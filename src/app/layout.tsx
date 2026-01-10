@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import Navbar from "@/components/Navbar";
+import TopNavigation from "@/components/TopNavigation";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,7 +31,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${oswald.variable} bg-background font-sans min-h-screen flex flex-col`}>
         <Providers>
-          <Navbar />
+          <TopNavigation />
           <main className="flex-1 p-6 relative">
             <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('/noise.svg')] mix-blend-overlay"></div>
             {children}
