@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { LayoutDashboard, FileText, ClipboardList, CheckCircle2, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, ClipboardList, CheckCircle2, LogOut, PlusCircle } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 export default function PlayerSidebar() {
@@ -15,6 +15,11 @@ export default function PlayerSidebar() {
             name: "DASHBOARD",
             href: "/player",
             icon: <LayoutDashboard className="w-5 h-5" />
+        },
+        {
+            name: "NOVA DENÚNCIA",
+            href: "/player/new",
+            icon: <PlusCircle className="w-5 h-5" />
         },
         {
             name: "DENÚNCIAS",
