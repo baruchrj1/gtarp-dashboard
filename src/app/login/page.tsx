@@ -25,7 +25,7 @@ export default function LoginPage() {
                     </p>
 
                     <button
-                        onClick={() => signIn("discord", { callbackUrl: "/admin" })}
+                        onClick={() => signIn("discord", { callbackUrl: "/player" })}
                         className="w-full gta-btn h-14 text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] transition-all"
                     >
                         <span className="flex items-center gap-3">
