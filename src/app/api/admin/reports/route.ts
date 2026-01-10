@@ -7,7 +7,7 @@ export async function GET(req: Request) {
     const session = await getServerSession(authOptions);
 
     // Authorization Check
-    // @ts-ignore
+    // Authorization Check
     if (!session || !session.user || !session.user.isAdmin) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

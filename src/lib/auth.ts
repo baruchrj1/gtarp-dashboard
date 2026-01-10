@@ -43,9 +43,7 @@ export const authOptions: NextAuthOptions = {
                 if (dbUser) {
                     session.user = {
                         ...session.user,
-                        // @ts-ignore
                         id: dbUser.id,
-                        // @ts-ignore
                         isAdmin: dbUser.isAdmin
                     };
                 }
