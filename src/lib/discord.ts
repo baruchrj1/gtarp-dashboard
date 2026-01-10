@@ -40,7 +40,7 @@ export async function sendReportNotification(report: any, reporterName: string) 
                 .setTimestamp()
                 .setFooter({ text: 'Painel de Denúncias' });
 
-            await channel.send({ embeds: [embed] });
+            await (channel as import('discord.js').TextChannel).send({ embeds: [embed] });
             console.log("Notification sent to Discord");
         }
     } catch (error) {
