@@ -1,10 +1,25 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { Shield } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function LoginPage() {
+    const { status } = useSession();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (status === "authenticated") {
+            router.replace("/player");
+        }
+    }, [status, router]);
+
+    const handleLogin = () => {
+        signIn("discord", { callbackUrl: "/player" });
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
             {/* Background Noise */}
@@ -25,7 +40,7 @@ export default function LoginPage() {
                     </p>
 
                     <button
-                        onClick={() => signIn("discord", { callbackUrl: "/player" })}
+                        onClick={handleLogin}
                         className="w-full gta-btn h-14 text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] transition-all"
                     >
                         <span className="flex items-center gap-3">
