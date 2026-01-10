@@ -27,8 +27,8 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-          <Link href="/reports/new" className="group relative inline-flex h-14 items-center justify-center overflow-hidden rounded bg-primary px-10 font-bold text-black uppercase tracking-wider transition-all hover:bg-white hover:scale-105">
-            <span className="mr-2">Registrar Denúncia</span>
+          <Link href="/player" className="group relative inline-flex h-14 items-center justify-center overflow-hidden rounded bg-primary px-10 font-bold text-black uppercase tracking-wider transition-all hover:bg-white hover:scale-105">
+            <span className="mr-2">Dashboard Pessoal</span>
             <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link href="/about" className="group inline-flex h-14 items-center justify-center rounded border border-zinc-700 bg-black/50 px-10 font-bold text-zinc-300 uppercase tracking-wider transition-all hover:bg-zinc-900 hover:text-white hover:border-zinc-500">
