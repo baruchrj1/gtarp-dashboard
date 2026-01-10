@@ -17,8 +17,8 @@ export default function Home() {
         </div>
 
         <h1 className="text-5xl md:text-8xl font-bold tracking-tighter uppercase font-display leading-none">
-          <span className="text-white">Justiça</span>
-          <span className="block text-primary text-6xl md:text-9xl mt-[-10px] opacity-90">Imparcial</span>
+          <span className="text-white">Hype</span>
+          <span className="block text-primary text-6xl md:text-9xl mt-[-10px] opacity-90">Reports</span>
         </h1>
 
         <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed font-light tracking-wide">

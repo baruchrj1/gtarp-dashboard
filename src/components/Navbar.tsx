@@ -18,7 +18,7 @@ export default function Navbar() {
                             <Shield className="w-6 h-6 text-primary" />
                         </div>
                         <Link href="/" className="text-2xl font-display font-bold text-white tracking-wider uppercase">
-                            GTA<span className="text-primary">RP</span> REPORTS
+                            HYPE<span className="text-primary"> REPORTS</span>
                         </Link>
                     </div>
 

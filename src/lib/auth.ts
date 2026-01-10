@@ -13,6 +13,42 @@ export const authOptions: NextAuthOptions = {
         async signIn({ user, account, profile }) {
             if (!user.email && !user.id) return false;
 
+            // Role Sync Logic
+            let role = "PLAYER";
+            let isAdmin = false;
+
+            if (account?.provider === "discord" && account.access_token) {
+                try {
+                    const guildId = process.env.DISCORD_GUILD_ID;
+                    const adminRoleId = process.env.DISCORD_ROLE_ADMIN_ID;
+                    const evaluatorRoleId = process.env.DISCORD_ROLE_EVALUATOR_ID;
+
+                    if (guildId) {
+                        const res = await fetch(`https://discord.com/api/users/@me/guilds/${guildId}/member`, {
+                            headers: {
+                                Authorization: `Bearer ${account.access_token}`,
+                            },
+                        });
+
+                        if (res.ok) {
+                            const member = await res.json();
+                            const roles = member.roles as string[];
+
+                            if (adminRoleId && roles.includes(adminRoleId)) {
+                                role = "ADMIN";
+                                isAdmin = true;
+                            } else if (evaluatorRoleId && roles.includes(evaluatorRoleId)) {
+                                role = "EVALUATOR";
+                            }
+                        } else {
+                            console.error("Failed to fetch guild member:", await res.text());
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error fetching Discord roles:", error);
+                }
+            }
+
             // Sync user to database
             try {
                 await prisma.user.upsert({
@@ -20,11 +56,15 @@ export const authOptions: NextAuthOptions = {
                     update: {
                         username: user.name || "Unknown",
                         avatar: user.image,
+                        role: role,
+                        isAdmin: isAdmin
                     },
                     create: {
                         id: user.id,
                         username: user.name || "Unknown",
                         avatar: user.image,
+                        role: role,
+                        isAdmin: isAdmin
                     },
                 });
                 return true;
@@ -35,7 +75,7 @@ export const authOptions: NextAuthOptions = {
         },
         async session({ session, token }) {
             if (session.user && token.sub) {
-                // Fetch extended user details (like isAdmin)
+                // Fetch extended user details
                 const dbUser = await prisma.user.findUnique({
                     where: { id: token.sub },
                 });
@@ -44,7 +84,8 @@ export const authOptions: NextAuthOptions = {
                     session.user = {
                         ...session.user,
                         id: dbUser.id,
-                        isAdmin: dbUser.isAdmin
+                        isAdmin: dbUser.isAdmin,
+                        role: dbUser.role
                     };
                 }
             }
@@ -54,6 +95,8 @@ export const authOptions: NextAuthOptions = {
     theme: {
         colorScheme: 'dark',
         brandColor: '#8b5cf6', // Violet
-        logo: '' // We can add a logo later
+    },
+    pages: {
+        signIn: '/login',
     }
 };

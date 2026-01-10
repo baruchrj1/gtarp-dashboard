@@ -1,5 +1,6 @@
 "use client";
 
+import useSWR from "swr";
 import Link from "next/link";
 import { useState } from "react";
 import { Search, Filter, ChevronLeft, ChevronRight, Eye } from "lucide-react";
@@ -16,34 +17,46 @@ interface Report {
     };
 }
 
-interface ReportsTableProps {
+interface ReportsResponse {
     reports: Report[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
 }
 
-export default function ReportsTable({ reports }: ReportsTableProps) {
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export default function ReportsTable() {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
 
-    // Filter logic
-    const filteredReports = reports.filter(report => {
-        const matchesSearch =
-            report.accusedId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            report.reporter.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            report.id.toString().includes(searchTerm);
+    const buildQuery = () => {
+        const params = new URLSearchParams();
+        params.set("page", currentPage.toString());
+        params.set("limit", "20");
+        if (statusFilter !== "ALL") params.set("status", statusFilter);
+        if (searchTerm) params.set("search", searchTerm);
+        return params.toString();
+    };
 
-        const matchesStatus = statusFilter === "ALL" || report.status === statusFilter;
+    const { data, isLoading } = useSWR<ReportsResponse>(`/api/admin/reports?${buildQuery()}`, fetcher);
 
-        return matchesSearch && matchesStatus;
-    });
+    const reports = data?.reports || [];
+    const pagination = data?.pagination;
 
-    // Pagination logic
-    const totalPages = Math.ceil(filteredReports.length / itemsPerPage);
-    const paginatedReports = filteredReports.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+        setCurrentPage(1);
+    };
+
+    const handleStatusChange = (value: string) => {
+        setStatusFilter(value);
+        setCurrentPage(1);
+    };
 
     const getStatusStyles = (status: string) => {
         switch (status) {
@@ -65,16 +78,15 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
             <div className="p-6 border-b border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <span className="w-1.5 h-6 bg-primary rounded-full"></span>
-                    <h3 className="text-lg font-bold text-white uppercase tracking-wider font-display">Registros ({filteredReports.length})</h3>
+                    <h3 className="text-lg font-bold text-white uppercase tracking-wider font-display">Registros ({pagination?.total || 0})</h3>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                    {/* Status Filter */}
                     <div className="relative">
                         <Filter className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
                         <select
                             value={statusFilter}
-                            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                            onChange={(e) => handleStatusChange(e.target.value)}
                             className="bg-zinc-900 border border-zinc-700 text-sm rounded px-4 py-2 pl-10 outline-none text-zinc-200 focus:border-primary cursor-pointer w-full appearance-none uppercase tracking-wide font-bold"
                         >
                             <option value="ALL">Todos os Status</option>
@@ -85,14 +97,13 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
                         </select>
                     </div>
 
-                    {/* Search Input */}
                     <div className="relative">
                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
                         <input
                             type="text"
                             placeholder="BUSCAR ID, JOGADOR..."
                             value={searchTerm}
-                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                            onChange={(e) => handleSearchChange(e.target.value)}
                             className="bg-black/50 border border-zinc-700 text-sm rounded pl-10 pr-4 py-2 w-full sm:w-64 focus:ring-1 focus:ring-primary focus:border-primary outline-none text-white placeholder-zinc-600 uppercase font-mono"
                         />
                     </div>
@@ -112,7 +123,7 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800/50">
-                        {paginatedReports.map((report) => (
+                        {reports.map((report) => (
                             <tr key={report.id} className="group hover:bg-white/5 transition-colors duration-200">
                                 <td className="p-4 text-sm font-mono text-zinc-400">#{report.id.toString().padStart(4, '0')}</td>
                                 <td className="p-4">
@@ -161,7 +172,14 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
                                 </td>
                             </tr>
                         ))}
-                        {filteredReports.length === 0 && (
+                        {isLoading && (
+                            <tr>
+                                <td colSpan={6} className="p-12 text-center">
+                                    <div className="animate-spin rounded h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                                </td>
+                            </tr>
+                        )}
+                        {!isLoading && reports.length === 0 && (
                             <tr>
                                 <td colSpan={6} className="p-12 text-center">
                                     <div className="flex flex-col items-center justify-center text-zinc-500">
@@ -178,22 +196,22 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
                 </table>
             </div>
 
-            {totalPages > 1 && (
+            {pagination && pagination.totalPages > 1 && (
                 <div className="p-4 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-500 uppercase tracking-wider font-medium">
                     <span>
-                        Mostrando {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, filteredReports.length)} / {filteredReports.length}
+                        Mostrando {((pagination.page - 1) * pagination.limit) + 1}-{Math.min(pagination.page * pagination.limit, pagination.total)} / {pagination.total}
                     </span>
                     <div className="flex gap-2">
                         <button
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
+                            disabled={pagination.page === 1}
                             className="p-1 px-3 rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
                         <button
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
+                            disabled={pagination.page === pagination.totalPages}
                             className="p-1 px-3 rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center"
                         >
                             <ChevronRight className="w-4 h-4" />

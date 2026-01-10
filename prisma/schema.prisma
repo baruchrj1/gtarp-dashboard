@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -13,6 +12,7 @@ model User {
   username      String
   avatar        String?
   isAdmin       Boolean   @default(false)
+  role          String    @default("PLAYER") // PLAYER, EVALUATOR, ADMIN
   reportsMade   Report[]  @relation("Reporter")
   createdAt     DateTime  @default(now())
 }
@@ -21,19 +21,25 @@ model Report {
   id          Int       @id @default(autoincrement())
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   // Incident Details
   accusedId   String    // ID of the player being reported
   reason      String
   description String?
   evidence    String    // URL to video/image
-  
+
   // Status
   status      String    @default("PENDING") // PENDING, APPROVED, REJECTED, INVESTIGATING
   adminNotes  String?
-  
+
   // Relations
   reporterId  String
   reporter    User      @relation("Reporter", fields: [reporterId], references: [id])
   handledBy   String?   // Admin ID who processed the report
+
+  // Indexes for performance
+  @@index([status, createdAt(sort: Desc)])
+  @@index([accusedId])
+  @@index([reporterId])
+  @@index([createdAt(sort: Desc)])
 }

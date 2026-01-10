@@ -33,9 +33,11 @@ export async function POST(req: Request) {
             },
         });
 
-        // Send Discord Notification
+        // Send Discord Notification in background (non-blocking)
         // @ts-ignore
-        await sendReportNotification(report, session.user.name);
+        sendReportNotification(report, session.user.name).catch((err) =>
+            console.error("Discord notification error:", err)
+        );
 
         return NextResponse.json({ success: true, report });
     } catch (error) {

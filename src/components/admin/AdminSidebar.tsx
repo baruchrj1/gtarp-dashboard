@@ -2,17 +2,52 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Users, Settings, Activity } from "lucide-react";
-
-const navigation = [
-    { name: "VISÃO GERAL", href: "/admin", icon: <LayoutDashboard className="w-5 h-5" /> },
-    { name: "DENÚNCIAS", href: "/admin/reports", icon: <FileText className="w-5 h-5" /> },
-    { name: "USUÁRIOS", href: "/admin/users", icon: <Users className="w-5 h-5" /> },
-    { name: "CONFIGURAÇÕES", href: "/admin/settings", icon: <Settings className="w-5 h-5" /> },
-];
+import { useSession } from "next-auth/react";
+import { LayoutDashboard, FileText, Users, Settings, Activity, ShieldCheck, MessageSquare } from "lucide-react";
 
 export default function AdminSidebar() {
     const pathname = usePathname();
+    const { data: session } = useSession();
+    const role = session?.user?.role || "PLAYER";
+
+    const navigation = [
+        {
+            name: "VISÃO GERAL",
+            href: "/admin",
+            icon: <LayoutDashboard className="w-5 h-5" />,
+            allowedRoles: ["ADMIN"]
+        },
+        {
+            name: "DENÚNCIAS",
+            href: "/admin/reports",
+            icon: <FileText className="w-5 h-5" />,
+            allowedRoles: ["ADMIN", "EVALUATOR"]
+        },
+        {
+            name: "AVALIAÇÃO",
+            href: "/admin/reviews",
+            icon: <ShieldCheck className="w-5 h-5" />,
+            allowedRoles: ["EVALUATOR"] // Specific workspace for evaluators
+        },
+        {
+            name: "USUÁRIOS",
+            href: "/admin/users",
+            icon: <Users className="w-5 h-5" />,
+            allowedRoles: ["ADMIN"]
+        },
+        {
+            name: "FEEDBACKS",
+            href: "/admin/feedback",
+            icon: <MessageSquare className="w-5 h-5" />,
+            allowedRoles: ["ADMIN"]
+        },
+        {
+            name: "CONFIGURAÇÕES",
+            href: "/admin/settings",
+            icon: <Settings className="w-5 h-5" />,
+            allowedRoles: ["ADMIN"]
+        },
+    ];
 
     return (
         <div className="hidden lg:flex flex-col w-64 bg-black/40 border-r border-white/5 h-[calc(100vh-80px)] sticky top-[80px]">
@@ -22,6 +57,9 @@ export default function AdminSidebar() {
                 </h2>
                 <nav className="space-y-2">
                     {navigation.map((item) => {
+                        // Check if user has permission
+                        if (!item.allowedRoles.includes(role)) return null;
+
                         const isActive = pathname === item.href;
                         return (
                             <Link
@@ -57,7 +95,11 @@ export default function AdminSidebar() {
                         </span>
                         <span className="text-xs font-medium text-emerald-400">ONLINE</span>
                     </div>
-                    <p className="text-[10px] text-zinc-600 mt-2 font-mono">Ping: 24ms | Uptime: 99.9%</p>
+                    <div className="mt-3 pt-3 border-t border-white/5">
+                        <p className="text-[10px] text-zinc-500 font-mono">
+                            Cargo: <span className="text-primary font-bold">{role}</span>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
