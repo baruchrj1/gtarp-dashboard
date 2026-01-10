@@ -29,8 +29,8 @@ export default function Navbar() {
                                 Início
                             </Link>
                             {session && (
-                                <Link href="/reports/new" className="text-zinc-400 hover:text-white hover:bg-white/5 px-4 py-2 rounded font-medium transition-all uppercase text-sm tracking-wide">
-                                    Nova Denúncia
+                                <Link href="/player" className="text-zinc-400 hover:text-white hover:bg-white/5 px-4 py-2 rounded font-medium transition-all uppercase text-sm tracking-wide">
+                                    Dashboard Pessoal
                                 </Link>
                             )}
                             {session?.user?.isAdmin && (
