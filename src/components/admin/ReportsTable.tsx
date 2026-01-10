@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 interface Report {
     id: number;
     accusedId: string;
@@ -97,9 +99,12 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
                                     </span>
                                 </td>
                                 <td className="p-4 text-right">
-                                    <button className="text-sm font-medium text-primary hover:text-primary-foreground hover:bg-primary/90 px-3 py-1.5 rounded-md transition-all">
+                                    <Link
+                                        href={`/admin/reports/${report.id}`}
+                                        className="inline-block text-sm font-medium text-primary hover:text-primary-foreground hover:bg-primary/10 px-3 py-1.5 rounded-md transition-all"
+                                    >
                                         Analisar
-                                    </button>
+                                    </Link>
                                 </td>
                             </tr>
                         ))}

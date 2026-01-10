@@ -35,4 +35,4 @@ model Report {
   // Relations
   reporterId  String
   reporter    User      @relation("Reporter", fields: [reporterId], references: [id])
-}
+  handledBy   String?   // Admin ID who processed the report
