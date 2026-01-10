@@ -12,7 +12,7 @@ export default function TopNavigation() {
     return (
         <nav className="sticky top-0 z-50 w-full mb-8 border-b border-white/10 bg-black/80 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-20">
+                <div className="flex items-center justify-between h-20 relative">
                     <div className="flex items-center gap-2">
                         <div className="bg-primary/20 p-2 rounded">
                             <Shield className="w-6 h-6 text-primary" />
@@ -23,7 +23,7 @@ export default function TopNavigation() {
                     </div>
 
                     {/* Desktop Menu */}
-                    <div className="hidden md:block">
+                    <div className="hidden md:block absolute left-1/2 -translate-x-1/2">
                         <div className="flex items-center space-x-1">
                             <Link href="/" className="text-zinc-400 hover:text-white hover:bg-white/5 px-4 py-2 rounded font-medium transition-all uppercase text-sm tracking-wide">
                                 Início
