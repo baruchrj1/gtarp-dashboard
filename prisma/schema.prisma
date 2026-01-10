@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model User {
@@ -21,17 +22,17 @@ model Report {
   id          Int       @id @default(autoincrement())
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
+  
   // Incident Details
   accusedId   String    // ID of the player being reported
   reason      String
   description String?
   evidence    String    // URL to video/image
-
+  
   // Status
   status      String    @default("PENDING") // PENDING, APPROVED, REJECTED, INVESTIGATING
   adminNotes  String?
-
+  
   // Relations
   reporterId  String
   reporter    User      @relation("Reporter", fields: [reporterId], references: [id])

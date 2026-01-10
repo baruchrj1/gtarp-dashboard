@@ -7,6 +7,7 @@ export const authOptions: NextAuthOptions = {
         DiscordProvider({
             clientId: process.env.DISCORD_CLIENT_ID || "",
             clientSecret: process.env.DISCORD_CLIENT_SECRET || "",
+            authorization: { params: { scope: "identify email guilds.members.read" } },
         }),
     ],
     callbacks: {
@@ -19,12 +20,17 @@ export const authOptions: NextAuthOptions = {
 
             if (account?.provider === "discord" && account.access_token) {
                 try {
-                    const guildId = process.env.DISCORD_GUILD_ID;
-                    const adminRoleId = process.env.DISCORD_ROLE_ADMIN_ID;
-                    const evaluatorRoleId = process.env.DISCORD_ROLE_EVALUATOR_ID;
+                    const guildId = process.env.DISCORD_GUILD_ID?.trim();
+                    const adminRoleId = process.env.DISCORD_ROLE_ADMIN_ID?.trim();
+                    const evaluatorRoleId = process.env.DISCORD_ROLE_EVALUATOR_ID?.trim();
+
+                    console.log(`[AUTH] Configured Guild ID: '${guildId}'`);
+                    console.log(`[AUTH] Configured Admin Role ID: '${adminRoleId}'`);
 
                     if (guildId) {
-                        const res = await fetch(`https://discord.com/api/users/@me/guilds/${guildId}/member`, {
+                        const url = `https://discord.com/api/users/@me/guilds/${guildId}/member`;
+
+                        const res = await fetch(url, {
                             headers: {
                                 Authorization: `Bearer ${account.access_token}`,
                             },
@@ -33,16 +39,29 @@ export const authOptions: NextAuthOptions = {
                         if (res.ok) {
                             const member = await res.json();
                             const roles = member.roles as string[];
+                            console.log(`[AUTH] User Roles from Discord:`, roles);
 
+                            // Check for Admin Match
                             if (adminRoleId && roles.includes(adminRoleId)) {
+                                console.log(`[AUTH] MATCH FOUND: User has Admin Role (${adminRoleId})`);
                                 role = "ADMIN";
                                 isAdmin = true;
-                            } else if (evaluatorRoleId && roles.includes(evaluatorRoleId)) {
+                            }
+                            // Check for Evaluator Match
+                            else if (evaluatorRoleId && roles.includes(evaluatorRoleId)) {
+                                console.log(`[AUTH] MATCH FOUND: User has Evaluator Role (${evaluatorRoleId})`);
                                 role = "EVALUATOR";
                             }
+                            else {
+                                console.log("[AUTH] NO MATCH: User has neither Admin nor Evaluator roles.");
+                            }
                         } else {
-                            console.error("Failed to fetch guild member:", await res.text());
+                            console.error(`[AUTH] Discord API Error: ${res.status} ${res.statusText}`);
+                            const errorText = await res.text();
+                            console.error(`[AUTH] Response Body: ${errorText}`);
                         }
+                    } else {
+                        console.error("[AUTH] Missing DISCORD_GUILD_ID in environment variables");
                     }
                 } catch (error) {
                     console.error("Error fetching Discord roles:", error);
