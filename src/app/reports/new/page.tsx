@@ -44,8 +44,8 @@ export default function NewReportPage() {
             }
 
             router.push("/reports/success");
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Erro ao enviar denúncia");
         } finally {
             setIsSubmitting(false);
         }

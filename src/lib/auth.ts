@@ -3,6 +3,8 @@ import DiscordProvider from "next-auth/providers/discord";
 import { prisma } from "./db";
 
 export const authOptions: NextAuthOptions = {
+    debug: process.env.NODE_ENV === 'development',
+    secret: process.env.NEXTAUTH_SECRET || "dev-secret-change-in-production",
     providers: [
         DiscordProvider({
             clientId: process.env.DISCORD_CLIENT_ID || "",
@@ -92,21 +94,41 @@ export const authOptions: NextAuthOptions = {
                 return false;
             }
         },
-        async session({ session, token }) {
-            if (session.user && token.sub) {
-                // Fetch extended user details
-                const dbUser = await prisma.user.findUnique({
-                    where: { id: token.sub },
-                });
+        async jwt({ token, user, trigger, session }) {
+            if (user) {
+                token.id = user.id;
+            }
 
-                if (dbUser) {
-                    session.user = {
-                        ...session.user,
-                        id: dbUser.id,
-                        isAdmin: dbUser.isAdmin,
-                        role: dbUser.role
-                    };
+            if (trigger === "update" && session) {
+                return { ...token, ...session };
+            }
+
+            if (token.sub) {
+                try {
+                    const dbUser = await prisma.user.findUnique({
+                        where: { id: token.sub },
+                    });
+
+                    if (dbUser) {
+                        token.role = dbUser.role;
+                        token.isAdmin = dbUser.isAdmin;
+                    }
+                } catch (error) {
+                    console.error("[AUTH] JWT callback error:", error);
                 }
+            }
+
+            return token;
+        },
+        async session({ session, token }) {
+            try {
+                if (session.user && token.sub) {
+                    session.user.id = token.sub;
+                    session.user.isAdmin = token.isAdmin as boolean;
+                    session.user.role = token.role as string;
+                }
+            } catch (error) {
+                console.error("[AUTH] Session callback error:", error);
             }
             return session;
         },

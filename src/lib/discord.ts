@@ -10,7 +10,7 @@ export const discordClient =
 
 if (process.env.NODE_ENV !== 'production') globalForDiscord.discord = discordClient;
 
-export async function sendReportNotification(report: any, reporterName: string) {
+export async function sendReportNotification(report: { id: number; accusedId: string; reason: string; description: string | null; evidence: string }, reporterName: string) {
     const token = process.env.DISCORD_BOT_TOKEN;
     const channelId = process.env.DISCORD_ADMIN_CHANNEL_ID;
 

@@ -20,8 +20,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        // @ts-ignore
-        const reporterId = session.user.id; // added in session callback
+        const reporterId = session.user.id;
 
         const report = await prisma.report.create({
             data: {
@@ -34,8 +33,7 @@ export async function POST(req: Request) {
         });
 
         // Send Discord Notification in background (non-blocking)
-        // @ts-ignore
-        sendReportNotification(report, session.user.name).catch((err) =>
+        sendReportNotification(report, session.user.name || "Unknown").catch((err) =>
             console.error("Discord notification error:", err)
         );
 
