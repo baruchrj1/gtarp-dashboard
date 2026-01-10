@@ -118,8 +118,8 @@ export default function PlayerReportsPage() {
                         <button
                             onClick={() => setFilter("all")}
                             className={`px-4 py-2 rounded text-sm font-bold uppercase tracking-wider transition-all ${filter === "all"
-                                    ? "bg-primary text-black"
-                                    : "bg-zinc-900 text-zinc-400 hover:text-white"
+                                ? "bg-primary text-black"
+                                : "bg-zinc-900 text-zinc-400 hover:text-white"
                                 }`}
                         >
                             Todas ({allReports.length})
@@ -127,8 +127,8 @@ export default function PlayerReportsPage() {
                         <button
                             onClick={() => setFilter("mine")}
                             className={`px-4 py-2 rounded text-sm font-bold uppercase tracking-wider transition-all ${filter === "mine"
-                                    ? "bg-primary text-black"
-                                    : "bg-zinc-900 text-zinc-400 hover:text-white"
+                                ? "bg-primary text-black"
+                                : "bg-zinc-900 text-zinc-400 hover:text-white"
                                 }`}
                         >
                             Minhas Denúncias ({allReports.filter((r: any) => r.reporterId === session?.user?.id).length})
@@ -136,8 +136,8 @@ export default function PlayerReportsPage() {
                         <button
                             onClick={() => setFilter("open")}
                             className={`px-4 py-2 rounded text-sm font-bold uppercase tracking-wider transition-all ${filter === "open"
-                                    ? "bg-primary text-black"
-                                    : "bg-zinc-900 text-zinc-400 hover:text-white"
+                                ? "bg-primary text-black"
+                                : "bg-zinc-900 text-zinc-400 hover:text-white"
                                 }`}
                         >
                             Em Aberto ({allReports.filter((r: any) => r.status === "PENDING").length})
@@ -187,28 +187,28 @@ export default function PlayerReportsPage() {
                                         >
                                             <td className="p-4">
                                                 <span className="text-zinc-500 text-xs font-mono">
-                                                    {report.id.slice(0, 8)}...
+                                                    #{report.id ? String(report.id).padStart(4, '0') : "????"}
                                                 </span>
                                             </td>
                                             <td className="p-4">
                                                 <p className="text-white font-medium text-sm">
-                                                    {report.accusedName}
+                                                    {report.accusedName || "Desconhecido"}
                                                 </p>
                                                 <p className="text-zinc-500 text-xs">
-                                                    ID: {report.accusedId}
+                                                    ID: {report.accusedId || "N/A"}
                                                 </p>
                                             </td>
                                             <td className="p-4">
                                                 <p className="text-zinc-300 text-sm line-clamp-2">
-                                                    {report.description}
+                                                    {report.description || "Sem descrição"}
                                                 </p>
                                             </td>
                                             <td className="p-4 text-center">
-                                                {getStatusBadge(report.status)}
+                                                {getStatusBadge(report.status || "PENDING")}
                                             </td>
                                             <td className="p-4 text-center">
                                                 <span className="text-zinc-400 text-xs">
-                                                    {new Date(report.createdAt).toLocaleDateString("pt-BR")}
+                                                    {report.createdAt ? new Date(report.createdAt).toLocaleDateString("pt-BR") : "-"}
                                                 </span>
                                             </td>
                                         </tr>
