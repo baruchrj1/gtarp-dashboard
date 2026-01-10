@@ -66,14 +66,7 @@ export default function Navbar() {
                                     <LogOut className="w-5 h-5" />
                                 </button>
                             </div>
-                        ) : (
-                            <button
-                                onClick={() => signIn("discord")}
-                                className="gta-btn"
-                            >
-                                <span>Login com Discord</span>
-                            </button>
-                        )}
+                        ) : null}
                     </div>
                 </div>
             </div>
