@@ -8,27 +8,26 @@ interface StatsCardProps {
 
 export default function StatsCard({ title, value, icon, trend, description }: StatsCardProps) {
     return (
-        <div className="glass-card p-6 relative overflow-hidden group">
-            <div className="flex justify-between items-start">
+        <div className="gta-card p-6 relative overflow-hidden group bg-card hover:bg-zinc-900/80 transition-all border-l-4 border-l-primary/50 hover:border-l-primary">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity scale-150 transform translate-x-2 -translate-y-2">
+                {icon}
+            </div>
+
+            <div className="flex justify-between items-start relative z-10">
                 <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-1">{title}</h3>
-                    <div className="text-3xl font-bold text-foreground">{value}</div>
+                    <h3 className="text-xs font-bold font-display uppercase tracking-widest text-zinc-500 mb-2">{title}</h3>
+                    <div className="text-4xl font-bold text-white tracking-tight">{value}</div>
                     {description && (
-                        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+                        <div className="flex items-center mt-2">
+                            {trend && <span className="text-xs font-bold text-primary mr-2 uppercase">{trend}</span>}
+                            <p className="text-xs text-zinc-500 uppercase tracking-wide">{description}</p>
+                        </div>
                     )}
                 </div>
-                <div className="p-3 bg-primary/10 rounded-xl text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                <div className="p-3 bg-primary/10 rounded border border-primary/20 text-primary group-hover:bg-primary group-hover:text-black transition-colors duration-300">
                     {icon}
                 </div>
             </div>
-            {trend && (
-                <div className="mt-4 flex items-center text-xs font-medium text-emerald-500">
-                    <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                    {trend}
-                </div>
-            )}
         </div>
     );
 }

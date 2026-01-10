@@ -3,123 +3,85 @@
 @tailwind utilities;
 
 :root {
-  /* Base Colors - Zinc Palette for Premium Feel */
-  --background: #09090b;
-  --foreground: #fafafa;
+  /* Los Santos Theme - Base Colors */
+  --background: #0D0D0D;
+  --foreground: #F5F5F5;
 
-  /* Surface Colors - Modern */
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
+  /* Card / Surface */
+  --card: #141414;
+  --card-foreground: #F5F5F5;
+  --popover: #141414;
+  --popover-foreground: #F5F5F5;
 
-  /* Legacy Compatibility - Keeping existing names to prevent breakage */
-  --surface: #18181b;
-  --surface-highlight: #27272a;
+  /* Primary - GTA Green */
+  --primary: #56AB2F;
+  --primary-foreground: #FFFFFF;
+  --primary-glow: rgba(86, 171, 47, 0.5);
 
-  /* Primary Brand Color - Violet/Indigo */
-  --primary: #7c3aed;
-  --primary-foreground: #ffffff;
-  --primary-glow: rgba(124, 58, 237, 0.4);
+  /* Secondary - Accent */
+  --secondary: #86C166;
+  --secondary-foreground: #0D0D0D;
 
-  /* Secondary/Accent - Restoring Pink for Gradients/Icons */
-  --secondary: #ec4899;
-  --secondary-foreground: #ffffff;
-
-  /* State Colors */
-  --muted: #71717a;
-  --muted-foreground: #a1a1aa;
-
-  --accent: #27272a;
-  --accent-foreground: #fafafa;
-
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-
-  --success: #10b981;
-  --warning: #f59e0b;
-
-  /* Borders & Radius */
-  --border: #27272a;
-  --input: #27272a;
-  --ring: #7c3aed;
-
-  --radius: 0.75rem;
-
-  /* Glass Utils Variables required by old css */
-  --glass-bg: rgba(9, 9, 11, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  /* State */
+  --muted: #2D2D2D;
+  --muted-foreground: #A1A1AA;
+  --accent: #1F1F1F;
+  --accent-foreground: #F5F5F5;
+  --destructive: #E02F2F;
+  --destructive-foreground: #FFFFFF;
+  --border: #2D2D2D;
+  --input: #1F1F1F;
+  --ring: #56AB2F;
+  --radius: 0.25rem; /* Sharper corners for that Tactical/GTA look */
 }
 
 body {
   @apply bg-background text-foreground antialiased;
-  font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-/* Glassmorphism Utilities - Refined & Compatible */
-.glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-}
-
-.glass-card {
-  @apply bg-zinc-900/50 backdrop-blur-sm border border-zinc-800/50 rounded-xl shadow-sm transition-all duration-300;
-}
-
-.glass-card:hover {
-  @apply border-zinc-700/50 shadow-lg shadow-primary/5;
-}
-
-.card {
-  @apply bg-zinc-900 border border-zinc-800 rounded-xl p-6 transition-all duration-200;
-}
-
-.card:hover {
-  @apply border-primary/50 shadow-lg shadow-primary/10;
-}
-
-/* Button Styles - Legacy Support */
-.btn {
-  @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold cursor-pointer transition-all duration-200 border-none text-sm;
-}
-
-.btn-primary {
-  @apply bg-primary text-white shadow-lg shadow-primary/20 hover:brightness-110 hover:-translate-y-px;
-}
-
-/* Custom Scrollbar */
+/* Custom GTA-style Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #0D0D0D; 
 }
-
 ::-webkit-scrollbar-thumb {
-  @apply bg-zinc-800 rounded-full;
+  background: #2D2D2D; 
+  border-radius: 2px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-zinc-700;
+  background: #56AB2F; 
 }
 
-/* Animation Utilities */
-.fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+/* Utility Classes */
+.gta-card {
+  @apply bg-card border border-border rounded shadow-lg;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
+.gta-input {
+  @apply flex h-10 w-full rounded-md border border-input bg-input px-3 py-2 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.gta-btn {
+  @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 uppercase tracking-wide;
+}
+
+.scanline::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(
+      to bottom,
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0.1;
 }
