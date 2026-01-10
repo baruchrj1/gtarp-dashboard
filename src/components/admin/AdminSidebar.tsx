@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { LayoutDashboard, FileText, Users, Settings, Activity, ShieldCheck, MessageSquare, Shield } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, Activity, ShieldCheck, MessageSquare, Shield, UserCheck, Gavel } from "lucide-react";
 
 export default function AdminSidebar() {
     const pathname = usePathname();
@@ -36,9 +36,21 @@ export default function AdminSidebar() {
             allowedRoles: ["ADMIN"]
         },
         {
+            name: "PUNIÇÃO",
+            href: "/admin/punishments",
+            icon: <Gavel className="w-5 h-5" />,
+            allowedRoles: ["ADMIN"]
+        },
+        {
             name: "CARGOS",
             href: "/admin/roles",
             icon: <Shield className="w-5 h-5" />,
+            allowedRoles: ["ADMIN"]
+        },
+        {
+            name: "AVALIADORES",
+            href: "/admin/evaluators",
+            icon: <UserCheck className="w-5 h-5" />,
             allowedRoles: ["ADMIN"]
         },
         {

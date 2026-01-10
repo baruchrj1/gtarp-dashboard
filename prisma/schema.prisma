@@ -25,6 +25,7 @@ model Report {
   
   // Incident Details
   accusedId   String    // ID of the player being reported
+  accusedName String?   // Name of the player being reported
   reason      String
   description String?
   evidence    String    // URL to video/image

@@ -4,6 +4,43 @@ import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { sendReportNotification } from "@/lib/discord";
 
+export async function GET() {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const reports = await prisma.report.findMany({
+            orderBy: { createdAt: "desc" },
+            include: {
+                reporter: {
+                    select: {
+                        id: true,
+                        username: true,
+                        avatar: true,
+                    }
+                }
+            }
+        });
+
+        // Add reporter name to each report
+        const formattedReports = reports.map((report) => ({
+            ...report,
+            reporter: {
+                ...report.reporter,
+                name: report.reporter?.username || "Anônimo"
+            }
+        }));
+
+        return NextResponse.json({ success: true, reports: formattedReports });
+    } catch (error) {
+        console.error("Error fetching reports:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
@@ -13,7 +50,7 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { accusedId, reason, description, evidence } = body;
+        const { accusedId, accusedName, reason, description, evidence } = body;
 
         // Basic Validation
         if (!accusedId || !reason || !evidence) {
@@ -25,6 +62,7 @@ export async function POST(req: Request) {
         const report = await prisma.report.create({
             data: {
                 accusedId,
+                accusedName: accusedName || accusedId,
                 reason,
                 description,
                 evidence,

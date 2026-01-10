@@ -4,10 +4,12 @@ import useSWR, { mutate } from "swr";
 import Link from "next/link";
 import { useState, use } from "react";
 import { ChevronLeft, Check, X, HelpCircle, Shield, User, FileText, ExternalLink } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 type ReportDetail = {
     id: number;
     accusedId: string;
+    accusedName?: string;
     reason: string;
     description: string;
     evidence: string;
@@ -16,6 +18,7 @@ type ReportDetail = {
     adminNotes: string | null;
     reporter: {
         username: string;
+        name?: string;
         avatar: string | null;
         id: string;
     };
@@ -25,9 +28,14 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ReportDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
-    const { data: session } = useSWR("/api/auth/session");
+    const { data: session, status: authStatus } = useSession();
+    const role = session?.user?.role || "PLAYER";
+    const isAdmin = role === "ADMIN" || session?.user?.isAdmin === true;
+    const isEvaluator = role === "EVALUATOR";
+    const canAccess = isAdmin || isEvaluator;
+
     const { data: reportData, isLoading } = useSWR<ReportDetail>(
-        session?.user?.isAdmin ? `/api/admin/reports/${id}` : null,
+        canAccess ? `/api/admin/reports/${id}` : null,
         fetcher
     );
 
@@ -36,13 +44,21 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
     const [notes, setNotes] = useState(report?.adminNotes || "");
     const [localReport, setLocalReport] = useState<ReportDetail | null>(null);
 
-    if (!session?.user?.isAdmin) {
+    if (authStatus === "loading") {
+        return (
+            <div className="flex justify-center items-center min-h-[50vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
+    if (!canAccess) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
                 <Shield className="w-16 h-16 text-zinc-700 mb-4" />
                 <h2 className="text-xl font-bold text-white uppercase tracking-widest">Acesso Negado</h2>
                 <p className="text-zinc-500 mt-2">Você não tem permissão para visualizar esta página.</p>
-                <Link href="/" className="mt-6 gta-btn">Voltar ao Início</Link>
+                <Link href="/" className="mt-6 bg-primary text-black px-6 py-3 rounded font-bold uppercase tracking-wider">Voltar ao Início</Link>
             </div>
         );
     }

@@ -4,9 +4,10 @@ interface StatsCardProps {
     icon: React.ReactNode;
     trend?: string;
     description?: string;
+    isText?: boolean;
 }
 
-export default function StatsCard({ title, value, icon, trend, description }: StatsCardProps) {
+export default function StatsCard({ title, value, icon, trend, description, isText }: StatsCardProps) {
     return (
         <div className="gta-card p-6 relative overflow-hidden group bg-card hover:bg-zinc-900/80 transition-all border-l-4 border-l-primary/50 hover:border-l-primary">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity scale-150 transform translate-x-2 -translate-y-2">
@@ -16,7 +17,7 @@ export default function StatsCard({ title, value, icon, trend, description }: St
             <div className="flex justify-between items-start relative z-10">
                 <div>
                     <h3 className="text-xs font-bold font-display uppercase tracking-widest text-zinc-500 mb-2">{title}</h3>
-                    <div className="text-4xl font-bold text-white tracking-tight">{value}</div>
+                    <div className={`${isText ? 'text-2xl' : 'text-4xl'} font-bold text-white tracking-tight`}>{value}</div>
                     {description && (
                         <div className="flex items-center mt-2">
                             {trend && <span className="text-xs font-bold text-primary mr-2 uppercase">{trend}</span>}
