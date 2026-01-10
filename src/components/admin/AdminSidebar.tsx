@@ -53,12 +53,7 @@ export default function AdminSidebar() {
             icon: <UserCheck className="w-5 h-5" />,
             allowedRoles: ["ADMIN"]
         },
-        {
-            name: "FEEDBACKS",
-            href: "/admin/feedback",
-            icon: <MessageSquare className="w-5 h-5" />,
-            allowedRoles: ["ADMIN"]
-        },
+
         {
             name: "CONFIGURAÇÕES",
             href: "/admin/settings",
