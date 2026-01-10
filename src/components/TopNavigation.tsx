@@ -77,6 +77,7 @@ export default function TopNavigation() {
                         </div>
                     </div>
                 </div>
+            </div>
         </nav>
     );
 }
