@@ -11,7 +11,9 @@ export async function GET(
 ) {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.isAdmin) {
+    const isStaff = session?.user?.role === "ADMIN" || session?.user?.role === "EVALUATOR" || session?.user?.isAdmin;
+
+    if (!isStaff) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -45,7 +47,9 @@ export async function PATCH(
 ) {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.isAdmin) {
+    const isStaff = session?.user?.role === "ADMIN" || session?.user?.role === "EVALUATOR" || session?.user?.isAdmin;
+
+    if (!isStaff) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

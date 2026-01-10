@@ -34,12 +34,12 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
     const isEvaluator = role === "EVALUATOR";
     const canAccess = isAdmin || isEvaluator;
 
-    const { data: reportData, isLoading } = useSWR<ReportDetail>(
+    const { data: apiResponse, isLoading } = useSWR<{ report: ReportDetail }>(
         canAccess ? `/api/admin/reports/${id}` : null,
         fetcher
     );
 
-    const report = reportData;
+    const report = apiResponse?.report;
     const [actionLoading, setActionLoading] = useState(false);
     const [notes, setNotes] = useState(report?.adminNotes || "");
     const [localReport, setLocalReport] = useState<ReportDetail | null>(null);
@@ -131,7 +131,7 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
                             <div>
                                 <div className="flex items-center gap-3 mb-3">
                                     <span className="bg-zinc-900/50 border border-zinc-700 px-3 py-1 rounded text-xs font-mono text-zinc-400">
-                                        ID #{currentReport.id.toString().padStart(4, '0')}
+                                        ID #{currentReport.id ? currentReport.id.toString().padStart(4, '0') : "????"}
                                     </span>
                                     <span className={`flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${statusStyle.border} bg-opacity-10 ${statusStyle.bg} bg-opacity-10 ${statusStyle.text}`}>
                                         <div className={`w-1.5 h-1.5 rounded-full mr-2 ${statusStyle.bg}`}></div>
