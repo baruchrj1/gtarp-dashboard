@@ -12,7 +12,12 @@ export async function GET() {
     }
 
     try {
+        // Filter: Staff filter sees all, Players see only their own
+        const isStaff = session.user.role === "ADMIN" || session.user.role === "EVALUATOR" || session.user.isAdmin;
+        const whereClause = isStaff ? {} : { reporterId: session.user.id };
+
         const reports = await prisma.report.findMany({
+            where: whereClause,
             orderBy: { createdAt: "desc" },
             include: {
                 reporter: {

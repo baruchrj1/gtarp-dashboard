@@ -25,9 +25,7 @@ export default function PlayerReportsPage() {
 
     // Filter reports based on selection
     const filteredReports = allReports.filter((report: any) => {
-        if (filter === "mine") {
-            return report.reporterId === session?.user?.id;
-        } else if (filter === "open") {
+        if (filter === "open") {
             return report.status === "PENDING";
         }
         return true; // "all"
@@ -98,10 +96,10 @@ export default function PlayerReportsPage() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-black/40 p-6 rounded border border-white/5">
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-widest uppercase font-display">
-                            <span className="text-primary">Denúncias</span>
+                            <span className="text-primary">Minhas Denúncias</span>
                         </h1>
                         <p className="text-zinc-400 mt-1 text-sm font-mono uppercase tracking-wider">
-                            Visualize denúncias abertas e suas denúncias
+                            Histórico completo das suas denúncias
                         </p>
                     </div>
                 </div>
@@ -123,15 +121,6 @@ export default function PlayerReportsPage() {
                                 }`}
                         >
                             Todas ({allReports.length})
-                        </button>
-                        <button
-                            onClick={() => setFilter("mine")}
-                            className={`px-4 py-2 rounded text-sm font-bold uppercase tracking-wider transition-all ${filter === "mine"
-                                ? "bg-primary text-black"
-                                : "bg-zinc-900 text-zinc-400 hover:text-white"
-                                }`}
-                        >
-                            Minhas Denúncias ({allReports.filter((r: any) => r.reporterId === session?.user?.id).length})
                         </button>
                         <button
                             onClick={() => setFilter("open")}
