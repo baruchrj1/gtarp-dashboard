@@ -67,7 +67,7 @@ export default function AdminDashboard() {
         },
     ];
 
-    if (!session?.user?.isAdmin) { // eslint-disable-line
+    if (!session?.user?.isAdmin) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mb-6 animate-pulse">

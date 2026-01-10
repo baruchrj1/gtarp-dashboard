@@ -26,7 +26,6 @@ export default function Navbar() {
                                         Nova Denúncia
                                     </Link>
                                 )}
-                                {/* @ts-ignore - isAdmin added in type declaration or session callback logic */}
                                 {session?.user?.isAdmin && (
                                     <Link href="/admin" className="text-primary hover:text-primary-foreground hover:bg-primary/10 px-4 py-2 rounded-lg text-sm font-medium transition-all">
                                         Admin Dashboard
