@@ -7,7 +7,6 @@ import StatsCard from "@/components/admin/StatsCard";
 import ReportsTable from "@/components/admin/ReportsTable";
 import { ShieldAlert, CheckCircle, Clock } from "lucide-react";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 interface Report {
     id: number;
@@ -25,7 +24,6 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AdminDashboard() {
     const { data: session, status } = useSession();
-    const router = useRouter();
 
     const isAuthenticated = status === "authenticated";
     const isLoadingAuth = status === "loading";
