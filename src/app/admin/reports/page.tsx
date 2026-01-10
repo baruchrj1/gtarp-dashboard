@@ -40,10 +40,10 @@ export default function AdminReportsPage() {
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             return (
-                report.accusedName?.toLowerCase().includes(query) ||
-                report.accusedId?.toLowerCase().includes(query) ||
-                String(report.id).toLowerCase().includes(query) ||
-                report.description?.toLowerCase().includes(query)
+                (report.accusedName && report.accusedName.toLowerCase().includes(query)) ||
+                (report.accusedId && report.accusedId.toLowerCase().includes(query)) ||
+                (report.id && String(report.id).toLowerCase().includes(query)) ||
+                (report.description && report.description.toLowerCase().includes(query))
             );
         }
 
@@ -274,33 +274,33 @@ export default function AdminReportsPage() {
                                         >
                                             <td className="p-4">
                                                 <span className="text-zinc-500 text-xs font-mono">
-                                                    #{String(report.id).padStart(4, '0')}
+                                                    #{report.id ? String(report.id).padStart(4, '0') : "????"}
                                                 </span>
                                             </td>
                                             <td className="p-4">
                                                 <p className="text-white font-medium text-sm">
-                                                    {report.accusedName}
+                                                    {report.accusedName || "Desconhecido"}
                                                 </p>
                                                 <p className="text-zinc-500 text-xs">
-                                                    ID: {report.accusedId}
+                                                    ID: {report.accusedId || "N/A"}
                                                 </p>
                                             </td>
                                             <td className="p-4">
                                                 <p className="text-zinc-300 text-sm">
-                                                    {report.reporter?.name || "Anônimo"}
+                                                    {report.reporter?.name || report.reporter?.username || "Anônimo"}
                                                 </p>
                                             </td>
                                             <td className="p-4 max-w-xs">
                                                 <p className="text-zinc-300 text-sm line-clamp-2">
-                                                    {report.description}
+                                                    {report.description || "Sem descrição"}
                                                 </p>
                                             </td>
                                             <td className="p-4 text-center">
-                                                {getStatusBadge(report.status)}
+                                                {getStatusBadge(report.status || "PENDING")}
                                             </td>
                                             <td className="p-4 text-center">
                                                 <span className="text-zinc-400 text-xs">
-                                                    {new Date(report.createdAt).toLocaleDateString("pt-BR")}
+                                                    {report.createdAt ? new Date(report.createdAt).toLocaleDateString("pt-BR") : "-"}
                                                 </span>
                                             </td>
                                             <td className="p-4 text-center">
