@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import PlayerSidebar from "@/components/player/PlayerSidebar";
-import { ShieldAlert, Send } from "lucide-react";
+import { ShieldAlert, Send, Plus, Trash2 } from "lucide-react";
 
 export default function NewPlayerReportPage() {
     const { data: session, status } = useSession();
@@ -14,14 +14,31 @@ export default function NewPlayerReportPage() {
         accusedId: "",
         reason: "",
         description: "",
-        evidence: "",
-        accusedName: "", // Added this field
+        evidence: [""],
+        accusedName: "",
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
 
     const isLoadingAuth = status === "loading";
     const isAuthenticated = status === "authenticated";
+
+    const handleEvidenceChange = (index: number, value: string) => {
+        const newEvidence = [...formData.evidence];
+        newEvidence[index] = value;
+        setFormData({ ...formData, evidence: newEvidence });
+    };
+
+    const addEvidenceField = () => {
+        setFormData({ ...formData, evidence: [...formData.evidence, ""] });
+    };
+
+    const removeEvidenceField = (index: number) => {
+        if (formData.evidence.length > 1) {
+            const newEvidence = formData.evidence.filter((_, i) => i !== index);
+            setFormData({ ...formData, evidence: newEvidence });
+        }
+    };
 
     if (isLoadingAuth) {
         return (
@@ -51,10 +68,22 @@ export default function NewPlayerReportPage() {
         setError("");
 
         try {
+            // Filter out empty evidence links
+            const validEvidence = formData.evidence.filter(link => link.trim() !== "");
+
+            if (validEvidence.length === 0) {
+                throw new Error("Você deve fornecer pelo menos um link de prova.");
+            }
+
+            const payload = {
+                ...formData,
+                evidence: validEvidence // Send as array, backend handles formatting
+            };
+
             const res = await fetch("/api/reports", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             if (!res.ok) {
@@ -62,7 +91,7 @@ export default function NewPlayerReportPage() {
                 throw new Error(data.error || "Erro ao enviar denúncia");
             }
 
-            router.push("/player/reports"); // Redirect to reports list
+            router.push("/player/reports");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Erro ao enviar denúncia");
         } finally {
@@ -88,9 +117,7 @@ export default function NewPlayerReportPage() {
 
                 {error && (
                     <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl mb-8 flex items-center">
-                        <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <ShieldAlert className="w-5 h-5 mr-3 flex-shrink-0" />
                         {error}
                     </div>
                 )}
@@ -163,21 +190,48 @@ export default function NewPlayerReportPage() {
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
-                                Link das Provas (Vídeo/Print) <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="url"
-                                required
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded px-4 py-3 text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
-                                placeholder="https://youtube.com/..."
-                                value={formData.evidence}
-                                onChange={(e) => setFormData({ ...formData, evidence: e.target.value })}
-                            />
-                            <p className="text-xs text-zinc-500 mt-1 flex items-center">
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
+                                    Links das Provas <span className="text-red-500">*</span>
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={addEvidenceField}
+                                    className="text-xs font-bold text-primary hover:text-white uppercase tracking-wider flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-white/5"
+                                >
+                                    <Plus className="w-3 h-3" /> Adicionar Link
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {formData.evidence.map((link, index) => (
+                                    <div key={index} className="flex gap-2 group">
+                                        <input
+                                            type="url"
+                                            required
+                                            className="w-full bg-zinc-900 border border-zinc-800 rounded px-4 py-3 text-white placeholder-zinc-600 focus:border-primary focus:outline-none transition-colors"
+                                            placeholder="https://youtube.com/..."
+                                            value={link}
+                                            onChange={(e) => handleEvidenceChange(index, e.target.value)}
+                                        />
+                                        {formData.evidence.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeEvidenceField(index)}
+                                                className="px-4 py-2 bg-zinc-900 text-zinc-500 rounded border border-zinc-800 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors group-hover:border-red-500/30"
+                                                title="Remover link"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <p className="text-xs text-zinc-500 mt-2 flex items-center">
                                 <ShieldAlert className="w-3 h-3 mr-1" />
-                                Denúncias sem provas verificáveis serão automaticamente rejeitadas.
+                                Links aceitos: YouTube, Imgur, Discord, Medal.tv.
                             </p>
                         </div>
 

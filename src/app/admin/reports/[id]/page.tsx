@@ -172,32 +172,47 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
                             <span className="text-xs text-zinc-600 uppercase">Clique para abrir</span>
                         </div>
 
-                        <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 aspect-video flex items-center justify-center group relative shadow-inner shadow-black/50">
-                            {currentReport.evidence.includes('youtube') || currentReport.evidence.includes('youtu.be') ? (
-                                <div className="text-center p-8">
-                                    <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-600/20 group-hover:scale-110 transition-transform">
-                                        <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[16px] border-l-white border-b-[8px] border-b-transparent ml-1"></div>
+                        <div className="grid grid-cols-1 gap-6">
+                            {(() => {
+                                let links = [currentReport.evidence];
+                                try {
+                                    const parsed = JSON.parse(currentReport.evidence);
+                                    if (Array.isArray(parsed)) links = parsed;
+                                } catch { }
+
+                                return links.map((evidenceUrl, idx) => (
+                                    <div key={idx} className="space-y-2">
+                                        {links.length > 1 && <h4 className="text-xs font-bold text-zinc-500 uppercase">Prova #{idx + 1}</h4>}
+                                        <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 aspect-video flex items-center justify-center group relative shadow-inner shadow-black/50">
+                                            {evidenceUrl.includes('youtube') || evidenceUrl.includes('youtu.be') ? (
+                                                <div className="text-center p-8">
+                                                    <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-600/20 group-hover:scale-110 transition-transform">
+                                                        <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[16px] border-l-white border-b-[8px] border-b-transparent ml-1"></div>
+                                                    </div>
+                                                    <p className="text-zinc-400 mb-2 font-medium">Conteúdo do YouTube</p>
+                                                    <a href={evidenceUrl} target="_blank" className="text-primary hover:text-white transition-colors break-all text-sm font-mono underline underline-offset-4">
+                                                        {evidenceUrl}
+                                                    </a>
+                                                </div>
+                                            ) : (evidenceUrl.match(/\.(jpeg|jpg|gif|png)$/) != null) ? (
+                                                <div className="relative w-full h-full group cursor-pointer" onClick={() => window.open(evidenceUrl, '_blank')}>
+                                                    <img src={evidenceUrl} alt="Evidência" className="w-full h-full object-contain opacity-80 group-hover:opacity-100 transition-opacity" />
+                                                    <div className="absolute inset-0 bg-black/50 group-hover:opacity-0 transition-opacity flex items-center justify-center">
+                                                        <span className="px-4 py-2 bg-black/80 rounded text-xs font-bold uppercase tracking-wider text-white">Visualizar Imagem</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center p-8">
+                                                    <p className="text-zinc-400 mb-2 font-medium">Link Externo</p>
+                                                    <a href={evidenceUrl} target="_blank" className="text-primary hover:text-white transition-colors break-all text-sm font-mono underline underline-offset-4">
+                                                        {evidenceUrl}
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <p className="text-zinc-400 mb-2 font-medium">Conteúdo do YouTube</p>
-                                    <a href={currentReport.evidence} target="_blank" className="text-primary hover:text-white transition-colors break-all text-sm font-mono underline underline-offset-4">
-                                        {currentReport.evidence}
-                                    </a>
-                                </div>
-                            ) : (currentReport.evidence.match(/\.(jpeg|jpg|gif|png)$/) != null) ? (
-                                <div className="relative w-full h-full group cursor-pointer" onClick={() => window.open(currentReport.evidence, '_blank')}>
-                                    <img src={currentReport.evidence} alt="Evidência" className="w-full h-full object-contain opacity-80 group-hover:opacity-100 transition-opacity" />
-                                    <div className="absolute inset-0 bg-black/50 group-hover:opacity-0 transition-opacity flex items-center justify-center">
-                                        <span className="px-4 py-2 bg-black/80 rounded text-xs font-bold uppercase tracking-wider text-white">Visualizar Imagem</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-center p-8">
-                                    <p className="text-zinc-400 mb-2 font-medium">Link Externo</p>
-                                    <a href={currentReport.evidence} target="_blank" className="text-primary hover:text-white transition-colors break-all text-sm font-mono underline underline-offset-4">
-                                        {currentReport.evidence}
-                                    </a>
-                                </div>
-                            )}
+                                ));
+                            })()}
                         </div>
                     </div>
                 </div>

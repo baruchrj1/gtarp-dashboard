@@ -57,8 +57,16 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { accusedId, accusedName, reason, description, evidence } = body;
 
+        // Helper to process evidence (string or array)
+        let processedEvidence = "";
+        if (Array.isArray(evidence)) {
+            processedEvidence = JSON.stringify(evidence);
+        } else {
+            processedEvidence = String(evidence);
+        }
+
         // Basic Validation
-        if (!accusedId || !reason || !evidence) {
+        if (!accusedId || !reason || !processedEvidence) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
@@ -70,7 +78,7 @@ export async function POST(req: Request) {
                 accusedName: accusedName || accusedId,
                 reason,
                 description,
-                evidence,
+                evidence: processedEvidence,
                 reporterId,
             },
         });
