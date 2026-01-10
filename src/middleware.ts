@@ -10,6 +10,11 @@ export default withAuth(
 
     const pathname = req.nextUrl.pathname;
 
+    // Redirect legacy /reports/new to /player/new
+    if (pathname === "/reports/new") {
+      return NextResponse.redirect(new URL("/player/new", req.url));
+    }
+
     // Redirect players trying to access admin routes
     if (pathname.startsWith("/admin") && !isAdmin && !isEvaluator) {
       return NextResponse.redirect(new URL("/player", req.url));
