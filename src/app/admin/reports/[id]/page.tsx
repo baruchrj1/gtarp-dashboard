@@ -2,6 +2,7 @@
 
 import useSWR, { mutate } from "swr";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, use } from "react";
 import { ChevronLeft, Check, X, HelpCircle, Shield, User, FileText, ExternalLink } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -28,6 +29,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ReportDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
+    const router = useRouter();
     const { data: session, status: authStatus } = useSession();
     const role = session?.user?.role || "PLAYER";
     const isAdmin = role === "ADMIN" || session?.user?.isAdmin === true;
@@ -105,6 +107,7 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
                 const data = await res.json();
                 setLocalReport(data.report);
                 mutate("/api/admin/reports");
+                router.push("/admin/reports");
             }
         } catch (error) {
             console.error("Failed to update status", error);
