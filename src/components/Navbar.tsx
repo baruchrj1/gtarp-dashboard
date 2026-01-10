@@ -9,26 +9,26 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <nav className="glass sticky top-0 z-50 w-full mb-8">
+        <nav className="sticky top-0 z-50 w-full mb-8 border-b border-zinc-800 bg-zinc-950/70 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16">
+                <div className="flex items-center justify-between h-20">
                     <div className="flex items-center">
-                        <Link href="/" className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                            GTA RP REPORTS
+                        <Link href="/" className="text-xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent hover:to-white transition-all">
+                            GTARP<span className="text-primary">REPORTS</span>
                         </Link>
                         <div className="hidden md:block ml-10">
-                            <div className="flex items-baseline space-x-4">
-                                <Link href="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                            <div className="flex items-baseline space-x-1">
+                                <Link href="/" className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 px-4 py-2 rounded-lg text-sm font-medium transition-all">
                                     Início
                                 </Link>
                                 {session && (
-                                    <Link href="/reports/new" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                    <Link href="/reports/new" className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 px-4 py-2 rounded-lg text-sm font-medium transition-all">
                                         Nova Denúncia
                                     </Link>
                                 )}
                                 {/* @ts-ignore - isAdmin added in type declaration or session callback logic */}
                                 {session?.user?.isAdmin && (
-                                    <Link href="/admin" className="text-primary hover:text-primary-glow px-3 py-2 rounded-md text-sm font-medium">
+                                    <Link href="/admin" className="text-primary hover:text-primary-foreground hover:bg-primary/10 px-4 py-2 rounded-lg text-sm font-medium transition-all">
                                         Admin Dashboard
                                     </Link>
                                 )}
@@ -38,15 +38,17 @@ export default function Navbar() {
                     <div>
                         {session ? (
                             <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2">
-                                    {session.user?.image && (
-                                        <img src={session.user.image} alt="Avatar" className="w-8 h-8 rounded-full border border-border" />
+                                <div className="flex items-center gap-3 bg-zinc-900/50 py-1.5 px-3 rounded-full border border-zinc-800">
+                                    {session.user?.image ? (
+                                        <img src={session.user.image} alt="Avatar" className="w-6 h-6 rounded-full ring-2 ring-zinc-800" />
+                                    ) : (
+                                        <div className="w-6 h-6 rounded-full bg-zinc-800" />
                                     )}
-                                    <span className="hidden md:block text-sm text-gray-200">{session.user?.name}</span>
+                                    <span className="hidden md:block text-sm font-medium text-zinc-200 pr-1">{session.user?.name}</span>
                                 </div>
                                 <button
                                     onClick={() => signOut()}
-                                    className="btn text-sm bg-surface hover:bg-surface-highlight border border-border"
+                                    className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
                                 >
                                     Sair
                                 </button>
@@ -54,9 +56,9 @@ export default function Navbar() {
                         ) : (
                             <button
                                 onClick={() => signIn("discord")}
-                                className="btn btn-primary text-sm"
+                                className="group relative inline-flex items-center justify-center px-6 py-2 text-sm font-medium text-white transition-all bg-primary rounded-lg hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 focus:outline-none"
                             >
-                                Login com Discord
+                                <span>Login com Discord</span>
                             </button>
                         )}
                     </div>

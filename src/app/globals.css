@@ -1,49 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  /* Core Colors */
+  /* Base Colors - Zinc Palette for Premium Feel */
   --background: #09090b;
+  --foreground: #fafafa;
+
+  /* Surface Colors - Modern */
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+
+  /* Legacy Compatibility - Keeping existing names to prevent breakage */
   --surface: #18181b;
   --surface-highlight: #27272a;
 
-  /* Accents */
-  --primary: #8b5cf6;
-  /* Violet Neon */
-  --primary-glow: rgba(139, 92, 246, 0.5);
+  /* Primary Brand Color - Violet/Indigo */
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --primary-glow: rgba(124, 58, 237, 0.4);
 
+  /* Secondary/Accent - Restoring Pink for Gradients/Icons */
   --secondary: #ec4899;
-  /* Pink Neon */
+  --secondary-foreground: #ffffff;
+
+  /* State Colors */
+  --muted: #71717a;
+  --muted-foreground: #a1a1aa;
+
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
 
   --success: #10b981;
   --warning: #f59e0b;
-  --error: #ef4444;
 
-  /* Text */
-  --foreground: #fafafa;
-  --muted: #a1a1aa;
-
-  /* UI */
-  --radius: 12px;
+  /* Borders & Radius */
   --border: #27272a;
-  --glass-bg: rgba(24, 24, 27, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --input: #27272a;
+  --ring: #7c3aed;
+
+  --radius: 0.75rem;
+
+  /* Glass Utils Variables required by old css */
+  --glass-bg: rgba(9, 9, 11, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-html,
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
+  @apply bg-background text-foreground antialiased;
+  font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-/* Glassmorphism Utilities */
+/* Glassmorphism Utilities - Refined & Compatible */
 .glass {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
@@ -51,66 +64,62 @@ body {
   border: 1px solid var(--glass-border);
 }
 
+.glass-card {
+  @apply bg-zinc-900/50 backdrop-blur-sm border border-zinc-800/50 rounded-xl shadow-sm transition-all duration-300;
+}
+
+.glass-card:hover {
+  @apply border-zinc-700/50 shadow-lg shadow-primary/5;
+}
+
 .card {
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  transition: all 0.2s ease;
+  @apply bg-zinc-900 border border-zinc-800 rounded-xl p-6 transition-all duration-200;
 }
 
 .card:hover {
-  border-color: var(--primary);
-  box-shadow: 0 0 20px -5px var(--primary-glow);
+  @apply border-primary/50 shadow-lg shadow-primary/10;
 }
 
-/* Button Styles */
+/* Button Styles - Legacy Support */
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  font-size: 0.95rem;
+  @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold cursor-pointer transition-all duration-200 border-none text-sm;
 }
 
 .btn-primary {
-  background-color: var(--primary);
-  color: white;
-  box-shadow: 0 0 15px var(--primary-glow);
+  @apply bg-primary text-white shadow-lg shadow-primary/20 hover:brightness-110 hover:-translate-y-px;
 }
 
-.btn-primary:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-}
-
-/* Typography */
-h1,
-h2,
-h3 {
-  letter-spacing: -0.02em;
-  font-weight: 700;
-}
-
-/* Scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-highlight);
-  border-radius: 4px;
+  @apply bg-zinc-800 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  @apply bg-zinc-700;
+}
+
+/* Animation Utilities */
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

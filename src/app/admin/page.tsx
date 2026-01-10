@@ -2,6 +2,9 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import StatsCard from "@/components/admin/StatsCard";
+import ReportsTable from "@/components/admin/ReportsTable";
 
 interface Report {
     id: number;
@@ -16,7 +19,7 @@ interface Report {
 }
 
 export default function AdminDashboard() {
-    const { data: session } = useSession();
+    const { data: session } = useSession(); // eslint-disable-line
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -40,103 +43,82 @@ export default function AdminDashboard() {
         }
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "PENDING": return "text-yellow-500 bg-yellow-500/10";
-            case "APPROVED": return "text-green-500 bg-green-500/10";
-            case "REJECTED": return "text-red-500 bg-red-500/10";
-            default: return "text-gray-500 bg-gray-500/10";
-        }
-    };
+    // Placeholder data for stats (could be real if API provides it)
+    const stats = [
+        {
+            title: "Total de Denúncias",
+            value: reports.length,
+            icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+            trend: "+12% esta semana",
+            description: "Total acumulado"
+        },
+        {
+            title: "Pendentes",
+            value: reports.filter(r => r.status === 'PENDING').length,
+            icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            description: "Aguardando análise"
+        },
+        {
+            title: "Resolvidas",
+            value: reports.filter(r => r.status !== 'PENDING').length,
+            icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            trend: "+5 hoje",
+            description: "Aprovadas ou Rejeitadas"
+        },
+    ];
 
-    // @ts-ignore
-    if (!session?.user?.isAdmin) {
+    if (!session?.user?.isAdmin) { // eslint-disable-line
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <h2 className="text-2xl font-bold mb-4">Acesso Negado</h2>
-                <p className="text-muted">Esta área é restrita para administradores.</p>
+                <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                    <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h2 className="text-3xl font-bold mb-2">Acesso Restrito</h2>
+                <p className="text-zinc-500 max-w-md text-center">Você não tem permissão para acessar o painel administrativo. Entre em contato com um administrador se acredita que isso é um erro.</p>
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                        Painel Administrativo
-                    </h1>
-                    <p className="text-muted mt-1">Gerencie as denúncias do servidor.</p>
-                </div>
-                <div className="flex gap-4">
-                    <div className="card py-2 px-4 flex flex-col items-center">
-                        <span className="text-2xl font-bold text-white">{reports.filter(r => r.status === 'PENDING').length}</span>
-                        <span className="text-xs text-muted uppercase tracking-wider">Pendentes</span>
-                    </div>
-                    <div className="card py-2 px-4 flex flex-col items-center">
-                        <span className="text-2xl font-bold text-primary">{reports.length}</span>
-                        <span className="text-xs text-muted uppercase tracking-wider">Total</span>
-                    </div>
-                </div>
-            </div>
+        <div className="flex flex-col lg:flex-row gap-8 max-w-[1600px] mx-auto pb-12">
+            <aside className="w-full lg:w-64 flex-shrink-0">
+                <AdminSidebar />
+            </aside>
 
-            {loading ? (
-                <div className="text-center py-20 text-muted">Carregando denúncias...</div>
-            ) : (
-                <div className="card glass overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b border-border bg-surface-highlight/50">
-                                    <th className="p-4 text-sm font-medium text-muted uppercase">ID</th>
-                                    <th className="p-4 text-sm font-medium text-muted uppercase">Acusado</th>
-                                    <th className="p-4 text-sm font-medium text-muted uppercase">Motivo</th>
-                                    <th className="p-4 text-sm font-medium text-muted uppercase">Autor</th>
-                                    <th className="p-4 text-sm font-medium text-muted uppercase">Data</th>
-                                    <th className="p-4 text-sm font-medium text-muted uppercase">Status</th>
-                                    <th className="p-4 text-sm font-medium text-muted uppercase">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {reports.map((report) => (
-                                    <tr key={report.id} className="hover:bg-white/5 transition">
-                                        <td className="p-4 text-sm text-muted">#{report.id}</td>
-                                        <td className="p-4 font-medium">{report.accusedId}</td>
-                                        <td className="p-4">
-                                            <span className="inline-block px-2 py-1 rounded text-xs font-semibold bg-primary/20 text-primary border border-primary/20">
-                                                {report.reason}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 text-sm text-gray-300">
-                                            {report.reporter.username}
-                                        </td>
-                                        <td className="p-4 text-sm text-muted">
-                                            {new Date(report.createdAt).toLocaleDateString()}
-                                        </td>
-                                        <td className="p-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
-                                                {report.status}
-                                            </span>
-                                        </td>
-                                        <td className="p-4">
-                                            <button className="text-sm text-primary hover:text-primary-glow font-medium transition">
-                                                Ver Detalhes
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {reports.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="p-8 text-center text-muted">
-                                            Nenhuma denúncia encontrada no momento.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+            <main className="flex-1 space-y-8 min-w-0">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white tracking-tight">Dashboard</h1>
+                        <p className="text-zinc-400 mt-1">Bem-vindo de volta, {session.user.name}. Aqui está o que está acontecendo hoje.</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <button className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm font-medium transition border border-zinc-700">
+                            Exportar Dados
+                        </button>
+                        <button className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium transition shadow-lg shadow-primary/20">
+                            + Nova Ação
+                        </button>
                     </div>
                 </div>
-            )}
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {stats.map((stat, i) => (
+                        <StatsCard key={i} {...stat} />
+                    ))}
+                </div>
+
+                <div className="space-y-6">
+                    {loading ? (
+                        <div className="grid place-items-center h-64">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                        </div>
+                    ) : (
+                        <ReportsTable reports={reports} />
+                    )}
+                </div>
+            </main>
         </div>
     );
 }
