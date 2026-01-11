@@ -30,7 +30,7 @@ export default function TopNavigation() {
                             <Link href="/" className="text-zinc-400 hover:text-white hover:bg-white/5 px-4 py-2 rounded font-medium transition-all uppercase text-sm tracking-wide">
                                 Início
                             </Link>
-                            <Link href="/player/protocols" className="text-zinc-400 hover:text-white hover:bg-white/5 px-4 py-2 rounded font-medium transition-all uppercase text-sm tracking-wide">
+                            <Link href="/protocols" className="text-zinc-400 hover:text-white hover:bg-white/5 px-4 py-2 rounded font-medium transition-all uppercase text-sm tracking-wide">
                                 Protocolos
                             </Link>
                             {session && (

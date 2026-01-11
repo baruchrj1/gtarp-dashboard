@@ -14,7 +14,6 @@ export async function getReportsBad() {
     return await prisma.report.findMany({
         include: {
             reporter: true,
-            evaluator: true,
         }
     });
 }
@@ -39,12 +38,7 @@ export async function getReportsGood() {
                     avatar: true,
                 }
             },
-            evaluator: {
-                select: {
-                    id: true,
-                    username: true,
-                }
-            }
+
         },
         orderBy: {
             createdAt: 'desc'

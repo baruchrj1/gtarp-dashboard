@@ -3,7 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import { Shield, RefreshCw, Save, Settings, Users, Search, Crown, CheckCircle, User, Clock } from "lucide-react";
+import { Shield, Save, Settings, Users, Search, Crown, CheckCircle, User, Clock } from "lucide-react";
 
 export default function RolesManagement() {
     const { data: session } = useSWR("/api/auth/session");
@@ -17,9 +17,7 @@ export default function RolesManagement() {
 
     const [activeTab, setActiveTab] = useState<"users" | "config" | "lists" | "tempos">("users");
     const [searchQuery, setSearchQuery] = useState("");
-    const [syncing, setSyncing] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
-    const [editingUser, setEditingUser] = useState<string | null>(null);
 
     // Dynamic Lists State
     const [newItemValue, setNewItemValue] = useState(""); // For Organization Name or Reason Label
@@ -41,41 +39,9 @@ export default function RolesManagement() {
         user.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleSyncRoles = async (userId: string) => {
-        setSyncing(userId);
-        try {
-            const res = await fetch("/api/admin/roles/sync", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                mutate();
-            } else {
-                alert(data.error || "Erro ao sincronizar cargos");
-            }
-        } catch (error) {
-            alert("Erro ao sincronizar cargos");
-        } finally {
-            setSyncing(null);
-        }
-    };
 
-    const handleRoleChange = async (userId: string, role: string, isAdmin: boolean) => {
-        try {
-            const res = await fetch("/api/admin/roles/users", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId, role, isAdmin })
-            });
-            if (res.ok) {
-                mutate();
-            }
-        } catch (error) {
-            alert("Erro ao atualizar cargo");
-        }
-    };
+
+
 
     const handleSaveConfig = async () => {
         setSaving(true);
@@ -231,7 +197,7 @@ export default function RolesManagement() {
                             : "text-muted-foreground hover:text-foreground"
                             }`}
                     >
-                        <RefreshCw className="w-4 h-4 inline mr-2" />
+                        <Settings className="w-4 h-4 inline mr-2" />
                         Listas & Opções
                     </button>
                     <button
@@ -266,19 +232,18 @@ export default function RolesManagement() {
                                         <th className="text-left text-xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Usuário</th>
                                         <th className="text-left text-xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Cargo</th>
                                         <th className="text-left text-xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Admin</th>
-                                        <th className="text-right text-xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {isLoading ? (
                                         <tr>
-                                            <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
+                                            <td colSpan={3} className="px-6 py-12 text-center text-muted-foreground">
                                                 Carregando...
                                             </td>
                                         </tr>
                                     ) : filteredUsers.length === 0 ? (
                                         <tr>
-                                            <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
+                                            <td colSpan={3} className="px-6 py-12 text-center text-muted-foreground">
                                                 Nenhum usuário encontrado
                                             </td>
                                         </tr>
@@ -301,45 +266,21 @@ export default function RolesManagement() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {editingUser === user.id ? (
-                                                        <select
-                                                            value={user.role}
-                                                            onChange={(e) => handleRoleChange(user.id, e.target.value, user.isAdmin)}
-                                                            onBlur={() => setEditingUser(null)}
-                                                            className="bg-card border border-border rounded px-3 py-2 text-foreground text-sm focus:outline-none focus:border-primary/50"
-                                                        >
-                                                            <option value="PLAYER">PLAYER</option>
-                                                            <option value="EVALUATOR">EVALUATOR</option>
-                                                            <option value="ADMIN">ADMIN</option>
-                                                        </select>
-                                                    ) : (
-                                                        <span
-                                                            onClick={() => setEditingUser(user.id)}
-                                                            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border cursor-pointer hover:opacity-80 ${getRoleColor(user.role, user.isAdmin)}`}
-                                                        >
-                                                            {getRoleIcon(user.role, user.isAdmin)}
-                                                            {user.role}
-                                                        </span>
-                                                    )}
+                                                    <span
+                                                        className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border ${getRoleColor(user.role, user.isAdmin)}`}
+                                                    >
+                                                        {getRoleIcon(user.role, user.isAdmin)}
+                                                        {user.role}
+                                                    </span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={user.isAdmin}
-                                                        onChange={(e) => handleRoleChange(user.id, user.role, e.target.checked)}
-                                                        className="w-4 h-4 rounded border-border bg-input text-primary focus:ring-primary"
-                                                    />
+                                                    {user.isAdmin ? (
+                                                        <Crown className="w-4 h-4 text-yellow-500" />
+                                                    ) : (
+                                                        <span className="text-muted-foreground">—</span>
+                                                    )}
                                                 </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <button
-                                                        onClick={() => handleSyncRoles(user.id)}
-                                                        disabled={syncing === user.id}
-                                                        className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-all disabled:opacity-50"
-                                                        title="Sincronizar com Discord"
-                                                    >
-                                                        <RefreshCw className={`w-4 h-4 ${syncing === user.id ? "animate-spin" : ""}`} />
-                                                    </button>
-                                                </td>
+
                                             </tr>
                                         ))
                                     )}

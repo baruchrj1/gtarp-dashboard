@@ -157,10 +157,10 @@ export default function ReportsTable() {
                                     </td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">
-                                            {report.reporter.avatar ? (
+                                            {report.reporter?.avatar ? (
                                                 <Image
                                                     src={report.reporter.avatar}
-                                                    alt={report.reporter.username}
+                                                    alt={report.reporter.username || "Avatar"}
                                                     width={24}
                                                     height={24}
                                                     className="rounded grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all"
@@ -169,7 +169,7 @@ export default function ReportsTable() {
                                                 <div className="w-6 h-6 rounded bg-secondary" />
                                             )}
                                             <span className="text-sm text-foreground font-medium">
-                                                {report.reporter.username}
+                                                {report.reporter?.username || "Desconhecido"}
                                             </span>
                                         </div>
                                     </td>

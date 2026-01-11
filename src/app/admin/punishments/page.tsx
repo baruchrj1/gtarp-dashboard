@@ -27,6 +27,7 @@ export default function PunishmentsPage() {
     const [warningModalOpen, setWarningModalOpen] = useState(false);
     const [suspensionModalOpen, setSuspensionModalOpen] = useState(false);
     const [isCustomDuration, setIsCustomDuration] = useState(false);
+    const [organization, setOrganization] = useState("");
 
     const isAuthenticated = status === "authenticated";
     const isLoadingAuth = status === "loading";
@@ -36,6 +37,7 @@ export default function PunishmentsPage() {
     const hasAccess = isAdmin || isEvaluator;
 
     const { data: durationsData } = useSWR(isAuthenticated && hasAccess ? "/api/admin/config/durations" : null, fetcher);
+    const { data: orgsData } = useSWR(isAuthenticated && hasAccess ? "/api/admin/config/organizations" : null, fetcher);
 
     // Fetch players data
     const { data, isLoading: isLoadingPlayers } = useSWR(
@@ -45,6 +47,7 @@ export default function PunishmentsPage() {
 
     const allPlayers = data?.players || [];
     const durations = durationsData || [];
+    const organizations = orgsData?.organizations || [];
 
     // MOCK DATA FOR VISUALIZATION
     const mockWarnedPlayers = [
@@ -450,6 +453,28 @@ export default function PunishmentsPage() {
                                 placeholder="Ex: Comportamento inadequado, uso de linguagem ofensiva..."
                                 className="w-full bg-input border border-border rounded px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none transition-colors"
                             />
+                        </div>
+
+                        {/* Organization Selector */}
+                        <div>
+                            <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                                Organização do Jogador (Para Estatísticas)
+                            </label>
+                            <select
+                                value={organization}
+                                onChange={(e) => setOrganization(e.target.value)}
+                                className="w-full bg-input border border-border rounded px-4 py-3 text-foreground focus:border-primary focus:outline-none transition-colors"
+                            >
+                                <option value="">Selecione uma organização (opcional)...</option>
+                                {organizations.map((org: any) => (
+                                    <option key={org.id || org.name} value={org.name}>
+                                        {org.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Essa informação será usada para gerar estatísticas por organização
+                            </p>
                         </div>
 
                         {/* Duration (only for suspensions) */}

@@ -10,6 +10,7 @@ const punishmentSchema = z.object({
     duration: z.number().min(1).max(720).optional(),
     reason: z.string().min(10, "Motivo deve ter pelo menos 10 caracteres"),
     reportId: z.number().optional(),
+    organization: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
                 reportId: validatedData.reportId,
                 adminId: session.user.id,
                 isActive: true,
+                organization: validatedData.organization,
             },
         });
 
@@ -93,7 +95,7 @@ export async function POST(request: NextRequest) {
 
         if (error instanceof z.ZodError) {
             return NextResponse.json(
-                { error: "Dados inválidos", details: error.errors },
+                { error: "Dados inválidos", details: error.issues },
                 { status: 400 }
             );
         }
@@ -141,7 +143,6 @@ export async function GET(request: NextRequest) {
                     select: {
                         id: true,
                         username: true,
-                        name: true,
                     },
                 },
                 report: {

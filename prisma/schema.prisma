@@ -75,6 +75,7 @@ model Punishment {
   duration  Int?      // In hours, for TEMP_BAN
   expiresAt DateTime?
   isActive  Boolean   @default(true)
+  organization String? // Organization/Family of the punished player
   
   userId    String
   user      User      @relation("PunishmentReceiver", fields: [userId], references: [id])
@@ -91,6 +92,7 @@ model Punishment {
   @@index([userId])
   @@index([adminId])
   @@index([isActive])
+  @@index([organization])
 }
 
 model ReportReason {
@@ -106,4 +108,88 @@ model PunishmentDuration {
   label     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// ARCHIVE SYSTEM - Historical Data Storage
+// ============================================
+
+model ArchivePeriod {
+  id           String   @id @default(cuid())
+  name         String   // "Janeiro 2026", "Período 1 - 2026"
+  startDate    DateTime
+  endDate      DateTime
+  
+  // Statistics snapshot
+  totalReports   Int @default(0)
+  approvedReports Int @default(0)
+  rejectedReports Int @default(0)
+  pendingReports  Int @default(0)
+  totalPunishments Int @default(0)
+  
+  // Relations
+  archivedReports     ArchivedReport[]
+  archivedPunishments ArchivedPunishment[]
+  
+  createdAt DateTime @default(now())
+  
+  @@index([createdAt(sort: Desc)])
+}
+
+model ArchivedReport {
+  id           String   @id @default(cuid())
+  originalId   Int      // Original report ID
+  
+  // Original report data
+  accusedId    String
+  accusedName  String?
+  accusedFamily String?
+  reason       String
+  description  String?
+  evidence     String
+  status       String
+  adminNotes   String?
+  reporterId   String
+  reporterName String?
+  handledBy    String?
+  handlerName  String?
+  originalCreatedAt DateTime
+  originalUpdatedAt DateTime
+  
+  // Archive relation
+  periodId     String
+  period       ArchivePeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime @default(now())
+  
+  @@index([periodId])
+  @@index([accusedFamily])
+  @@index([status])
+}
+
+model ArchivedPunishment {
+  id           String   @id @default(cuid())
+  originalId   String   // Original punishment ID
+  
+  // Original punishment data
+  type         String
+  reason       String
+  duration     Int?
+  expiresAt    DateTime?
+  organization String?
+  userId       String
+  userName     String?
+  adminId      String
+  adminName    String?
+  originalCreatedAt DateTime
+  
+  // Archive relation
+  periodId     String
+  period       ArchivePeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime @default(now())
+  
+  @@index([periodId])
+  @@index([organization])
+  @@index([type])
 }

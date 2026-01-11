@@ -49,18 +49,11 @@ export async function GET(request: NextRequest) {
                             mode: "insensitive",
                         },
                     },
-                    {
-                        name: {
-                            contains: query,
-                            mode: "insensitive",
-                        },
-                    },
                 ],
             },
             select: {
                 id: true,
                 username: true,
-                name: true,
                 avatar: true,
             },
             take: 10,

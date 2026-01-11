@@ -38,18 +38,18 @@ function ReasonSelector({ value, onChange }: { value: string, onChange: (val: st
                 required
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full bg-white dark:bg-black/40 border border-zinc-300 dark:border-white/10 rounded-lg pl-12 pr-4 py-4 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
+                className="w-full bg-secondary border border-border rounded-lg pl-12 pr-4 py-4 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
             >
-                <option value="" className="bg-zinc-900 text-zinc-500">
+                <option value="" className="bg-card text-muted-foreground">
                     {isLoading ? "Carregando motivos..." : "Selecione um motivo..."}
                 </option>
                 {displayReasons.map((r: any) => (
-                    <option key={r.value} value={r.value} className="bg-zinc-900">
+                    <option key={r.value} value={r.value} className="bg-card">
                         {r.label}
                     </option>
                 ))}
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted-foreground">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
@@ -82,23 +82,23 @@ function OrganizationSelector({ value, onChange }: { value: string, onChange: (v
                 name="accusedFamily"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full bg-white dark:bg-black/40 border border-zinc-300 dark:border-white/10 rounded-lg pl-12 pr-4 py-4 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
+                className="w-full bg-secondary border border-border rounded-lg pl-12 pr-4 py-4 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
             >
-                <option value="" className="bg-zinc-900 text-zinc-500">
+                <option value="" className="bg-card text-muted-foreground">
                     {isLoading ? "Carregando organizações..." : "Selecione uma organização (Opcional)..."}
                 </option>
                 {displayOrgs.map((o: any) => (
-                    <option key={o.id || o.name} value={o.name} className="bg-zinc-900">
+                    <option key={o.id || o.name} value={o.name} className="bg-card">
                         {o.name}
                     </option>
                 ))}
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted-foreground">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-zinc-500">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-muted-foreground">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
@@ -199,10 +199,10 @@ export default function NewPlayerReportPage() {
                     <div className="w-24 h-24 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center mb-6 animate-pulse">
                         <ShieldAlert className="w-10 h-10 text-red-500" />
                     </div>
-                    <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-white">
+                    <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-foreground">
                         Acesso Negado
                     </h2>
-                    <p className="text-zinc-500">Voce precisa estar autenticado para acessar esta area.</p>
+                    <p className="text-muted-foreground">Voce precisa estar autenticado para acessar esta area.</p>
                 </div>
             </PageTransition>
         );
@@ -217,11 +217,11 @@ export default function NewPlayerReportPage() {
 
                 <main className="flex-1 min-w-0">
                     {/* Header */}
-                    <div className="bg-black/40 p-6 rounded border border-white/5 mb-8 fade-in">
-                        <h1 className="text-3xl font-bold text-white tracking-widest uppercase font-display">
+                    <div className="bg-card p-6 rounded border border-border mb-8 fade-in">
+                        <h1 className="text-3xl font-bold text-foreground tracking-widest uppercase font-display">
                             Nova <span className="text-primary">Denuncia</span>
                         </h1>
-                        <p className="text-zinc-400 mt-1 text-sm font-mono uppercase tracking-wider">
+                        <p className="text-muted-foreground mt-1 text-sm font-mono uppercase tracking-wider">
                             Preencha o formulario com detalhes precisos. Falsas denuncias sao passiveis de punicao.
                         </p>
                     </div>
@@ -231,12 +231,12 @@ export default function NewPlayerReportPage() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
+                                    <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider">
                                         ID do Acusado (Passaporte)
                                     </label>
                                     <input
                                         type="text"
-                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
+                                        className="w-full bg-secondary border border-border rounded px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
                                         placeholder="Ex: 12345 (Opcional)"
                                         value={formData.accusedId}
                                         onChange={(e) => setFormData({ ...formData, accusedId: e.target.value })}
@@ -244,12 +244,12 @@ export default function NewPlayerReportPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
+                                    <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider">
                                         Nome do Acusado (Opcional)
                                     </label>
                                     <input
                                         type="text"
-                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
+                                        className="w-full bg-secondary border border-border rounded px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
                                         placeholder="Ex: Joao Silva"
                                         value={formData.accusedName}
                                         onChange={(e) => setFormData({ ...formData, accusedName: e.target.value })}
@@ -257,7 +257,7 @@ export default function NewPlayerReportPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
+                                    <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider">
                                         Organização / Família (Opcional)
                                     </label>
                                     <OrganizationSelector
@@ -282,7 +282,7 @@ export default function NewPlayerReportPage() {
                                     Descricao Detalhada
                                 </label>
                                 <textarea
-                                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-4 py-3 text-zinc-900 dark:text-white focus:border-primary outline-none min-h-[120px] placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:ring-2 focus:ring-primary/20 resize-y"
+                                    className="w-full bg-secondary border border-border rounded px-4 py-3 text-foreground focus:border-primary outline-none min-h-[120px] placeholder-muted-foreground transition-all focus:ring-2 focus:ring-primary/20 resize-y"
                                     placeholder="Descreva exatamente o que aconteceu, incluindo o contexto..."
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -291,7 +291,7 @@ export default function NewPlayerReportPage() {
 
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
+                                    <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider">
                                         Links das Provas <span className="text-red-500">*</span>
                                     </label>
                                     <button
@@ -313,7 +313,7 @@ export default function NewPlayerReportPage() {
                                             <input
                                                 type="url"
                                                 required
-                                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
+                                                className="w-full bg-secondary border border-border rounded px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
                                                 placeholder="https://youtube.com/..."
                                                 value={link}
                                                 onChange={(e) => handleEvidenceChange(index, e.target.value)}
@@ -322,7 +322,7 @@ export default function NewPlayerReportPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => removeEvidenceField(index)}
-                                                    className="px-4 py-2 bg-zinc-900 text-zinc-500 rounded border border-zinc-800 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all group-hover:border-red-500/30 active:scale-95"
+                                                    className="px-4 py-2 bg-secondary text-muted-foreground rounded border border-border hover:bg-red-500 hover:text-white hover:border-red-500 transition-all group-hover:border-red-500/30 active:scale-95"
                                                     title="Remover link"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
@@ -332,7 +332,7 @@ export default function NewPlayerReportPage() {
                                     ))}
                                 </div>
 
-                                <p className="text-xs text-zinc-500 mt-2 flex items-center">
+                                <p className="text-xs text-muted-foreground mt-2 flex items-center">
                                     <ShieldAlert className="w-3 h-3 mr-1" />
                                     Links aceitos: YouTube, Imgur, Discord, Medal.tv.
                                 </p>

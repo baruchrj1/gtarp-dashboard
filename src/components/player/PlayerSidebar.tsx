@@ -39,9 +39,9 @@ export default function PlayerSidebar() {
     ];
 
     return (
-        <div className="bg-black/40 border border-white/5 rounded p-4 h-fit sticky top-8">
+        <div className="bg-card border border-border rounded p-4 h-fit sticky top-8">
             {/* User Info */}
-            <div className="mb-6 pb-4 border-b border-white/5">
+            <div className="mb-6 pb-4 border-b border-border">
                 <div className="flex items-center gap-3">
                     {session?.user?.image ? (
                         <img
@@ -57,10 +57,10 @@ export default function PlayerSidebar() {
                         </div>
                     )}
                     <div className="flex-1 min-w-0">
-                        <p className="text-white font-bold text-sm truncate">
+                        <p className="text-foreground font-bold text-sm truncate">
                             {session?.user?.name || "Jogador"}
                         </p>
-                        <p className="text-zinc-500 text-xs uppercase tracking-wider">
+                        <p className="text-muted-foreground text-xs uppercase tracking-wider">
                             Jogador
                         </p>
                     </div>
@@ -78,8 +78,8 @@ export default function PlayerSidebar() {
                             className={`
                                 flex items-center gap-3 px-4 py-3 rounded transition-all
                                 ${isActive
-                                    ? "bg-primary text-black font-bold"
-                                    : "text-zinc-400 hover:text-white hover:bg-white/5"
+                                    ? "bg-primary text-primary-foreground font-bold"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                                 }
                             `}
                         >
@@ -93,7 +93,7 @@ export default function PlayerSidebar() {
             </nav>
 
             {/* Logout Button */}
-            <div className="mt-6 pt-4 border-t border-white/5">
+            <div className="mt-6 pt-4 border-t border-border">
                 <button
                     onClick={() => signOut({ callbackUrl: "/" })}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"

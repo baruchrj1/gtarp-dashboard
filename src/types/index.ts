@@ -37,6 +37,7 @@ export interface ReportListItem {
     id: number;
     accusedId: string;
     accusedName?: string | null;
+    accusedFamily?: string | null;
     reason: string;
     status: string;
     createdAt: string;

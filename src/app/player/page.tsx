@@ -41,10 +41,10 @@ export default function PlayerDashboard() {
                 <div className="w-24 h-24 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center mb-6 animate-pulse">
                     <ShieldAlert className="w-10 h-10 text-red-500" />
                 </div>
-                <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-white">
+                <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-foreground">
                     Acesso Negado
                 </h2>
-                <p className="text-zinc-500">Você precisa estar autenticado para acessar esta área.</p>
+                <p className="text-muted-foreground">Você precisa estar autenticado para acessar esta área.</p>
             </div>
         );
     }
@@ -84,11 +84,11 @@ export default function PlayerDashboard() {
             </aside>
 
             <main className="flex-1 space-y-8 min-w-0">
-                <div className="bg-black/40 p-6 rounded border border-white/5">
-                    <h1 className="text-3xl font-bold text-white tracking-widest uppercase font-display">
+                <div className="bg-card p-6 rounded border border-border">
+                    <h1 className="text-3xl font-bold text-foreground tracking-widest uppercase font-display">
                         Bem-vindo, <span className="text-primary">{session?.user?.name}</span>
                     </h1>
-                    <p className="text-zinc-400 mt-1 text-sm font-mono uppercase tracking-wider">
+                    <p className="text-muted-foreground mt-1 text-sm font-mono uppercase tracking-wider">
                         Dashboard do Jogador
                     </p>
                 </div>
@@ -100,9 +100,9 @@ export default function PlayerDashboard() {
                 </div>
 
                 {/* Recent Reports */}
-                <div className="bg-black/40 border border-white/5 rounded p-6">
+                <div className="bg-card border border-border rounded p-6">
                     <div className="flex items-center justify-between border-b border-primary/20 pb-4 mb-6">
-                        <h2 className="text-xl font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                             <FileText className="w-5 h-5 text-primary" />
                             Minhas Denúncias Recentes
                         </h2>
@@ -114,8 +114,8 @@ export default function PlayerDashboard() {
                         </div>
                     ) : myReports.length === 0 ? (
                         <div className="text-center py-12">
-                            <FileText className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-                            <p className="text-zinc-400">Você ainda não fez nenhuma denúncia.</p>
+                            <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground">Você ainda não fez nenhuma denúncia.</p>
                         </div>
                     ) : (
                         <div className="space-y-3">

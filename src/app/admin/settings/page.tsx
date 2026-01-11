@@ -117,16 +117,16 @@ export default function SettingsPage() {
                             <h2 className="text-lg font-bold text-foreground uppercase tracking-wider">Banco de Dados</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded border border-zinc-200 dark:border-zinc-800">
-                                <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Total de Usuários</p>
+                            <div className="bg-secondary p-4 rounded border border-border">
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total de Usuários</p>
                                 <p className="text-2xl font-bold text-foreground">--</p>
                             </div>
-                            <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded border border-zinc-200 dark:border-zinc-800">
-                                <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Total de Denúncias</p>
+                            <div className="bg-secondary p-4 rounded border border-border">
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total de Denúncias</p>
                                 <p className="text-2xl font-bold text-foreground">--</p>
                             </div>
-                            <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded border border-zinc-200 dark:border-zinc-800">
-                                <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Status do Banco</p>
+                            <div className="bg-secondary p-4 rounded border border-border">
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Status do Banco</p>
                                 <p className="text-sm font-bold text-emerald-500">● Conectado</p>
                             </div>
                         </div>

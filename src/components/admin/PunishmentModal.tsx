@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Hammer, Clock, AlertTriangle, Search, User } from 'lucide-react';
+import { X, Hammer, Clock, AlertTriangle, Search, User, Users } from 'lucide-react';
 import { LoadingButton } from '@/components/ui/LoadingButton';
 import { useDebounce } from '@/hooks/useDebounce';
+import useSWR from 'swr';
 
 interface PunishmentModalProps {
     isOpen: boolean;
@@ -29,7 +30,6 @@ export function PunishmentModal({
     const [reason, setReason] = useState(reportReason || '');
     const [loading, setLoading] = useState(false);
 
-    // Player search states
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string } | null>(
@@ -37,8 +37,13 @@ export function PunishmentModal({
     );
     const [isSearching, setIsSearching] = useState(false);
     const [showResults, setShowResults] = useState(false);
+    const [organization, setOrganization] = useState('');
 
     const debouncedSearch = useDebounce(searchQuery, 300);
+
+    // Fetch organizations
+    const { data: orgsData } = useSWR('/api/admin/config/organizations');
+    const organizations = orgsData?.organizations || [];
 
     // Search for players
     useEffect(() => {
@@ -93,6 +98,7 @@ export function PunishmentModal({
                     duration: type === 'TEMP_BAN' ? parseInt(duration) : undefined,
                     reason,
                     reportId,
+                    organization: organization || undefined,
                 }),
             });
 
@@ -250,8 +256,8 @@ export function PunishmentModal({
                                             type="button"
                                             onClick={() => setType(pt.value as PunishmentType)}
                                             className={`p-4 rounded-lg border-2 transition-all ${type === pt.value
-                                                    ? `border-${pt.color}-500 bg-${pt.color}-500/10`
-                                                    : 'border-border hover:border-primary/50'
+                                                ? `border-${pt.color}-500 bg-${pt.color}-500/10`
+                                                : 'border-border hover:border-primary/50'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -290,14 +296,49 @@ export function PunishmentModal({
                         {/* Reason */}
                         <div>
                             <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                                Motivo
+                                Motivo da Punição
                             </label>
-                            <textarea
+                            <input
+                                type="text"
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
                                 required
-                                className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all resize-none h-32"
-                                placeholder="Descreva o motivo da punição..."
+                                className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                                placeholder="Ex: Comportamento inadequado, uso de linguagem ofensiva..."
+                            />
+                        </div>
+
+                        {/* Organization Selector */}
+                        <div>
+                            <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                                <Users className="w-4 h-4 inline mr-2" />
+                                Organização do Jogador
+                            </label>
+                            <select
+                                value={organization}
+                                onChange={(e) => setOrganization(e.target.value)}
+                                className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all appearance-none"
+                            >
+                                <option value="">Selecione uma organização (opcional)...</option>
+                                {organizations.map((org: any) => (
+                                    <option key={org.id || org.name} value={org.name}>
+                                        {org.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Essa informação será usada nas estatísticas
+                            </p>
+                        </div>
+
+                        {/* Custom Message (Optional) */}
+                        <div>
+                            <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                                Mensagem Personalizada (Opcional)
+                            </label>
+                            <textarea
+                                className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all resize-none h-24"
+                                placeholder="Adicione uma mensagem personalizada para o jogador..."
                             />
                         </div>
 

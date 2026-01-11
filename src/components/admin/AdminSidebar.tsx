@@ -44,7 +44,7 @@ export default function AdminSidebar() {
         },
         {
             name: "HISTÓRICO",
-            href: "/admin/reviews",
+            href: "/admin/history",
             icon: <ShieldCheck className="w-5 h-5" />,
             allowedRoles: ["ADMIN", "EVALUATOR"]
         },
