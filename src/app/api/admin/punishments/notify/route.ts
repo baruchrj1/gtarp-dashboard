@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1459637324173545554/hRk5A6wNG2y40Y6Lx58lIoUmA3_PqyMPmUaxQBqFbMoBkSlxwVsNlC3EMpTku1N1WOHL";
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
 // Message templates for different punishment types
 const MESSAGE_TEMPLATES = {
@@ -281,6 +281,11 @@ export async function POST(request: Request) {
 
 // Fallback function to send via webhook
 async function sendWebhookNotification(playerName: string, embed: any) {
+    if (!DISCORD_WEBHOOK_URL) {
+        console.error("DISCORD_WEBHOOK_URL not configured, cannot send webhook notification");
+        return;
+    }
+
     // Add player name to embed
     embed.fields.unshift({
         name: "👤 Jogador",
