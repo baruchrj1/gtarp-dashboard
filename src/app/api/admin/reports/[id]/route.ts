@@ -54,7 +54,7 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const { status, adminNotes } = await req.json();
+    const { status, adminNotes, accusedFamily } = await req.json();
 
     try {
         const updatedReport = await prisma.report.update({
@@ -62,6 +62,7 @@ export async function PATCH(
             data: {
                 status,
                 adminNotes,
+                accusedFamily,
                 handledBy: session.user.id,
             },
             include: {
