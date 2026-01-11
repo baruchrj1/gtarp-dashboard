@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
+import { isStaff, AuthErrors } from "@/lib/permissions";
+
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID;
 const DISCORD_ROLE_PLAYER_ID = process.env.DISCORD_ROLE_PLAYER_ID;
@@ -11,12 +13,13 @@ export async function GET() {
     try {
         const session = await getServerSession(authOptions);
 
-        // Check if user is authenticated and is an ADMIN
-        if (!session?.user || session.user.role !== "ADMIN") {
-            return NextResponse.json(
-                { error: "Acesso negado. Apenas administradores podem sincronizar jogadores." },
-                { status: 403 }
-            );
+        // Check if user is authenticated and is STAFF
+        if (!session?.user) {
+            return NextResponse.json(AuthErrors.UNAUTHENTICATED, { status: 401 });
+        }
+
+        if (!isStaff(session)) {
+            return NextResponse.json(AuthErrors.STAFF_REQUIRED, { status: 403 });
         }
 
         if (!DISCORD_BOT_TOKEN || !DISCORD_GUILD_ID || !DISCORD_ROLE_PLAYER_ID) {

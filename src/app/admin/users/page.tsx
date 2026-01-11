@@ -19,10 +19,12 @@ export default function UsersPage() {
     const isLoadingAuth = status === "loading";
     const role = session?.user?.role || "PLAYER";
     const isAdmin = role === "ADMIN";
+    const isEvaluator = role === "EVALUATOR";
+    const canAccess = isAdmin || isEvaluator;
 
     // Fetch players data
     const { data, isLoading, mutate } = useSWR(
-        isAuthenticated && isAdmin ? "/api/admin/players" : null,
+        isAuthenticated && canAccess ? "/api/admin/players" : null,
         fetcher
     );
 
@@ -68,7 +70,7 @@ export default function UsersPage() {
     }
 
     // Redirect or show denied if not authorized
-    if (!isAuthenticated || !isAdmin) {
+    if (!isAuthenticated || !canAccess) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="w-24 h-24 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center mb-6 animate-pulse">
@@ -78,7 +80,7 @@ export default function UsersPage() {
                     Acesso Negado
                 </h2>
                 <div className="text-zinc-500 max-w-md text-center">
-                    <p className="mb-2">Apenas administradores podem acessar esta área.</p>
+                    <p className="mb-2">Apenas administradores e avaliadores podem acessar esta área.</p>
                     <p className="text-xs font-mono bg-zinc-900 p-2 rounded border border-zinc-800">
                         Status: {status} | Role: {role}
                     </p>

@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { sendReportNotification } from "@/lib/discord";
+import { sendReportNotification, sendPlayerReportStatusNotification } from "@/lib/discord";
 
 // GET: Fetch single report details
 export async function GET(
@@ -66,14 +66,19 @@ export async function PATCH(
                 handledBy: session.user.id,
             },
             include: {
-                reporter: { select: { username: true } }
+                reporter: { select: { username: true, id: true } }
             }
         });
 
-        // Notify Discord about the update
-        if (updatedReport) {
-            // We could add a specific notification for updates here
-            // For now, we rely on the initial one, but sending an update log would be good
+        // Notify the player who made the report about the status change
+        if (updatedReport && updatedReport.reporter?.id) {
+            await sendPlayerReportStatusNotification(updatedReport.reporter.id, {
+                id: updatedReport.id,
+                accusedId: updatedReport.accusedId,
+                accusedName: updatedReport.accusedName || undefined,
+                status: updatedReport.status,
+                adminNotes: updatedReport.adminNotes,
+            });
         }
 
         return NextResponse.json({ report: updatedReport });

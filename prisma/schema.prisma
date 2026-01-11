@@ -16,13 +16,18 @@ model User {
   role          String    @default("PLAYER") // PLAYER, EVALUATOR, ADMIN
   reportsMade   Report[]  @relation("Reporter")
   createdAt     DateTime  @default(now())
+
+  // Indexes for performance
+  @@index([role])
+  @@index([isAdmin])
+  @@index([createdAt(sort: Desc)])
 }
 
 model Report {
   id          Int       @id @default(autoincrement())
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   // Incident Details
   accusedId   String    // ID of the player being reported
   accusedName String?   // Name of the player being reported
@@ -30,11 +35,11 @@ model Report {
   reason      String
   description String?
   evidence    String    // URL to video/image
-  
+
   // Status
   status      String    @default("PENDING") // PENDING, APPROVED, REJECTED, INVESTIGATING
   adminNotes  String?
-  
+
   // Relations
   reporterId  String
   reporter    User      @relation("Reporter", fields: [reporterId], references: [id])
@@ -44,5 +49,6 @@ model Report {
   @@index([status, createdAt(sort: Desc)])
   @@index([accusedId])
   @@index([reporterId])
+  @@index([handledBy])
   @@index([createdAt(sort: Desc)])
 }

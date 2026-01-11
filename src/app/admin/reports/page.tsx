@@ -12,7 +12,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AdminReportsPage() {
     const { data: session, status } = useSession();
-    const [filter, setFilter] = useState<"all" | "pending" | "investigating" | "resolved">("all");
+    const [filter, setFilter] = useState<"all" | "pending" | "investigating">("all");
     const [searchQuery, setSearchQuery] = useState("");
 
     const isAuthenticated = status === "authenticated";
@@ -29,12 +29,14 @@ export default function AdminReportsPage() {
 
     const allReports = reportsData?.reports || [];
 
+    // Only show active reports (PENDING or INVESTIGATING) - resolved go to History
+    const activeReports = allReports.filter((r: any) => r.status === "PENDING" || r.status === "INVESTIGATING");
+
     // Filter reports
-    const filteredReports = allReports.filter((report: any) => {
+    const filteredReports = activeReports.filter((report: any) => {
         // Status filter
         if (filter === "pending" && report.status !== "PENDING") return false;
         if (filter === "investigating" && report.status !== "INVESTIGATING") return false;
-        if (filter === "resolved" && report.status !== "APPROVED" && report.status !== "REJECTED") return false;
 
         // Search filter
         if (searchQuery) {
@@ -51,10 +53,9 @@ export default function AdminReportsPage() {
     });
 
     // Stats
-    const pendingCount = allReports.filter((r: any) => r.status === "PENDING").length;
-    const investigatingCount = allReports.filter((r: any) => r.status === "INVESTIGATING").length;
-    const approvedCount = allReports.filter((r: any) => r.status === "APPROVED").length;
-    const rejectedCount = allReports.filter((r: any) => r.status === "REJECTED").length;
+    const pendingCount = activeReports.filter((r: any) => r.status === "PENDING").length;
+    const investigatingCount = activeReports.filter((r: any) => r.status === "INVESTIGATING").length;
+    const resolvedCount = allReports.filter((r: any) => r.status === "APPROVED" || r.status === "REJECTED").length;
 
     // Show loading state
     if (isLoadingAuth) {
@@ -117,10 +118,10 @@ export default function AdminReportsPage() {
 
     const stats = [
         {
-            title: "Total de Denúncias",
-            value: allReports.length,
+            title: "Ativas",
+            value: activeReports.length,
             icon: <FileText className="w-6 h-6 text-primary" />,
-            description: "Registradas no sistema"
+            description: "Aguardando resolução"
         },
         {
             title: "Pendentes",
@@ -135,10 +136,10 @@ export default function AdminReportsPage() {
             description: "Sendo analisadas"
         },
         {
-            title: "Resolvidas",
-            value: approvedCount + rejectedCount,
+            title: "No Histórico",
+            value: resolvedCount,
             icon: <CheckCircle className="w-6 h-6 text-emerald-500" />,
-            description: `${approvedCount} aprovadas, ${rejectedCount} rejeitadas`
+            description: "Ver aba Histórico"
         },
     ];
 
@@ -213,15 +214,6 @@ export default function AdminReportsPage() {
                                 }`}
                         >
                             Em Análise ({investigatingCount})
-                        </button>
-                        <button
-                            onClick={() => setFilter("resolved")}
-                            className={`px-4 py-2 rounded text-sm font-bold uppercase tracking-wider transition-all ${filter === "resolved"
-                                ? "bg-emerald-500 text-black"
-                                : "bg-zinc-900 text-zinc-400 hover:text-white"
-                                }`}
-                        >
-                            Resolvidas ({approvedCount + rejectedCount})
                         </button>
                     </div>
                 </div>

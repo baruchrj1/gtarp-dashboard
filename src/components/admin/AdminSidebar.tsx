@@ -19,22 +19,22 @@ export default function AdminSidebar() {
             allowedRoles: ["ADMIN"]
         },
         {
+            name: "USUÁRIOS",
+            href: "/admin/users",
+            icon: <Users className="w-5 h-5" />,
+            allowedRoles: ["ADMIN", "EVALUATOR"]
+        },
+        {
             name: "DENÚNCIAS",
             href: "/admin/reports",
             icon: <FileText className="w-5 h-5" />,
             allowedRoles: ["ADMIN", "EVALUATOR"]
         },
         {
-            name: "AVALIAÇÃO",
+            name: "HISTÓRICO",
             href: "/admin/reviews",
             icon: <ShieldCheck className="w-5 h-5" />,
-            allowedRoles: ["EVALUATOR"] // Specific workspace for evaluators
-        },
-        {
-            name: "USUÁRIOS",
-            href: "/admin/users",
-            icon: <Users className="w-5 h-5" />,
-            allowedRoles: ["ADMIN"]
+            allowedRoles: ["ADMIN", "EVALUATOR"]
         },
         {
             name: "PUNIÇÃO",

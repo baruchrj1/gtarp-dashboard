@@ -53,9 +53,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -64,7 +70,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-gta-gray-700);
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -73,19 +79,36 @@ body {
 
 /* Utility Classes */
 @utility gta-card {
-  @apply bg-card border border-border rounded shadow-lg;
+  @apply bg-card border border-border rounded-lg shadow-lg transition-all duration-300;
+}
+
+@utility gta-card-hover {
+  @apply gta-card hover:border-primary/30 hover:shadow-primary/5 hover:-translate-y-0.5;
 }
 
 @utility gta-input {
-  @apply flex h-10 w-full rounded-md border border-input bg-input px-3 py-2 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all;
+  @apply flex h-10 w-full rounded-md border border-input bg-input px-3 py-2 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200;
 }
 
 @utility gta-btn {
-  @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 uppercase tracking-wide;
+  @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] h-10 px-4 py-2 uppercase tracking-wide;
+}
+
+@utility gta-btn-secondary {
+  @apply gta-btn bg-zinc-800 hover:bg-zinc-700 text-white;
+}
+
+@utility gta-btn-ghost {
+  @apply gta-btn bg-transparent hover:bg-white/5 text-white;
+}
+
+@utility gta-btn-danger {
+  @apply gta-btn bg-red-600 hover:bg-red-700;
 }
 
 /* Animations */
 @layer utilities {
+  /* Scanline effect */
   .scanline::before {
     content: " ";
     display: block;
@@ -103,6 +126,7 @@ body {
     opacity: 0.1;
   }
 
+  /* Fade in animation */
   .fade-in {
     animation: fadeIn 0.5s ease-out forwards;
   }
@@ -112,10 +136,214 @@ body {
       opacity: 0;
       transform: translateY(10px);
     }
-
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
+
+  /* Slide up animation */
+  .slide-up {
+    animation: slideUp 0.4s ease-out forwards;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Scale in animation */
+  .scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Skeleton wave animation */
+  .skeleton-wave {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: wave 1.5s ease-in-out infinite;
+  }
+
+  @keyframes wave {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* Pulse glow effect */
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 5px var(--color-primary);
+    }
+    50% {
+      box-shadow: 0 0 20px var(--color-primary), 0 0 30px var(--color-primary);
+    }
+  }
+
+  /* Stagger children animation helper */
+  .stagger-children > * {
+    animation: fadeIn 0.4s ease-out forwards;
+    opacity: 0;
+  }
+
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+  .stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+  .stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-transform duration-200;
+  }
+  .hover-lift:hover {
+    @apply -translate-y-1;
+  }
+
+  /* Shimmer effect for loading */
+  .shimmer {
+    background: linear-gradient(
+      -45deg,
+      transparent 40%,
+      rgba(255,255,255,0.03) 50%,
+      transparent 60%
+    );
+    background-size: 300% 300%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 100% 100%; }
+    100% { background-position: 0% 0%; }
+  }
+
+  /* Border glow on hover */
+  .border-glow-hover {
+    @apply transition-all duration-300;
+  }
+  .border-glow-hover:hover {
+    @apply border-primary/50 shadow-lg shadow-primary/10;
+  }
+
+  /* Animate-in classes (compatible with tailwindcss-animate) */
+  .animate-in {
+    animation-duration: 0.3s;
+    animation-fill-mode: both;
+  }
+
+  .fade-in-0 {
+    animation-name: fadeIn;
+  }
+
+  .slide-in-from-bottom-2 {
+    --tw-translate-y: 0.5rem;
+    animation-name: slideInFromBottom;
+  }
+
+  .slide-in-from-bottom-4 {
+    --tw-translate-y: 1rem;
+    animation-name: slideInFromBottom;
+  }
+
+  .slide-in-from-right-full {
+    --tw-translate-x: 100%;
+    animation-name: slideInFromRight;
+  }
+
+  .zoom-in-95 {
+    animation-name: zoomIn95;
+  }
+
+  .duration-300 {
+    animation-duration: 0.3s;
+  }
+
+  .duration-500 {
+    animation-duration: 0.5s;
+  }
+
+  @keyframes slideInFromBottom {
+    from {
+      opacity: 0;
+      transform: translateY(var(--tw-translate-y, 1rem));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(var(--tw-translate-x, 100%));
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes zoomIn95 {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Table row hover effect */
+  .table-row-hover {
+    @apply transition-colors duration-150;
+  }
+  .table-row-hover:hover {
+    @apply bg-white/[0.02];
+  }
+}
+
+/* Focus visible outline for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Selection color */
+::selection {
+  background-color: var(--color-primary);
+  color: white;
 }
