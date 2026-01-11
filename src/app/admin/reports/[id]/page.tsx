@@ -242,70 +242,71 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
                         </h3>
 
                         <div className="space-y-4">
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-[10px] uppercase font-bold text-zinc-500 mb-2 block">Organização / Família</label>
-                                    <div className="relative">
-                                        <select
-                                            className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-sm text-zinc-200 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all appearance-none"
-                                            value={accusedFamily}
-                                            onChange={(e) => setAccusedFamily(e.target.value)}
-                                        >
-                                            <option value="" className="bg-zinc-900">Selecione a organização...</option>
-                                            {FACTIONS.map(faction => (
-                                                <option key={faction} value={faction} className="bg-zinc-900">{faction}</option>
-                                            ))}
-                                        </select>
-                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
-                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                        </div>
+
+                            <div>
+                                <label className="text-[10px] uppercase font-bold text-zinc-500 mb-2 block">Organização / Família</label>
+                                <div className="relative">
+                                    <select
+                                        className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-sm text-zinc-200 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all appearance-none"
+                                        value={accusedFamily}
+                                        onChange={(e) => setAccusedFamily(e.target.value)}
+                                    >
+                                        <option value="" className="bg-zinc-900">Selecione a organização...</option>
+                                        {FACTIONS.map(faction => (
+                                            <option key={faction} value={faction} className="bg-zinc-900">{faction}</option>
+                                        ))}
+                                    </select>
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
+                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div>
-                                    <label className="text-[10px] uppercase font-bold text-zinc-500 mb-2 block">Notas da Administração</label>
-                                    <textarea
-                                        className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-sm text-zinc-200 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all resize-none h-32 placeholder-zinc-700"
-                                        placeholder="Justifique sua decisão aqui..."
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                    />
-                                </div>
+                            <div>
+                                <label className="text-[10px] uppercase font-bold text-zinc-500 mb-2 block">Notas da Administração</label>
+                                <textarea
+                                    className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-sm text-zinc-200 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all resize-none h-32 placeholder-zinc-700"
+                                    placeholder="Justifique sua decisão aqui..."
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                />
+                            </div>
 
-                                <div className="grid grid-cols-2 gap-3 pt-2">
-                                    <button
-                                        onClick={() => handleUpdateStatus("APPROVED")}
-                                        disabled={actionLoading}
-                                        className="col-span-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-black py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                                    >
-                                        <Check className="w-4 h-4" /> Aprovar
-                                    </button>
-                                    <button
-                                        onClick={() => handleUpdateStatus("REJECTED")}
-                                        disabled={actionLoading}
-                                        className="col-span-1 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                                    >
-                                        <X className="w-4 h-4" /> Rejeitar
-                                    </button>
-                                    <button
-                                        onClick={() => handleUpdateStatus("INVESTIGATING")}
-                                        disabled={actionLoading}
-                                        className="col-span-2 bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500 hover:text-white py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                                    >
-                                        <HelpCircle className="w-4 h-4" /> Marcar como Em Análise
-                                    </button>
-                                </div>
+                            <div className="grid grid-cols-2 gap-3 pt-2">
+                                <button
+                                    onClick={() => handleUpdateStatus("APPROVED")}
+                                    disabled={actionLoading}
+                                    className="col-span-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-black py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    <Check className="w-4 h-4" /> Aprovar
+                                </button>
+                                <button
+                                    onClick={() => handleUpdateStatus("REJECTED")}
+                                    disabled={actionLoading}
+                                    className="col-span-1 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    <X className="w-4 h-4" /> Rejeitar
+                                </button>
+                                <button
+                                    onClick={() => handleUpdateStatus("INVESTIGATING")}
+                                    disabled={actionLoading}
+                                    className="col-span-2 bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500 hover:text-white py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    <HelpCircle className="w-4 h-4" /> Marcar como Em Análise
+                                </button>
                             </div>
                         </div>
+                    </div>
 
-                        <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-zinc-600 uppercase tracking-widest font-bold">Data do Registro</span>
-                                <span className="text-zinc-400 font-mono">{new Date(currentReport.createdAt).toLocaleDateString("pt-BR")} ás {new Date(currentReport.createdAt).toLocaleTimeString("pt-BR")}</span>
-                            </div>
+                    <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+                        <div className="flex justify-between items-center text-xs">
+                            <span className="text-zinc-600 uppercase tracking-widest font-bold">Data do Registro</span>
+                            <span className="text-zinc-400 font-mono">{new Date(currentReport.createdAt).toLocaleDateString("pt-BR")} ás {new Date(currentReport.createdAt).toLocaleTimeString("pt-BR")}</span>
                         </div>
                     </div>
                 </div>
             </div>
-            );
+        </div>
+        </div >
+    );
 }
