@@ -147,10 +147,7 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
                                     <span className="bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-300 dark:border-zinc-700 px-3 py-1 rounded text-xs font-mono text-zinc-700 dark:text-zinc-400">
                                         ID #{currentReport.id ? currentReport.id.toString().padStart(4, '0') : "????"}
                                     </span>
-                                    <span className={`flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${statusStyle.border} bg-opacity-10 ${statusStyle.bg} bg-opacity-10 ${statusStyle.text}`}>
-                                        <div className={`w-1.5 h-1.5 rounded-full mr-2 ${statusStyle.bg}`}></div>
-                                        {statusStyle.label}
-                                    </span>
+                                    <div className={`w-3 h-3 rounded-full ${statusStyle.bg}`} title={statusStyle.label}></div>
                                     <span className="bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-300 dark:border-zinc-700 px-3 py-1 rounded text-xs font-mono text-zinc-600 dark:text-zinc-500">
                                         {new Date(currentReport.createdAt).toLocaleDateString("pt-BR")} às {new Date(currentReport.createdAt).toLocaleTimeString("pt-BR")}
                                     </span>
