@@ -111,7 +111,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Database */}
-                    <div className="bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/5 rounded-lg p-6 lg:col-span-2">
+                    <div className="gta-card p-6 lg:col-span-2">
                         <div className="flex items-center gap-3 mb-4">
                             <Database className="w-5 h-5 text-primary" />
                             <h2 className="text-lg font-bold text-foreground uppercase tracking-wider">Banco de Dados</h2>

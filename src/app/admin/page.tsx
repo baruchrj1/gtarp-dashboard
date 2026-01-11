@@ -85,7 +85,7 @@ export default function AdminDashboard() {
             </aside>
 
             <main className="flex-1 space-y-8 min-w-0">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-black/40 p-6 rounded border border-zinc-200 dark:border-white/5 shadow-sm dark:shadow-none">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 gta-card p-6">
                     <div>
                         <h1 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-widest uppercase font-display">
                             Painel <span className="text-primary">{isAdmin ? "Administrativo" : "de Avaliação"}</span>
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
                             {/* Charts Row 1 */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 {/* Daily Activity Chart */}
-                                <div className="lg:col-span-2 bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/5 rounded p-6 shadow-sm dark:shadow-none">
+                                <div className="lg:col-span-2 gta-card p-6">
                                     <h3 className="text-lg font-bold text-foreground dark:text-white uppercase tracking-wider mb-6 flex items-center gap-2">
                                         <BarChart3 className="w-5 h-5 text-primary" />
                                         Atividade {timeRange === "7d" && " (7 Dias)"}{timeRange === "30d" && " (30 Dias)"}{timeRange === "month" && " Mensal"}
@@ -260,7 +260,7 @@ export default function AdminDashboard() {
                             {/* Bottom Row - Groups, Players */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Top Punished Groups */}
-                                <div className="bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/5 rounded p-6 shadow-sm dark:shadow-none">
+                                <div className="gta-card p-6">
                                     <h3 className="text-lg font-bold text-foreground dark:text-white uppercase tracking-wider mb-6 flex items-center gap-2">
                                         <TrendingUp className="w-5 h-5 text-red-500" />
                                         Grupos Mais Punidos

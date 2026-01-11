@@ -227,7 +227,7 @@ export default function NewPlayerReportPage() {
                     </div>
 
                     {/* Form */}
-                    <div className="bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/5 rounded p-6 fade-in" style={{ animationDelay: "100ms" }}>
+                    <div className="gta-card p-6 fade-in" style={{ animationDelay: "100ms" }}>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">

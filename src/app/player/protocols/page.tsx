@@ -148,7 +148,7 @@ export default function PlayerProtocolsPage() {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-4">
+                                    <div className="gta-card p-4">
                                         <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                                             Denunciado
                                         </p>
@@ -156,7 +156,7 @@ export default function PlayerProtocolsPage() {
                                         <p className="text-zinc-500 text-xs mt-1">ID: {report.accusedId}</p>
                                     </div>
 
-                                    <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-4">
+                                    <div className="gta-card p-4">
                                         <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                                             Avaliador
                                         </p>
@@ -166,7 +166,7 @@ export default function PlayerProtocolsPage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-4">
+                                <div className="gta-card p-4">
                                     <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                                         Descrição da Denúncia
                                     </p>
@@ -174,7 +174,7 @@ export default function PlayerProtocolsPage() {
                                 </div>
 
                                 {report.evidence && (
-                                    <div className="mt-4 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-4">
+                                    <div className="mt-4 gta-card p-4">
                                         <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                                             Evidência
                                         </p>
