@@ -421,7 +421,7 @@ export default function PunishmentsPage() {
                             {/* Status Selection */}
                             <div>
                                 <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                                    Novo Status
+                                    Punição
                                 </label>
                                 <select
                                     value={newStatus}
@@ -429,7 +429,7 @@ export default function PunishmentsPage() {
                                     required
                                     className="w-full bg-input border border-border rounded px-4 py-3 text-foreground focus:border-primary focus:outline-none transition-colors"
                                 >
-                                    <option value="">Escolha o status...</option>
+                                    <option value="">Escolha a punição...</option>
                                     <option value="active">✅ Ativo (Remover Punição)</option>
                                     <option value="warned">⚠️ Advertido</option>
                                     <option value="suspended">🚫 Suspenso</option>

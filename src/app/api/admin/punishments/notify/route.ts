@@ -63,10 +63,10 @@ export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions);
 
-        // Check if user is authenticated and is an ADMIN
-        if (!session?.user || session.user.role !== "ADMIN") {
+        // Check if user is authenticated and is an ADMIN or EVALUATOR
+        if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "EVALUATOR")) {
             return NextResponse.json(
-                { error: "Acesso negado. Apenas administradores podem enviar notificações." },
+                { error: "Acesso negado. Apenas administradores e avaliadores podem enviar notificações." },
                 { status: 403 }
             );
         }

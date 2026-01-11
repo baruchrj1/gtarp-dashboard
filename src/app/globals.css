@@ -117,9 +117,7 @@ body {
 }
 
 /* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
+
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {

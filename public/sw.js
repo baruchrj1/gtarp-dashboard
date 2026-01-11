@@ -1,9 +1,9 @@
 // Service Worker for caching and offline support
 // This file will be served from /public/sw.js
 
-const CACHE_NAME = 'gtarp-dashboard-v1';
-const STATIC_CACHE = 'gtarp-static-v1';
-const DYNAMIC_CACHE = 'gtarp-dynamic-v1';
+const CACHE_NAME = 'gtarp-dashboard-v2';
+const STATIC_CACHE = 'gtarp-static-v2';
+const DYNAMIC_CACHE = 'gtarp-dynamic-v2';
 
 // Assets to cache immediately on install
 const STATIC_ASSETS = [

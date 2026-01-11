@@ -15,6 +15,11 @@ model User {
   isAdmin       Boolean   @default(false)
   role          String    @default("PLAYER") // PLAYER, EVALUATOR, ADMIN
   reportsMade   Report[]  @relation("Reporter")
+  
+  // Relations for punishments
+  punishmentsReceived Punishment[] @relation("PunishmentReceiver")
+  punishmentsGiven    Punishment[] @relation("PunishmentGiver")
+
   createdAt     DateTime  @default(now())
 
   // Indexes for performance
@@ -45,19 +50,47 @@ model Report {
   reporter    User      @relation("Reporter", fields: [reporterId], references: [id])
   handledBy   String?   // Admin ID who processed the report
 
+  // Relation to Punishment
+  punishment  Punishment?
+
   // Indexes for performance
   @@index([status, createdAt(sort: Desc)])
   @@index([accusedId])
   @@index([reporterId])
   @@index([handledBy])
   @@index([createdAt(sort: Desc)])
-
 }
 
 model Organization {
   id        String   @id @default(cuid())
   name      String   @unique
   createdAt DateTime @default(now())
+}
+
+
+model Punishment {
+  id        String    @id @default(cuid())
+  type      String    // WARNING, KICK, TEMP_BAN, PERM_BAN
+  reason    String
+  duration  Int?      // In hours, for TEMP_BAN
+  expiresAt DateTime?
+  isActive  Boolean   @default(true)
+  
+  userId    String
+  user      User      @relation("PunishmentReceiver", fields: [userId], references: [id])
+  
+  adminId   String
+  admin     User      @relation("PunishmentGiver", fields: [adminId], references: [id])
+  
+  reportId  Int?      @unique
+  report    Report?   @relation(fields: [reportId], references: [id])
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([isActive])
 }
 
 model ReportReason {
