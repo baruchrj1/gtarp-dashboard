@@ -122,7 +122,7 @@ export default function PlayerDashboard() {
                             {myReports.slice(0, 5).map((report: any) => (
                                 <div
                                     key={report.id}
-                                    className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-4 hover:border-primary/20 transition-colors"
+                                    className="gta-card p-4 hover:border-primary/20 transition-colors"
                                 >
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
