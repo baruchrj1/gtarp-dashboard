@@ -307,6 +307,5 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
                 </div>
             </div>
         </div>
-        </div >
     );
 }
