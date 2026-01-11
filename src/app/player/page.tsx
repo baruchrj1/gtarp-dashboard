@@ -126,13 +126,13 @@ export default function PlayerDashboard() {
                                 >
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
-                                            <h3 className="text-white font-bold text-sm mb-1">
+                                            <h3 className="text-foreground font-bold text-sm mb-1">
                                                 {report.accusedName}
                                             </h3>
-                                            <p className="text-zinc-400 text-xs line-clamp-2 mb-2">
+                                            <p className="text-muted-foreground text-xs line-clamp-2 mb-2">
                                                 {report.description}
                                             </p>
-                                            <div className="flex items-center gap-2 text-xs text-zinc-500">
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                 <span>ID: #{String(report.id).padStart(4, '0')}</span>
                                                 <span>•</span>
                                                 <span>{new Date(report.createdAt).toLocaleDateString("pt-BR")}</span>
