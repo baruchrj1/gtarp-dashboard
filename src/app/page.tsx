@@ -17,7 +17,7 @@ export default function Home() {
         </div>
 
         <h1 className="text-5xl md:text-8xl font-bold tracking-tighter uppercase font-display leading-none">
-          <span className="text-white">Hype</span>
+          <span className="text-white">System</span>
           <span className="block text-primary text-6xl md:text-9xl mt-[-10px] opacity-90">Reports</span>
         </h1>
 

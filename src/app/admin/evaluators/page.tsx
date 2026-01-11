@@ -67,7 +67,7 @@ export default function EvaluatorsPage() {
                 <div className="w-24 h-24 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center mb-6 animate-pulse">
                     <ShieldAlert className="w-10 h-10 text-red-500" />
                 </div>
-                <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-white">
+                <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-zinc-900 dark:text-white">
                     Acesso Negado
                 </h2>
                 <div className="text-zinc-500 max-w-md text-center">
@@ -117,12 +117,12 @@ export default function EvaluatorsPage() {
             </aside>
 
             <main className="flex-1 space-y-8 min-w-0">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-black/40 p-6 rounded border border-white/5">
+                <div className="gta-card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card/50 backdrop-blur-sm">
                     <div>
-                        <h1 className="text-3xl font-bold text-white tracking-widest uppercase font-display">
+                        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-widest uppercase font-display">
                             Gerenciamento de <span className="text-primary">Avaliadores</span>
                         </h1>
-                        <p className="text-zinc-400 mt-1 text-sm font-mono uppercase tracking-wider">
+                        <p className="text-muted-foreground dark:text-zinc-400 mt-1 text-sm font-mono uppercase tracking-wider">
                             Monitore o desempenho e atividade dos avaliadores
                         </p>
                     </div>
@@ -141,8 +141,8 @@ export default function EvaluatorsPage() {
                         </div>
 
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between border-b border-primary/20 pb-4">
-                                <h2 className="text-xl font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <div className="flex items-center justify-between border-b border-border pb-4">
+                                <h2 className="text-xl font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                                     <UserCheck className="w-5 h-5 text-primary" />
                                     Lista de Avaliadores
                                 </h2>

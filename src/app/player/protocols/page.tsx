@@ -29,8 +29,8 @@ export default function PlayerProtocolsPage() {
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
         return (
-            report.id.toLowerCase().includes(query) ||
-            report.accusedName.toLowerCase().includes(query)
+            String(report.id).includes(query) ||
+            (report.accusedName && report.accusedName.toLowerCase().includes(query))
         );
     });
 
@@ -85,7 +85,7 @@ export default function PlayerProtocolsPage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Digite o ID do protocolo ou nome do acusado..."
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded px-4 py-3 text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-primary focus:outline-none"
                     />
                 </div>
 
@@ -111,7 +111,7 @@ export default function PlayerProtocolsPage() {
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                                     <div>
                                         <h3 className="text-white font-bold text-lg mb-1">
-                                            Protocolo #{report.id.slice(0, 12).toUpperCase()}
+                                            Protocolo #{String(report.id).padStart(4, '0')}
                                         </h3>
                                         <p className="text-zinc-500 text-sm">
                                             Criado em {new Date(report.createdAt).toLocaleDateString("pt-BR", {
@@ -148,7 +148,7 @@ export default function PlayerProtocolsPage() {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <div className="bg-zinc-900/50 border border-zinc-800 rounded p-4">
+                                    <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-4">
                                         <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                                             Denunciado
                                         </p>
@@ -156,7 +156,7 @@ export default function PlayerProtocolsPage() {
                                         <p className="text-zinc-500 text-xs mt-1">ID: {report.accusedId}</p>
                                     </div>
 
-                                    <div className="bg-zinc-900/50 border border-zinc-800 rounded p-4">
+                                    <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-4">
                                         <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                                             Avaliador
                                         </p>
@@ -166,7 +166,7 @@ export default function PlayerProtocolsPage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-zinc-900/50 border border-zinc-800 rounded p-4">
+                                <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-4">
                                     <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                                         Descrição da Denúncia
                                     </p>
@@ -174,7 +174,7 @@ export default function PlayerProtocolsPage() {
                                 </div>
 
                                 {report.evidence && (
-                                    <div className="mt-4 bg-zinc-900/50 border border-zinc-800 rounded p-4">
+                                    <div className="mt-4 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-4">
                                         <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                                             Evidência
                                         </p>

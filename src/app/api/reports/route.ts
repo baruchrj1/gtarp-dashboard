@@ -65,6 +65,33 @@ export async function POST(req: Request) {
         return rateLimitResponse(rateLimitResult.resetIn);
     }
 
+    // Check daily limit (3 reports per 24 hours)
+    // Staff members bypass this limit
+    /* 
+    if (!isStaff(session)) {
+        const ONE_DAY_AGO = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+        const dailyCount = await prisma.report.count({
+            where: {
+                reporterId: session.user.id,
+                createdAt: {
+                    gte: ONE_DAY_AGO
+                }
+            }
+        });
+
+        if (dailyCount >= 3) {
+            return NextResponse.json(
+                {
+                    error: "Limite diário atingido",
+                    message: "Você só pode criar 3 denúncias a cada 24 horas."
+                },
+                { status: 429 }
+            );
+        }
+    }
+    */
+
     try {
         // Validate input
         const validation = await validateBody(req, createReportSchema);
@@ -76,7 +103,7 @@ export async function POST(req: Request) {
             );
         }
 
-        const { accusedId, accusedName, reason, description, evidence } = validation.data;
+        const { accusedId, accusedName, accusedFamily, reason, description, evidence } = validation.data;
 
         // Process evidence (string or array)
         let processedEvidence = "";
@@ -90,8 +117,9 @@ export async function POST(req: Request) {
 
         const report = await prisma.report.create({
             data: {
-                accusedId,
-                accusedName: accusedName || accusedId,
+                accusedId: accusedId || "N/A",
+                accusedName: accusedName || (accusedId ? accusedId : "Desconhecido"),
+                accusedFamily: accusedFamily || null,
                 reason,
                 description: description || null,
                 evidence: processedEvidence,
@@ -111,8 +139,8 @@ export async function POST(req: Request) {
             process.env.NODE_ENV === "production"
                 ? "Erro ao criar denúncia"
                 : error instanceof Error
-                ? error.message
-                : "Internal Server Error";
+                    ? error.message
+                    : "Internal Server Error";
         return NextResponse.json({ error: message }, { status: 500 });
     }
 }

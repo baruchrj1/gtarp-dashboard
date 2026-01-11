@@ -15,15 +15,17 @@ const fetcher = async (url: string) => {
     return res.json();
 };
 
-// SWR global configuration
+// SWR global configuration - OPTIMIZED
 const swrConfig = {
     fetcher,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: true,
-    dedupingInterval: 5000,
-    errorRetryCount: 3,
-    errorRetryInterval: 5000,
-    shouldRetryOnError: true,
+    revalidateOnFocus: false,       // Don't refetch on window focus
+    revalidateOnReconnect: true,    // Refetch on reconnect
+    refreshInterval: 0,             // No automatic polling
+    dedupingInterval: 5000,         // Dedupe requests within 5 seconds
+    errorRetryCount: 3,             // Retry failed requests 3 times
+    errorRetryInterval: 5000,       // Wait 5 seconds between retries
+    shouldRetryOnError: true,       // Retry on error
+    keepPreviousData: true,         // Keep previous data while revalidating
 };
 
 export function Providers({ children }: { children: React.ReactNode }) {

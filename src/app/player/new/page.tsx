@@ -8,6 +8,104 @@ import { ShieldAlert, Send, Plus, Trash2 } from "lucide-react";
 import { PageLoading } from "@/components/ui/LoadingSpinner";
 import { useToast } from "@/components/ui/Toast";
 import { PageTransition } from "@/components/ui/PageTransition";
+import useSWR from "swr"; // Added import
+
+// Component for dynamic fetching
+function ReasonSelector({ value, onChange }: { value: string, onChange: (val: string) => void }) {
+    const { data, isLoading } = useSWR("/api/admin/config/reasons");
+    const reasons = data?.reasons || [];
+
+    // Fallback options
+    const defaultReasons = [
+        { value: "RDM", label: "RDM (Random Death Match)" },
+        { value: "VDM", label: "VDM (Vehicle Death Match)" },
+        { value: "Dark RP", label: "Dark RP" },
+        { value: "Power Gaming", label: "Power Gaming" },
+        { value: "Combat Logging", label: "Combat Logging" },
+        { value: "Metagaming", label: "Metagaming" },
+        { value: "Bugs", label: "Aproveitamento de Bugs" },
+        { value: "Insulto", label: "Ofensas/Xingamentos" },
+        { value: "Outros", label: "Outros" }
+    ];
+
+    const displayReasons = reasons.length > 0 ? reasons : defaultReasons;
+
+    return (
+        <div className="relative">
+            <select
+                id="reason"
+                name="reason"
+                required
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full bg-white dark:bg-black/40 border border-zinc-300 dark:border-white/10 rounded-lg pl-12 pr-4 py-4 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
+            >
+                <option value="" className="bg-zinc-900 text-zinc-500">
+                    {isLoading ? "Carregando motivos..." : "Selecione um motivo..."}
+                </option>
+                {displayReasons.map((r: any) => (
+                    <option key={r.value} value={r.value} className="bg-zinc-900">
+                        {r.label}
+                    </option>
+                ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </div>
+    );
+}
+
+
+// Component for dynamic fetching
+function OrganizationSelector({ value, onChange }: { value: string, onChange: (val: string) => void }) {
+    const { data, isLoading } = useSWR("/api/admin/config/organizations");
+    const orgs = data?.organizations || [];
+
+    // Fallback options
+    const defaultOrgs = [
+        { name: "LSPD" },
+        { name: "EMS" },
+        { name: "Ballas" },
+        { name: "Vagos" },
+        { name: "Mecânica" }
+    ];
+
+    const displayOrgs = orgs.length > 0 ? orgs : defaultOrgs;
+
+    return (
+        <div className="relative">
+            <select
+                id="accusedFamily"
+                name="accusedFamily"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full bg-white dark:bg-black/40 border border-zinc-300 dark:border-white/10 rounded-lg pl-12 pr-4 py-4 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
+            >
+                <option value="" className="bg-zinc-900 text-zinc-500">
+                    {isLoading ? "Carregando organizações..." : "Selecione uma organização (Opcional)..."}
+                </option>
+                {displayOrgs.map((o: any) => (
+                    <option key={o.id || o.name} value={o.name} className="bg-zinc-900">
+                        {o.name}
+                    </option>
+                ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-zinc-500">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+        </div>
+    );
+}
 
 export default function NewPlayerReportPage() {
     const { data: session, status } = useSession();
@@ -16,10 +114,11 @@ export default function NewPlayerReportPage() {
 
     const [formData, setFormData] = useState({
         accusedId: "",
+        accusedName: "",
+        accusedFamily: "",
         reason: "",
         description: "",
         evidence: [""],
-        accusedName: "",
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -74,7 +173,7 @@ export default function NewPlayerReportPage() {
 
             if (!res.ok) {
                 const data = await res.json();
-                throw new Error(data.error || "Erro ao enviar denuncia");
+                throw new Error(data.message || data.error || "Erro ao enviar denuncia");
             }
 
             toast.success("Denuncia enviada!", "Sua denuncia foi registrada com sucesso.");
@@ -128,32 +227,42 @@ export default function NewPlayerReportPage() {
                     </div>
 
                     {/* Form */}
-                    <div className="bg-black/40 border border-white/5 rounded p-6 fade-in" style={{ animationDelay: "100ms" }}>
+                    <div className="bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/5 rounded p-6 fade-in" style={{ animationDelay: "100ms" }}>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
-                                        ID do Acusado (Passaporte) <span className="text-red-500">*</span>
+                                        ID do Acusado (Passaporte)
                                     </label>
                                     <input
                                         type="text"
-                                        required
-                                        className="w-full bg-zinc-900 border border-zinc-800 rounded px-4 py-3 text-white placeholder-zinc-600 focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
-                                        placeholder="Ex: 12345"
+                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
+                                        placeholder="Ex: 12345 (Opcional)"
                                         value={formData.accusedId}
                                         onChange={(e) => setFormData({ ...formData, accusedId: e.target.value })}
                                     />
                                 </div>
+
                                 <div className="space-y-2">
                                     <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
                                         Nome do Acusado (Opcional)
                                     </label>
                                     <input
                                         type="text"
-                                        className="w-full bg-zinc-900 border border-zinc-800 rounded px-4 py-3 text-white placeholder-zinc-600 focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
+                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
                                         placeholder="Ex: Joao Silva"
                                         value={formData.accusedName}
                                         onChange={(e) => setFormData({ ...formData, accusedName: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
+                                        Organização / Família (Opcional)
+                                    </label>
+                                    <OrganizationSelector
+                                        value={formData.accusedFamily}
+                                        onChange={(val) => setFormData({ ...formData, accusedFamily: val })}
                                     />
                                 </div>
                             </div>
@@ -162,44 +271,10 @@ export default function NewPlayerReportPage() {
                                 <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
                                     Motivo da Denuncia <span className="text-red-500">*</span>
                                 </label>
-                                <div className="relative">
-                                    <select
-                                        required
-                                        className="w-full bg-zinc-900 border border-zinc-800 rounded px-4 py-3 text-white focus:border-primary outline-none appearance-none cursor-pointer transition-all focus:ring-2 focus:ring-primary/20"
-                                        value={formData.reason}
-                                        onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                                    >
-                                        <option value="" className="bg-zinc-900 text-zinc-500">
-                                            Selecione um motivo...
-                                        </option>
-                                        <option value="RDM" className="bg-zinc-900">
-                                            RDM (Random Death Match)
-                                        </option>
-                                        <option value="VDM" className="bg-zinc-900">
-                                            VDM (Vehicle Death Match)
-                                        </option>
-                                        <option value="Combat Logging" className="bg-zinc-900">
-                                            Combat Logging
-                                        </option>
-                                        <option value="Metagaming" className="bg-zinc-900">
-                                            Metagaming
-                                        </option>
-                                        <option value="Bugs" className="bg-zinc-900">
-                                            Aproveitamento de Bugs
-                                        </option>
-                                        <option value="Toxidade" className="bg-zinc-900">
-                                            Toxidade / Ofensa
-                                        </option>
-                                        <option value="Outros" className="bg-zinc-900">
-                                            Outros
-                                        </option>
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
-                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </div>
-                                </div>
+                                <ReasonSelector
+                                    value={formData.reason}
+                                    onChange={(val) => setFormData({ ...formData, reason: val })}
+                                />
                             </div>
 
                             <div className="space-y-2">
@@ -207,7 +282,7 @@ export default function NewPlayerReportPage() {
                                     Descricao Detalhada
                                 </label>
                                 <textarea
-                                    className="w-full bg-zinc-900 border border-zinc-800 rounded px-4 py-3 text-white focus:border-primary outline-none min-h-[120px] placeholder-zinc-600 transition-all focus:ring-2 focus:ring-primary/20 resize-y"
+                                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-4 py-3 text-zinc-900 dark:text-white focus:border-primary outline-none min-h-[120px] placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:ring-2 focus:ring-primary/20 resize-y"
                                     placeholder="Descreva exatamente o que aconteceu, incluindo o contexto..."
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -238,7 +313,7 @@ export default function NewPlayerReportPage() {
                                             <input
                                                 type="url"
                                                 required
-                                                className="w-full bg-zinc-900 border border-zinc-800 rounded px-4 py-3 text-white placeholder-zinc-600 focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
+                                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
                                                 placeholder="https://youtube.com/..."
                                                 value={link}
                                                 onChange={(e) => handleEvidenceChange(index, e.target.value)}

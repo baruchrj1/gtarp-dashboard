@@ -2,12 +2,18 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { isStaff, AuthErrors } from "@/lib/permissions";
 
 export async function GET(req: Request) {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user || !session.user.isAdmin) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Allow both ADMIN and EVALUATOR to access reports
+    if (!session?.user) {
+        return NextResponse.json(AuthErrors.UNAUTHENTICATED, { status: 401 });
+    }
+
+    if (!isStaff(session)) {
+        return NextResponse.json(AuthErrors.STAFF_REQUIRED, { status: 403 });
     }
 
     try {

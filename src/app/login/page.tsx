@@ -36,7 +36,7 @@ export default function LoginPage() {
                     </h1>
 
                     <p className="text-zinc-400 text-sm mb-8 leading-relaxed">
-                        Sistema HYPE REPORTS. Identifique-se para acessar o painel administrativo e gerenciar denúncias.
+                        Sistema SYSTEM REPORTS. Identifique-se para acessar o painel administrativo e gerenciar denúncias.
                     </p>
 
                     <button

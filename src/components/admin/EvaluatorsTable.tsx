@@ -43,38 +43,38 @@ export default function EvaluatorsTable({ evaluators }: EvaluatorsTableProps) {
 
     if (evaluators.length === 0) {
         return (
-            <div className="bg-black/40 border border-white/5 rounded p-12 text-center">
-                <Activity className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-                <p className="text-zinc-400 text-sm">Nenhum avaliador encontrado no sistema.</p>
+            <div className="bg-card dark:bg-black/40 border border-border dark:border-white/5 rounded p-12 text-center">
+                <Activity className="w-12 h-12 text-muted-foreground dark:text-zinc-600 mx-auto mb-4" />
+                <p className="text-muted-foreground dark:text-zinc-400 text-sm">Nenhum avaliador encontrado no sistema.</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-black/40 border border-white/5 rounded overflow-hidden">
+        <div className="gta-card overflow-hidden bg-card/50 backdrop-blur-sm border-border">
             <div className="overflow-x-auto">
                 <table className="w-full">
                     <thead>
-                        <tr className="border-b border-white/5 bg-black/20">
-                            <th className="text-left p-4 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                        <tr className="bg-muted/50 border-b border-border">
+                            <th className="text-left p-4 text-xs font-bold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">
                                 Avaliador
                             </th>
-                            <th className="text-center p-4 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                            <th className="text-center p-4 text-xs font-bold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">
                                 Status
                             </th>
-                            <th className="text-center p-4 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                            <th className="text-center p-4 text-xs font-bold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">
                                 Total Processado
                             </th>
-                            <th className="text-center p-4 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                            <th className="text-center p-4 text-xs font-bold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">
                                 Aprovadas
                             </th>
-                            <th className="text-center p-4 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                            <th className="text-center p-4 text-xs font-bold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">
                                 Rejeitadas
                             </th>
-                            <th className="text-center p-4 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                            <th className="text-center p-4 text-xs font-bold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">
                                 Investigando
                             </th>
-                            <th className="text-left p-4 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                            <th className="text-left p-4 text-xs font-bold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">
                                 Última Atividade
                             </th>
                         </tr>
@@ -85,8 +85,7 @@ export default function EvaluatorsTable({ evaluators }: EvaluatorsTableProps) {
                             return (
                                 <tr
                                     key={evaluator.id}
-                                    className={`border-b border-white/5 hover:bg-white/5 transition-colors ${index % 2 === 0 ? "bg-black/10" : ""
-                                        }`}
+                                    className={`border-b border-border/50 hover:bg-muted/50 transition-colors`}
                                 >
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
@@ -108,10 +107,10 @@ export default function EvaluatorsTable({ evaluators }: EvaluatorsTableProps) {
                                                 )}
                                             </div>
                                             <div>
-                                                <p className="text-white font-medium text-sm">
+                                                <p className="text-zinc-900 dark:text-white font-medium text-sm">
                                                     {evaluator.username}
                                                 </p>
-                                                <p className="text-zinc-500 text-xs font-mono">
+                                                <p className="text-zinc-500 dark:text-zinc-500 text-xs font-mono">
                                                     ID: {evaluator.id.slice(0, 8)}...
                                                 </p>
                                             </div>
@@ -133,7 +132,7 @@ export default function EvaluatorsTable({ evaluators }: EvaluatorsTableProps) {
                                         </div>
                                     </td>
                                     <td className="p-4 text-center">
-                                        <span className="text-white font-bold text-lg">
+                                        <span className="text-zinc-900 dark:text-white font-bold text-lg">
                                             {evaluator.stats.totalHandled}
                                         </span>
                                     </td>
@@ -162,16 +161,16 @@ export default function EvaluatorsTable({ evaluators }: EvaluatorsTableProps) {
                                         </div>
                                     </td>
                                     <td className="p-4">
-                                        <p className="text-zinc-400 text-xs font-mono">
+                                        <p className="text-muted-foreground dark:text-zinc-400 text-xs font-mono">
                                             {formatDate(evaluator.stats.lastActivity)}
                                         </p>
                                     </td>
-                                </tr>
+                                </tr >
                             );
                         })}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    </tbody >
+                </table >
+            </div >
+        </div >
     );
 }

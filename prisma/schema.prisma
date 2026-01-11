@@ -51,4 +51,26 @@ model Report {
   @@index([reporterId])
   @@index([handledBy])
   @@index([createdAt(sort: Desc)])
+
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model ReportReason {
+  id        String   @id @default(cuid())
+  value     String   @unique // The internal value (e.g., "RDM")
+  label     String   // The display label (e.g., "RDM (Morte Aleatória)")
+  createdAt DateTime @default(now())
+}
+
+model PunishmentDuration {
+  id        String   @id @default(cuid())
+  value     String   @unique
+  label     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

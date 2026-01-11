@@ -6,9 +6,9 @@ import { z } from "zod";
 export const createReportSchema = z.object({
     accusedId: z
         .string()
-        .min(1, "ID do acusado é obrigatório")
         .max(50, "ID do acusado muito longo")
-        .regex(/^\d+$/, "ID do acusado deve ser numérico"),
+        .optional()
+        .or(z.literal("")),
     accusedName: z
         .string()
         .max(100, "Nome do acusado muito longo")
@@ -79,3 +79,37 @@ export async function validateBody<T>(
 export function formatZodErrors(error: z.ZodError<unknown>): string[] {
     return error.issues.map((e) => `${e.path.join(".")}: ${e.message}`);
 }
+
+/**
+ * Report update schema (for admin)
+ */
+export const updateReportSchema = z.object({
+    status: z.enum(["PENDING", "INVESTIGATING", "APPROVED", "REJECTED"]).optional(),
+    adminNotes: z.string().max(2000).optional(),
+    accusedFamily: z.string().max(100).optional(),
+});
+
+export type UpdateReportInput = z.infer<typeof updateReportSchema>;
+
+/**
+ * User role update schema
+ */
+export const updateUserRoleSchema = z.object({
+    userId: z.string().min(1, "ID do usuário é obrigatório"),
+    role: z.enum(["PLAYER", "EVALUATOR", "ADMIN"]).optional(),
+    isAdmin: z.boolean().optional(),
+});
+
+export type UpdateUserRoleInput = z.infer<typeof updateUserRoleSchema>;
+
+/**
+ * Pagination query params schema
+ */
+export const paginationSchema = z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(500).default(20),
+    status: z.string().optional(),
+    search: z.string().optional(),
+});
+
+export type PaginationInput = z.infer<typeof paginationSchema>;

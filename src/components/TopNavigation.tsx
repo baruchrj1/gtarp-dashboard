@@ -4,6 +4,8 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X, Shield, LogOut, User } from "lucide-react";
+import ThemeSelector from "@/components/ThemeSelector";
+import ModeToggle from "@/components/ModeToggle";
 
 export default function TopNavigation() {
     const { data: session } = useSession();
@@ -17,13 +19,13 @@ export default function TopNavigation() {
                         <div className="bg-primary/20 p-2 rounded">
                             <Shield className="w-6 h-6 text-primary" />
                         </div>
-                        <Link href="/" className="text-2xl font-display font-bold text-white tracking-wider uppercase">
-                            HYPE<span className="text-primary"> REPORTS</span>
+                        <Link href="/" className="text-2xl font-display font-bold text-foreground tracking-wider uppercase">
+                            SYSTEM<span className="text-primary"> REPORTS</span>
                         </Link>
                     </div>
 
                     {/* Desktop Menu */}
-                    <div className="hidden md:block absolute left-1/2 -translate-x-1/2">
+                    <div className="hidden md:flex flex-1 items-center justify-center px-8">
                         <div className="flex items-center space-x-1">
                             <Link href="/" className="text-zinc-400 hover:text-white hover:bg-white/5 px-4 py-2 rounded font-medium transition-all uppercase text-sm tracking-wide">
                                 Início
@@ -65,6 +67,13 @@ export default function TopNavigation() {
                                             <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Online</span>
                                         </div>
                                     </div>
+
+                                    <ThemeSelector />
+
+                                    <div className="w-px h-6 bg-white/10 mx-2" />
+
+                                    <ModeToggle />
+
                                     <button
                                         onClick={() => signOut()}
                                         className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
