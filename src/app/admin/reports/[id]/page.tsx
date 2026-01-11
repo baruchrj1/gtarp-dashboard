@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, use } from "react";
 import { ChevronLeft, Check, X, HelpCircle, Shield, User, FileText, ExternalLink, Hammer } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { PunishmentModal } from "@/components/admin/PunishmentModal";
 
 type ReportDetail = {
     id: number;
@@ -46,6 +47,7 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
     const [actionLoading, setActionLoading] = useState(false);
     const [notes, setNotes] = useState(report?.adminNotes || "");
     const [accusedFamily, setAccusedFamily] = useState(report?.accusedFamily || "");
+    const [isPunishmentModalOpen, setIsPunishmentModalOpen] = useState(false);
 
     const FACTIONS = [
         "Civil", "Policia", "Hospital", "Mecanica",
@@ -153,10 +155,10 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
                                         {new Date(currentReport.createdAt).toLocaleDateString("pt-BR")} às {new Date(currentReport.createdAt).toLocaleTimeString("pt-BR")}
                                     </span>
                                 </div>
-                                <h1 className="text-4xl font-bold text-white uppercase font-display tracking-tight mb-2">
-                                    Denúncia <span className="text-zinc-500 mx-2">/</span> {currentReport.accusedId}
+                                <h1 className="text-4xl font-bold text-foreground uppercase font-display tracking-tight mb-2">
+                                    Denúncia <span className="text-muted-foreground mx-2">/</span> {currentReport.accusedId}
                                 </h1>
-                                <p className="text-zinc-400 font-medium">Motivo: <span className="text-primary">{currentReport.reason}</span></p>
+                                <p className="text-muted-foreground font-medium">Motivo: <span className="text-primary">{currentReport.reason}</span></p>
                             </div>
 
                             <div className="flex items-center gap-4 bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm">
@@ -324,18 +326,29 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
                                 </button>
                             </div>
 
-                            {/* Shortcut to Punishments */}
-                            <Link
-                                href="/admin/punishments"
+                            {/* Punishment Button */}
+                            <button
+                                type="button"
+                                onClick={() => setIsPunishmentModalOpen(true)}
                                 className="w-full mt-3 bg-orange-500/10 text-orange-500 border border-orange-500/20 hover:bg-orange-500 hover:text-black py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                             >
-                                <Hammer className="w-4 h-4" /> Ir para Punições
-                            </Link>
+                                <Hammer className="w-4 h-4" /> Aplicar Punição
+                            </button>
                         </div>
                     </div>
 
                 </div>
             </div>
+
+            {/* Punishment Modal */}
+            <PunishmentModal
+                isOpen={isPunishmentModalOpen}
+                onClose={() => setIsPunishmentModalOpen(false)}
+                accusedId={currentReport.accusedId}
+                accusedName={currentReport.accusedName}
+                reportId={currentReport.id}
+                reportReason={currentReport.reason}
+            />
         </div>
     );
 }

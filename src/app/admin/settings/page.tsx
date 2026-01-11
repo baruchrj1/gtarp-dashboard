@@ -54,12 +54,12 @@ export default function SettingsPage() {
 
             <main className="flex-1 space-y-8 min-w-0">
                 {/* Header */}
-                <div className="bg-black/40 p-6 rounded border border-white/5">
-                    <h1 className="text-3xl font-bold text-white tracking-widest uppercase font-display flex items-center gap-3">
+                <div className="gta-card p-6">
+                    <h1 className="text-3xl font-bold text-foreground tracking-widest uppercase font-display flex items-center gap-3">
                         <Settings className="w-8 h-8 text-primary" />
                         <span className="text-primary">Configurações</span>
                     </h1>
-                    <p className="text-zinc-400 mt-1 text-sm font-mono uppercase tracking-wider">
+                    <p className="text-muted-foreground mt-1 text-sm font-mono uppercase tracking-wider">
                         Gerencie as configurações do sistema
                     </p>
                 </div>
@@ -67,44 +67,44 @@ export default function SettingsPage() {
                 {/* Settings Sections */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Notifications */}
-                    <div className="bg-black/40 border border-white/5 rounded-lg p-6">
+                    <div className="gta-card p-6">
                         <div className="flex items-center gap-3 mb-4">
                             <Bell className="w-5 h-5 text-primary" />
-                            <h2 className="text-lg font-bold text-white uppercase tracking-wider">Notificações</h2>
+                            <h2 className="text-lg font-bold text-foreground uppercase tracking-wider">Notificações</h2>
                         </div>
                         <div className="space-y-4">
                             <label className="flex items-center justify-between cursor-pointer">
-                                <span className="text-sm text-zinc-400">Notificar novas denúncias via Discord</span>
+                                <span className="text-sm text-muted-foreground">Notificar novas denúncias via Discord</span>
                                 <input type="checkbox" defaultChecked className="w-5 h-5 accent-primary" />
                             </label>
                             <label className="flex items-center justify-between cursor-pointer">
-                                <span className="text-sm text-zinc-400">Notificar jogadores sobre status</span>
+                                <span className="text-sm text-muted-foreground">Notificar jogadores sobre status</span>
                                 <input type="checkbox" defaultChecked className="w-5 h-5 accent-primary" />
                             </label>
                             <label className="flex items-center justify-between cursor-pointer">
-                                <span className="text-sm text-zinc-400">Enviar resumo diário para admins</span>
+                                <span className="text-sm text-muted-foreground">Enviar resumo diário para admins</span>
                                 <input type="checkbox" className="w-5 h-5 accent-primary" />
                             </label>
                         </div>
                     </div>
 
                     {/* Security */}
-                    <div className="bg-black/40 border border-white/5 rounded-lg p-6">
+                    <div className="gta-card p-6">
                         <div className="flex items-center gap-3 mb-4">
                             <Shield className="w-5 h-5 text-primary" />
-                            <h2 className="text-lg font-bold text-white uppercase tracking-wider">Segurança</h2>
+                            <h2 className="text-lg font-bold text-foreground uppercase tracking-wider">Segurança</h2>
                         </div>
                         <div className="space-y-4">
                             <label className="flex items-center justify-between cursor-pointer">
-                                <span className="text-sm text-zinc-400">Exigir verificação de Discord</span>
+                                <span className="text-sm text-muted-foreground">Exigir verificação de Discord</span>
                                 <input type="checkbox" defaultChecked className="w-5 h-5 accent-primary" />
                             </label>
                             <label className="flex items-center justify-between cursor-pointer">
-                                <span className="text-sm text-zinc-400">Limitar denúncias por dia (anti-spam)</span>
+                                <span className="text-sm text-muted-foreground">Limitar denúncias por dia (anti-spam)</span>
                                 <input type="checkbox" defaultChecked className="w-5 h-5 accent-primary" />
                             </label>
                             <label className="flex items-center justify-between cursor-pointer">
-                                <span className="text-sm text-zinc-400">Registrar logs de ações administrativas</span>
+                                <span className="text-sm text-muted-foreground">Registrar logs de ações administrativas</span>
                                 <input type="checkbox" defaultChecked className="w-5 h-5 accent-primary" />
                             </label>
                         </div>
@@ -114,16 +114,16 @@ export default function SettingsPage() {
                     <div className="bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/5 rounded-lg p-6 lg:col-span-2">
                         <div className="flex items-center gap-3 mb-4">
                             <Database className="w-5 h-5 text-primary" />
-                            <h2 className="text-lg font-bold text-white uppercase tracking-wider">Banco de Dados</h2>
+                            <h2 className="text-lg font-bold text-foreground uppercase tracking-wider">Banco de Dados</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded border border-zinc-200 dark:border-zinc-800">
                                 <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Total de Usuários</p>
-                                <p className="text-2xl font-bold text-white">--</p>
+                                <p className="text-2xl font-bold text-foreground">--</p>
                             </div>
                             <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded border border-zinc-200 dark:border-zinc-800">
                                 <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Total de Denúncias</p>
-                                <p className="text-2xl font-bold text-white">--</p>
+                                <p className="text-2xl font-bold text-foreground">--</p>
                             </div>
                             <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded border border-zinc-200 dark:border-zinc-800">
                                 <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Status do Banco</p>
