@@ -170,8 +170,8 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
                                     </div>
                                 )}
                                 <div>
-                                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Autor</p>
-                                    <p className="font-bold text-white text-lg leading-none">{currentReport.reporter.username}</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Autor</p>
+                                    <p className="font-bold text-foreground text-lg leading-none">{currentReport.reporter.username}</p>
                                 </div>
                             </div>
                         </div>
