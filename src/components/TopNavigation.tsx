@@ -6,22 +6,36 @@ import { useState } from "react";
 import { Menu, X, Shield, LogOut, User } from "lucide-react";
 import ThemeSelector from "@/components/ThemeSelector";
 import ModeToggle from "@/components/ModeToggle";
+import { useSettings } from "@/contexts/SettingsContext";
 
 export default function TopNavigation() {
     const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
+    const { settings } = useSettings();
 
     return (
         <nav className="sticky top-0 z-50 w-full mb-8 border-b border-white/10 bg-black/80 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20 relative">
                     <div className="flex items-center gap-2">
-                        <div className="bg-primary/20 p-2 rounded">
-                            <Shield className="w-6 h-6 text-primary" />
-                        </div>
-                        <Link href="/" className="text-2xl font-display font-bold text-foreground tracking-wider uppercase">
-                            SYSTEM<span className="text-primary"> REPORTS</span>
-                        </Link>
+                        {settings.server_logo ? (
+                            <Link href="/">
+                                <img src={settings.server_logo} alt={settings.server_name} className="h-12 w-auto object-contain hover:opacity-80 transition-opacity" />
+                            </Link>
+                        ) : (
+                            <>
+                                <div className="bg-primary/20 p-2 rounded">
+                                    <Shield className="w-6 h-6 text-primary" />
+                                </div>
+                                <Link href="/" className="text-2xl font-display font-bold text-foreground tracking-wider uppercase">
+                                    {settings.server_name.split(' ').map((word, i, arr) => (
+                                        <span key={i} className={i === arr.length - 1 ? "text-primary" : ""}>
+                                            {word}{i < arr.length - 1 ? " " : ""}
+                                        </span>
+                                    ))}
+                                </Link>
+                            </>
+                        )}
                     </div>
 
                     {/* Desktop Menu */}

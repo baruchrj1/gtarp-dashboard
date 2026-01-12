@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { SWRConfig } from "swr";
 import { useEffect } from "react";
 import { ToastProvider } from "@/components/ui/Toast";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 
 // Global SWR fetcher
 const fetcher = async (url: string) => {
@@ -55,7 +56,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <SessionProvider>
             <SWRConfig value={swrConfig}>
-                <ToastProvider>{children}</ToastProvider>
+                <SettingsProvider>
+                    <ToastProvider>{children}</ToastProvider>
+                </SettingsProvider>
             </SWRConfig>
         </SessionProvider>
     );
