@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { prisma } from './db';
+
 
 type RateLimitRecord = {
     count: number;
@@ -81,3 +83,89 @@ export function rateLimitResponse(resetIn: number): NextResponse {
         }
     );
 }
+
+
+export interface ReportRateLimitResult {
+    allowed: boolean;
+    remaining: number;
+    current: number;
+    resetAt: Date;
+}
+
+/**
+ * Check if user can create a new report
+ * Limit: 3 reports per 24 hours
+ */
+export async function checkReportRateLimit(
+    userId: string,
+    tenantId: string
+): Promise<ReportRateLimitResult> {
+    const LIMIT = 3;
+    const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+    const windowStart = new Date(Date.now() - WINDOW_MS);
+
+    // Count reports in the last 24 hours
+    const recentReports = await prisma.report.count({
+        where: {
+            reporterId: userId,
+            tenantId: tenantId,
+            createdAt: {
+                gte: windowStart
+            }
+        }
+    });
+
+    const allowed = recentReports < LIMIT;
+    const remaining = Math.max(0, LIMIT - recentReports);
+    const resetAt = new Date(Date.now() + WINDOW_MS);
+
+    return {
+        allowed,
+        remaining,
+        current: recentReports,
+        resetAt
+    };
+}
+
+/**
+ * Get when the user can submit their next report
+ */
+export async function getNextAvailableReportTime(
+    userId: string,
+    tenantId: string
+): Promise<Date | null> {
+    const WINDOW_MS = 24 * 60 * 60 * 1000;
+    const windowStart = new Date(Date.now() - WINDOW_MS);
+
+    const oldestReport = await prisma.report.findFirst({
+        where: {
+            reporterId: userId,
+            tenantId: tenantId,
+            createdAt: {
+                gte: windowStart
+            }
+        },
+        orderBy: {
+            createdAt: 'asc'
+        },
+        select: {
+            createdAt: true
+        }
+    });
+
+    if (!oldestReport) {
+        return null; // Can report now
+    }
+
+    const nextAvailable = new Date(oldestReport.createdAt.getTime() + WINDOW_MS);
+
+
+    // If next available time is in the past, user can report now
+    if (nextAvailable.getTime() <= Date.now()) {
+        return null;
+    }
+
+    return nextAvailable;
+}
+

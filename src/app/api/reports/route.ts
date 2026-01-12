@@ -65,32 +65,33 @@ export async function POST(req: Request) {
         return rateLimitResponse(rateLimitResult.resetIn);
     }
 
-    // Check daily limit (3 reports per 24 hours)
+    // Check daily limit (3 reports per 24 hours) - Database-based
     // Staff members bypass this limit
-    /* 
     if (!isStaff(session)) {
-        const ONE_DAY_AGO = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const { checkReportRateLimit } = await import('@/lib/rate-limit');
 
-        const dailyCount = await prisma.report.count({
-            where: {
-                reporterId: session.user.id,
-                createdAt: {
-                    gte: ONE_DAY_AGO
-                }
-            }
-        });
+        const tenantId = session.user.tenantId;
+        if (!tenantId) {
+            return NextResponse.json(
+                { error: "Tenant ID não encontrado" },
+                { status: 400 }
+            );
+        }
 
-        if (dailyCount >= 3) {
+        const rateLimitCheck = await checkReportRateLimit(session.user.id, tenantId);
+
+        if (!rateLimitCheck.allowed) {
             return NextResponse.json(
                 {
                     error: "Limite diário atingido",
-                    message: "Você só pode criar 3 denúncias a cada 24 horas."
+                    message: `Você só pode criar 3 denúncias a cada 24 horas. Denúncias restantes: ${rateLimitCheck.remaining}`,
+                    remaining: rateLimitCheck.remaining,
+                    resetAt: rateLimitCheck.resetAt
                 },
                 { status: 429 }
             );
         }
     }
-    */
 
     try {
         // Validate input
