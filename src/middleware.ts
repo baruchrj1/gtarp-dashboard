@@ -72,7 +72,37 @@ export default withAuth(
       return NextResponse.redirect(new URL("/", req.url));
     }
 
-    return NextResponse.next();
+    // Parse Tenant Slug from Host (Critical for Vercel Multi-tenant)
+    const host = req.headers.get("host") || "";
+    let tenantSlug: string | null = null;
+
+    // Logic to extract slug/subdomain
+    // 1. Localhost -> handled by tenant.ts fallback (tenantSlug remains null)
+    // 2. Vercel Domains (e.g. painel-client-1.vercel.app)
+    if (host.includes(".vercel.app")) {
+      const subdomain = host.split(".")[0];
+      // If not the main project domain 'gtarp-dashboard', assume it's a tenant
+      if (subdomain !== "gtarp-dashboard") {
+        tenantSlug = subdomain;
+      }
+    }
+    // 3. Custom Domains (not localhost, not vercel.app)
+    // Assuming anything else is a custom domain
+    else if (!host.includes("localhost") && !host.includes("127.0.0.1")) {
+      tenantSlug = `custom:${host}`;
+    }
+
+    if (tenantSlug) {
+      console.log(`[MIDDLEWARE] Detected Tenant Slug: ${tenantSlug}`);
+    }
+
+    // Forward the header
+    const response = NextResponse.next();
+    if (tenantSlug) {
+      response.headers.set("x-tenant-slug", tenantSlug);
+    }
+
+    return response;
   },
   {
     callbacks: {

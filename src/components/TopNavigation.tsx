@@ -77,7 +77,7 @@ export default function TopNavigation({ tenantLogo, tenantName, isTenantContext 
                         )}
                         {session && (session.user?.role === "SUPER_ADMIN" || session.user?.isSuperAdmin) && (
                             <Link
-                                href="/superadmin"
+                                href="https://gtarp-dashboard.vercel.app/superadmin"
                                 className="hidden md:inline-flex items-center justify-center h-8 px-2 rounded bg-red-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-red-700 transition-colors"
                             >
                                 Super Admin
