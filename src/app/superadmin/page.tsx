@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Users, FileText, AlertTriangle, CheckCircle } from "lucide-react";
+import Link from "next/link";
 
 async function getStats() {
   const [tenantCount, activeCount, totalUsers, totalReports] = await Promise.all([
@@ -72,27 +73,27 @@ export default async function SuperAdminDashboard() {
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
         <h2 className="text-xl font-bold text-white mb-4">Acoes Rapidas</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
+          <Link
             href="/superadmin/tenants/new"
             className="flex items-center gap-3 p-4 bg-violet-600/10 border border-violet-600/20 rounded-lg hover:bg-violet-600/20 transition-colors"
           >
             <Users className="w-5 h-5 text-violet-500" />
             <span className="text-white font-medium">Novo Tenant</span>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/superadmin/tenants"
             className="flex items-center gap-3 p-4 bg-blue-600/10 border border-blue-600/20 rounded-lg hover:bg-blue-600/20 transition-colors"
           >
             <Users className="w-5 h-5 text-blue-500" />
             <span className="text-white font-medium">Ver Tenants</span>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/superadmin/settings"
             className="flex items-center gap-3 p-4 bg-zinc-700/10 border border-zinc-700/20 rounded-lg hover:bg-zinc-700/20 transition-colors"
           >
             <AlertTriangle className="w-5 h-5 text-zinc-500" />
             <span className="text-white font-medium">Configuracoes</span>
-          </a>
+          </Link>
         </div>
       </div>
     </div>

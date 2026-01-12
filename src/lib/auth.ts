@@ -115,39 +115,27 @@ export const authOptions: NextAuthOptions = {
                 }
             }
 
-            // Sync user to database (with error handling)
-            try {
-                console.log(`[AUTH] Syncing user to database: ${user.id}`);
-                await prisma.user.upsert({
-                    where: { id: user.id },
-                    update: {
-                        username: user.name || "Unknown",
-                        avatar: user.image,
-                        role: role,
-                        isAdmin: isAdmin,
-                    },
-                    create: {
-                        id: user.id,
-                        username: user.name || "Unknown",
-                        avatar: user.image,
-                        role: role,
-                        isAdmin: isAdmin,
-                    },
-                });
-                console.log(`[AUTH] ✅ User synced successfully with role: ${role}`);
-                return true;
-            } catch (error) {
-                console.error("[AUTH] ❌ Database sync error:", error);
-                // Allow sign-in even if database sync fails
-                console.warn("[AUTH] Allowing sign-in despite database error");
+            // Check if user is super admin - skip database sync for super admins
+            const userEmail = user.email?.toLowerCase();
+            const isSuperAdmin = userEmail ? SUPER_ADMIN_EMAILS.includes(userEmail) : false;
+
+            if (isSuperAdmin) {
+                console.log(`[AUTH] ✅ User is super admin, skipping tenant user sync`);
                 return true;
             }
+
+            // For regular users, we need tenant context to sync
+            // In development without tenant, skip database sync
+            console.log(`[AUTH] ⚠️ No tenant context available for user sync (development mode)`);
+            console.log(`[AUTH] User will be able to login but won't be synced to database`);
+            return true;
         },
 
         async jwt({ token, user, trigger, session }) {
             // On initial sign-in, add user ID to token
             if (user) {
                 token.id = user.id;
+                token.email = user.email;
                 console.log(`[AUTH] JWT: Added user ID to token: ${user.id}`);
             }
 
@@ -157,19 +145,28 @@ export const authOptions: NextAuthOptions = {
                 return { ...token, ...session };
             }
 
-            // Fetch latest user data from database
+            // Check if user is super admin (skip database lookup for super admins)
+            const userEmail = (token.email as string)?.toLowerCase();
+            if (userEmail && SUPER_ADMIN_EMAILS.includes(userEmail)) {
+                token.isSuperAdmin = true;
+                token.role = "SUPER_ADMIN";
+                token.isAdmin = true;
+                return token;
+            }
+
+            // For regular users, try to fetch from database (but don't fail if not found)
+            // In multi-tenant setup, users are per-tenant so lookup may fail without tenant context
             if (token.sub) {
                 try {
-                    const dbUser = await prisma.user.findUnique({
-                        where: { id: token.sub },
+                    const dbUser = await prisma.user.findFirst({
+                        where: { discordId: token.sub },
                     });
 
                     if (dbUser) {
                         token.role = dbUser.role;
                         token.isAdmin = dbUser.isAdmin;
-                    } else {
-                        console.warn(`[AUTH] JWT: User ${token.sub} not found in database`);
                     }
+                    // Don't warn if user not found - expected in development without tenant
                 } catch (error) {
                     console.error("[AUTH] JWT callback error:", error);
                 }
@@ -185,11 +182,8 @@ export const authOptions: NextAuthOptions = {
                     session.user.isAdmin = (token.isAdmin as boolean) || false;
                     session.user.role = (token.role as string) || "PLAYER";
 
-                    // Verifica se e super admin pelo email
-                    const userEmail = session.user.email?.toLowerCase();
-                    session.user.isSuperAdmin = userEmail
-                        ? SUPER_ADMIN_EMAILS.includes(userEmail)
-                        : false;
+                    // Use isSuperAdmin from token (already calculated in JWT callback)
+                    session.user.isSuperAdmin = (token.isSuperAdmin as boolean) || false;
                 }
             } catch (error) {
                 console.error("[AUTH] Session callback error:", error);
