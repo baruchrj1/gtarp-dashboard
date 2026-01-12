@@ -6,7 +6,8 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import StatsCard from "@/components/admin/StatsCard";
 import ReportsTable from "@/components/admin/ReportsTable";
 import { ShieldAlert, CheckCircle, Clock, FileText, BarChart3, PieChart, Users, TrendingUp, Calendar, Filter } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart as RePieChart, Pie, Cell, Legend, LineChart, Line
@@ -19,6 +20,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
 export default function AdminDashboard() {
+    const router = useRouter();
     const { data: session, status } = useSession();
     const { themeMode } = useTheme();
     const axisColor = themeMode === "dark" ? "#fff" : "#666";
@@ -31,9 +33,19 @@ export default function AdminDashboard() {
     const isLoadingAuth = status === "loading";
 
     const role = session?.user?.role || "PLAYER";
+    const isSuperAdmin = role === "SUPER_ADMIN" || session?.user?.isSuperAdmin === true;
     const isEvaluator = role === "EVALUATOR";
-    const isAdmin = role === "ADMIN" || session?.user?.isAdmin === true;
+    // Admin is either explicit ADMIN role, SUPER_ADMIN role, or isAdmin flag
+    const isAdmin = role === "ADMIN" || isSuperAdmin || session?.user?.isAdmin === true;
+
+    // Allow access if admin (inc. super admin) or evaluator
     const hasAccess = isAdmin || isEvaluator;
+
+    useEffect(() => {
+        if (!isLoadingAuth && !isAuthenticated) {
+            router.replace("/");
+        }
+    }, [isLoadingAuth, isAuthenticated, router]);
 
     const [timeRange, setTimeRange] = useState<"7d" | "30d" | "month">("7d");
     const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7)); // YYYY-MM
@@ -68,6 +80,11 @@ export default function AdminDashboard() {
                 <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-zinc-900 dark:text-white">Acesso Negado</h2>
                 <div className="text-zinc-500 max-w-md text-center">
                     <p className="mb-2">Protocolo de segurança: Nível 4 exigido.</p>
+                    {role === "PLAYER" && (
+                        <p className="text-sm">Seu cargo atual ({role}) não possui permissão para acessar o painel administrativo.</p>
+                    )}
+                    <p className="text-xs mt-4 text-zinc-600">ID: {session?.user?.id}</p>
+                    <p className="text-xs text-zinc-600">Role: {role}</p>
                 </div>
             </div>
         );
