@@ -55,6 +55,14 @@ export async function POST(request: NextRequest) {
             expiresAt.setHours(expiresAt.getHours() + validatedData.duration);
         }
 
+        const tenantId = session.user.tenantId;
+        if (!tenantId) {
+            return NextResponse.json(
+                { error: "Tenant ID não encontrado" },
+                { status: 400 }
+            );
+        }
+
         // Create punishment record
         const punishment = await prisma.punishment.create({
             data: {
@@ -67,6 +75,7 @@ export async function POST(request: NextRequest) {
                 adminId: session.user.id,
                 isActive: true,
                 organization: validatedData.organization,
+                tenantId,
             },
         });
 

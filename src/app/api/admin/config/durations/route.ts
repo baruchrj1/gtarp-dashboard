@@ -42,8 +42,16 @@ export async function POST(req: Request) {
             );
         }
 
+        const tenantId = session.user.tenantId;
+        if (!tenantId) {
+            return NextResponse.json(
+                { error: "Tenant ID not found" },
+                { status: 400 }
+            );
+        }
+
         const duration = await prisma.punishmentDuration.create({
-            data: { value, label },
+            data: { value, label, tenantId },
         });
 
         return NextResponse.json(duration);

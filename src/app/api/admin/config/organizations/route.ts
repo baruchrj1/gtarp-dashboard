@@ -43,9 +43,15 @@ export async function POST(req: Request) {
 
         const { name } = validation.data;
 
+        const tenantId = session.user.tenantId;
+        if (!tenantId) {
+            return NextResponse.json({ error: "Tenant ID não encontrado" }, { status: 400 });
+        }
+
         const organization = await prisma.organization.create({
             data: {
-                name
+                name,
+                tenantId
             }
         });
 

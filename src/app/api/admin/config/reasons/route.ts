@@ -44,10 +44,16 @@ export async function POST(req: Request) {
 
         const { label, value } = validation.data;
 
+        const tenantId = session.user.tenantId;
+        if (!tenantId) {
+            return NextResponse.json({ error: "Tenant ID não encontrado" }, { status: 400 });
+        }
+
         const reason = await prisma.reportReason.create({
             data: {
                 label,
-                value
+                value,
+                tenantId
             }
         });
 

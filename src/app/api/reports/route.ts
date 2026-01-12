@@ -114,6 +114,14 @@ export async function POST(req: Request) {
         }
 
         const reporterId = session.user.id;
+        const tenantId = session.user.tenantId;
+
+        if (!tenantId) {
+            return NextResponse.json(
+                { error: "Tenant ID não encontrado" },
+                { status: 400 }
+            );
+        }
 
         const report = await prisma.report.create({
             data: {
@@ -124,6 +132,7 @@ export async function POST(req: Request) {
                 description: description || null,
                 evidence: processedEvidence,
                 reporterId,
+                tenantId,
             },
         });
 
