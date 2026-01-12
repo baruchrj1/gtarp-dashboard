@@ -157,6 +157,9 @@ export default function PlayerReportsPage() {
                                             Acusado
                                         </th>
                                         <th className="text-left p-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                                            Motivo
+                                        </th>
+                                        <th className="text-left p-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                                             Descrição
                                         </th>
                                         <th className="text-center p-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
@@ -186,6 +189,11 @@ export default function PlayerReportsPage() {
                                                 <p className="text-muted-foreground text-xs">
                                                     ID: {report.accusedId || "N/A"}
                                                 </p>
+                                            </td>
+                                            <td className="p-4 align-middle">
+                                                <span className="inline-flex items-center px-2 py-1 rounded border border-white/20 bg-transparent text-[10px] font-bold text-foreground uppercase tracking-wider hover:bg-white/5 transition-colors cursor-default">
+                                                    {report.reason || "Outros"}
+                                                </span>
                                             </td>
                                             <td className="p-4">
                                                 <p className="text-foreground text-sm line-clamp-2">

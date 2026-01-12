@@ -101,7 +101,7 @@ export default function AdminSidebar() {
             </div>
 
             <div className="mt-auto p-6 border-t border-border">
-                <div className="bg-secondary rounded border border-border p-4 relative overflow-hidden group">
+                <div className="bg-zinc-900/50 backdrop-blur-sm rounded border border-white/10 p-4 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <div className="flex items-center gap-2 mb-2">
                         <Activity className="w-4 h-4 text-emerald-500" />

@@ -4,9 +4,10 @@ import useSWR, { mutate } from "swr";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, use } from "react";
-import { ChevronLeft, Check, X, HelpCircle, Shield, User, FileText, ExternalLink, Hammer } from "lucide-react";
+import { ChevronLeft, Check, X, HelpCircle, Shield, User, FileText, ExternalLink, Hammer, ChevronDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { PunishmentModal } from "@/components/admin/PunishmentModal";
+import clsx from "clsx";
 
 type ReportDetail = {
     id: number;
@@ -27,6 +28,13 @@ type ReportDetail = {
     };
 };
 
+type Template = {
+    id: string;
+    title: string;
+    content: string;
+    category: "APPROVAL" | "REJECTION" | "INVESTIGATION" | "OTHER";
+};
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ReportDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -43,11 +51,15 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
         fetcher
     );
 
+    const { data: templatesExpanded } = useSWR<{ templates: Template[] }>("/api/admin/settings/templates", fetcher);
+    const templates = templatesExpanded?.templates || [];
+
     const report = apiResponse?.report;
     const [actionLoading, setActionLoading] = useState(false);
     const [notes, setNotes] = useState(report?.adminNotes || "");
     const [accusedFamily, setAccusedFamily] = useState(report?.accusedFamily || "");
     const [isPunishmentModalOpen, setIsPunishmentModalOpen] = useState(false);
+    const [showTemplateDropdown, setShowTemplateDropdown] = useState(false);
 
     const FACTIONS = [
         "Civil", "Policia", "Hospital", "Mecanica",
@@ -127,9 +139,14 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
         }
     };
 
+    const applyTemplate = (content: string) => {
+        setNotes(content);
+        setShowTemplateDropdown(false);
+    };
+
     return (
         <div className="max-w-7xl mx-auto space-y-6">
-            <Link href="/admin" className="inline-flex items-center text-xs font-bold text-zinc-500 hover:text-white uppercase tracking-widest transition-colors group">
+            <Link href="/admin/reports" className="inline-flex items-center text-xs font-bold text-zinc-500 hover:text-white uppercase tracking-widest transition-colors group">
                 <ChevronLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
                 Voltar para Lista
             </Link>
@@ -290,7 +307,50 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
                             </div>
 
                             <div>
-                                <label className="text-[10px] uppercase font-bold text-zinc-500 mb-2 block">Notas da Administração</label>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-[10px] uppercase font-bold text-zinc-500 block">Notas da Administração</label>
+
+                                    {/* Template Dropdown */}
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowTemplateDropdown(!showTemplateDropdown)}
+                                            className="text-[10px] uppercase font-bold text-primary hover:text-primary/80 flex items-center gap-1"
+                                        >
+                                            <FileText className="w-3 h-3" /> Usar Template <ChevronDown className="w-3 h-3" />
+                                        </button>
+
+                                        {showTemplateDropdown && (
+                                            <>
+                                                <div
+                                                    className="fixed inset-0 z-40"
+                                                    onClick={() => setShowTemplateDropdown(false)}
+                                                />
+                                                <div className="absolute right-0 top-6 w-64 bg-zinc-900 border border-zinc-700 shadow-xl rounded-lg z-50 py-1 max-h-60 overflow-y-auto">
+                                                    {templates.length === 0 ? (
+                                                        <div className="px-3 py-2 text-xs text-zinc-500">Nenhum template criado</div>
+                                                    ) : (
+                                                        templates.map((template) => (
+                                                            <button
+                                                                key={template.id}
+                                                                onClick={() => applyTemplate(template.content)}
+                                                                className="w-full text-left px-3 py-2 hover:bg-zinc-800 transition-colors"
+                                                            >
+                                                                <div className="text-xs font-bold text-white truncate">{template.title}</div>
+                                                                <div className="text-[10px] text-zinc-500 truncate">{template.content}</div>
+                                                            </button>
+                                                        ))
+                                                    )}
+                                                    <div className="border-t border-zinc-700 mt-1 pt-1">
+                                                        <Link href="/admin/settings/templates" className="block px-3 py-2 text-[10px] text-center text-primary hover:underline">
+                                                            Gerenciar Templates
+                                                        </Link>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
                                 <textarea
                                     className="w-full bg-black/40 border border-zinc-800 rounded-lg p-3 text-sm text-zinc-200 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all resize-none h-32 placeholder-zinc-700"
                                     placeholder="Justifique sua decisão aqui..."

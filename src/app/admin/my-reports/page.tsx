@@ -194,7 +194,9 @@ export default function MyReportsPage() {
                                                             className="rounded"
                                                         />
                                                     ) : (
-                                                        <div className="w-6 h-6 rounded bg-secondary" />
+                                                        <div className="w-6 h-6 rounded bg-zinc-800 border border-white/10 flex items-center justify-center">
+                                                            <span className="text-[10px] font-bold text-zinc-500">{report.reporter?.username?.[0]?.toUpperCase()}</span>
+                                                        </div>
                                                     )}
                                                     <span className="text-sm text-foreground">
                                                         {report.reporter?.username || "Anônimo"}
@@ -202,7 +204,7 @@ export default function MyReportsPage() {
                                                 </div>
                                             </td>
                                             <td className="p-4">
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-secondary text-secondary-foreground border border-border">
+                                                <span className="inline-flex items-center px-2 py-1 rounded border border-white/20 bg-transparent text-[10px] font-bold text-white uppercase tracking-wider hover:bg-white/5 transition-colors cursor-default">
                                                     {report.reason}
                                                 </span>
                                             </td>
