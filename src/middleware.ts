@@ -46,7 +46,8 @@ export default withAuth(
     }
 
     // Redirect admins/evaluators trying to access player routes
-    if (pathname.startsWith("/player") && (isAdmin || isEvaluator)) {
+    // EXCEPT for SUPER_ADMIN who should be able to see everything
+    if (pathname.startsWith("/player") && (isAdmin || isEvaluator) && !token?.isSuperAdmin) {
       return NextResponse.redirect(new URL("/admin", req.url));
     }
 
