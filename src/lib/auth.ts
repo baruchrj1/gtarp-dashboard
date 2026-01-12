@@ -40,7 +40,7 @@ export const authOptions: NextAuthOptions = {
     // Configure session cookie to expire when browser closes
     cookies: {
         sessionToken: {
-            name: `next-auth.session-token`,
+            name: `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}next-auth.session-token`,
             options: {
                 httpOnly: true,
                 sameSite: "lax",
