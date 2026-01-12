@@ -8,19 +8,28 @@ import ThemeSelector from "@/components/ThemeSelector";
 import ModeToggle from "@/components/ModeToggle";
 import { useSettings } from "@/contexts/SettingsContext";
 
-export default function TopNavigation() {
+type TopNavigationProps = {
+    tenantLogo?: string | null;
+    tenantName?: string | null;
+};
+
+export default function TopNavigation({ tenantLogo, tenantName }: TopNavigationProps) {
     const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const { settings } = useSettings();
+
+    // Usa dados do tenant se disponivel, senao usa settings
+    const logo = tenantLogo || settings.server_logo;
+    const name = tenantName || settings.server_name;
 
     return (
         <nav className="sticky top-0 z-50 w-full mb-8 border-b border-white/10 bg-black/80 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20 relative">
                     <div className="flex items-center gap-2">
-                        {settings.server_logo ? (
+                        {logo ? (
                             <Link href="/">
-                                <img src={settings.server_logo} alt={settings.server_name} className="h-12 w-auto object-contain hover:opacity-80 transition-opacity" />
+                                <img src={logo} alt={name} className="h-12 w-auto object-contain hover:opacity-80 transition-opacity" />
                             </Link>
                         ) : (
                             <>
@@ -28,7 +37,7 @@ export default function TopNavigation() {
                                     <Shield className="w-6 h-6 text-primary" />
                                 </div>
                                 <Link href="/" className="text-2xl font-display font-bold text-foreground tracking-wider uppercase">
-                                    {settings.server_name.split(' ').map((word, i, arr) => (
+                                    {name.split(' ').map((word, i, arr) => (
                                         <span key={i} className={i === arr.length - 1 ? "text-primary" : ""}>
                                             {word}{i < arr.length - 1 ? " " : ""}
                                         </span>

@@ -2,6 +2,9 @@ import { NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import { prisma } from "./db";
 
+// Lista de emails de super admins (voce)
+const SUPER_ADMIN_EMAILS = (process.env.SUPER_ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
+
 // Validate required environment variables
 const requiredEnvVars = {
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
@@ -181,6 +184,12 @@ export const authOptions: NextAuthOptions = {
                     session.user.id = token.sub;
                     session.user.isAdmin = (token.isAdmin as boolean) || false;
                     session.user.role = (token.role as string) || "PLAYER";
+
+                    // Verifica se e super admin pelo email
+                    const userEmail = session.user.email?.toLowerCase();
+                    session.user.isSuperAdmin = userEmail
+                        ? SUPER_ADMIN_EMAILS.includes(userEmail)
+                        : false;
                 }
             } catch (error) {
                 console.error("[AUTH] Session callback error:", error);
