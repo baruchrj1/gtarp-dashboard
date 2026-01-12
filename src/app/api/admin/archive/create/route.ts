@@ -85,12 +85,16 @@ export async function POST(request: NextRequest) {
             totalPunishments: punishments.length,
         };
 
+        // Get tenantId from the first report (all reports are from the same tenant)
+        const tenantId = reports[0].tenantId;
+
         // Create archive period
         const archivePeriod = await prisma.archivePeriod.create({
             data: {
                 name: periodName,
                 startDate,
                 endDate,
+                tenantId,
                 ...stats,
             },
         });
