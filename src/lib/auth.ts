@@ -33,6 +33,22 @@ export const authOptions: NextAuthOptions = {
             },
         }),
     ],
+    session: {
+        strategy: "jwt",
+        maxAge: 24 * 60 * 60, // 24 hours fallback
+    },
+    // Configure session cookie to expire when browser closes
+    cookies: {
+        sessionToken: {
+            name: `next-auth.session-token`,
+            options: {
+                httpOnly: true,
+                sameSite: "lax",
+                path: "/",
+                secure: process.env.NODE_ENV === "production",
+            },
+        },
+    },
     callbacks: {
         async signIn({ user, account, profile }) {
             console.log(`[AUTH] Sign-in attempt for user: ${user.email || user.id}`);
