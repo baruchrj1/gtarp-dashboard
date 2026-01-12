@@ -6,12 +6,24 @@ export default withAuth(
     const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
 
-    // Super admin routes - verificar se e super admin
+    // Super admin routes - verificar se e super admin E se esta no dominio correto
     if (pathname.startsWith("/superadmin")) {
       const isSuperAdmin = token?.isSuperAdmin === true;
+      const host = req.headers.get("host") || "";
 
-      if (!isSuperAdmin) {
-        // Redireciona para home se nao for super admin
+      // Permitir apenas no dominio principal (gtarp-dashboard.vercel.app) ou localhost
+      const allowedHosts = [
+        "gtarp-dashboard.vercel.app",
+        "localhost:3000",
+        "localhost:3001",
+        "127.0.0.1:3000",
+        "127.0.0.1:3001"
+      ];
+
+      const isAllowedDomain = allowedHosts.some(allowedHost => host.includes(allowedHost));
+
+      if (!isSuperAdmin || !isAllowedDomain) {
+        // Redireciona para home se nao for super admin OU se nao estiver no dominio permitido
         return NextResponse.redirect(new URL("/", req.url));
       }
 

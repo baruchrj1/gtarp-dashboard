@@ -1,5 +1,5 @@
 "use client";
-// Force update
+// Force update - sidebar loading fix v2
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,63 +8,64 @@ import { LayoutDashboard, FileText, Users, Settings, Activity, ShieldCheck, Shie
 
 export default function AdminSidebar() {
     const pathname = usePathname();
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const role = session?.user?.role || "PLAYER";
+    const isLoading = status === "loading";
 
     const navigation = [
         {
             name: "VISÃO GERAL",
             href: "/admin",
             icon: <LayoutDashboard className="w-5 h-5" />,
-            allowedRoles: ["ADMIN"]
+            allowedRoles: ["ADMIN", "SUPER_ADMIN"]
         },
         {
             name: "USUÁRIOS",
             href: "/admin/users",
             icon: <Users className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "EVALUATOR"]
+            allowedRoles: ["ADMIN", "EVALUATOR", "SUPER_ADMIN"]
         },
         {
             name: "DENÚNCIAS",
             href: "/admin/reports",
             icon: <FileText className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "EVALUATOR"]
+            allowedRoles: ["ADMIN", "EVALUATOR", "SUPER_ADMIN"]
         },
         {
             name: "MINHAS DENÚNCIAS",
             href: "/admin/my-reports",
             icon: <UserCheck className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "EVALUATOR"]
+            allowedRoles: ["ADMIN", "EVALUATOR", "SUPER_ADMIN"]
         },
         {
             name: "PUNIÇÃO",
             href: "/admin/punishments",
             icon: <Gavel className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "EVALUATOR"]
+            allowedRoles: ["ADMIN", "EVALUATOR", "SUPER_ADMIN"]
         },
         {
             name: "HISTÓRICO",
             href: "/admin/history",
             icon: <ShieldCheck className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "EVALUATOR"]
+            allowedRoles: ["ADMIN", "EVALUATOR", "SUPER_ADMIN"]
         },
         {
             name: "GERENCIAMENTO",
             href: "/admin/roles",
             icon: <Shield className="w-5 h-5" />,
-            allowedRoles: ["ADMIN"]
+            allowedRoles: ["ADMIN", "SUPER_ADMIN"]
         },
         {
             name: "AVALIADORES",
             href: "/admin/evaluators",
             icon: <UserCheck className="w-5 h-5" />,
-            allowedRoles: ["ADMIN"]
+            allowedRoles: ["ADMIN", "SUPER_ADMIN"]
         },
         {
             name: "CONFIGURAÇÕES",
             href: "/admin/settings",
             icon: <Settings className="w-5 h-5" />,
-            allowedRoles: ["ADMIN"]
+            allowedRoles: ["ADMIN", "SUPER_ADMIN"]
         },
     ];
 
@@ -76,8 +77,8 @@ export default function AdminSidebar() {
                 </h2>
                 <nav className="space-y-2">
                     {navigation.map((item) => {
-                        // Check if user has permission
-                        if (!item.allowedRoles.includes(role)) return null;
+                        // Show all items while loading, filter by role when loaded
+                        if (!isLoading && !item.allowedRoles.includes(role)) return null;
 
                         const isActive = pathname === item.href;
                         return (

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { validateSuperAdminAccess } from "@/lib/superadmin-auth";
 
 // Schema de validacao
 const createTenantSchema = z.object({
@@ -27,7 +28,8 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.isSuperAdmin) {
+    // Validar super admin E domínio permitido
+    if (!validateSuperAdminAccess(session, req)) {
       return NextResponse.json({ message: "Nao autorizado" }, { status: 403 });
     }
 
@@ -58,7 +60,8 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.isSuperAdmin) {
+    // Validar super admin E domínio permitido
+    if (!validateSuperAdminAccess(session, req)) {
       return NextResponse.json({ message: "Nao autorizado" }, { status: 403 });
     }
 

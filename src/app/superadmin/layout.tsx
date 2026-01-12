@@ -16,6 +16,24 @@ export default async function SuperAdminLayout({
     redirect("/");
   }
 
+  // Verificar se está no domínio correto (apenas gtarp-dashboard.vercel.app ou localhost)
+  // Esta verificação adicional garante que mesmo super admins só possam acessar pelo domínio principal
+  const allowedHosts = [
+    "gtarp-dashboard.vercel.app",
+    "localhost",
+    "127.0.0.1"
+  ];
+
+  // Em produção, verificar o domínio
+  if (process.env.NODE_ENV === "production") {
+    const host = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || "";
+    const isAllowedDomain = allowedHosts.some(allowedHost => host.includes(allowedHost));
+
+    if (!isAllowedDomain) {
+      redirect("/");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950">
       {/* Sidebar */}
