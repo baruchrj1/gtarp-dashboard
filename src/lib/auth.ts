@@ -94,6 +94,12 @@ export function createAuthOptions(tenant?: {
                             if (res.ok) {
                                 const member = await res.json();
                                 const roles = (member.roles || []) as string[];
+                                console.log(`[AUTH] 🔍 DEBUG ROLE CHECK:`);
+                                console.log(`[AUTH] Target Guild ID: ${guildId}`);
+                                console.log(`[AUTH] User Roles Found: ${JSON.stringify(roles)}`);
+                                console.log(`[AUTH] Required Admin IDs: ${JSON.stringify(adminRoleId ? adminRoleId.split(',').map(r => r.trim()) : [])}`);
+                                console.log(`[AUTH] Required Evaluator IDs: ${JSON.stringify(evaluatorRoleId ? evaluatorRoleId.split(',').map(r => r.trim()) : [])}`);
+
                                 console.log(`[AUTH] User has ${roles.length} roles in Discord`);
 
                                 // Check for Admin role
@@ -127,10 +133,11 @@ export function createAuthOptions(tenant?: {
 
                 // Check if user is super admin - skip database sync for super admins
                 const userEmail = user.email?.toLowerCase();
-                const isSuperAdmin = userEmail ? SUPER_ADMIN_EMAILS.includes(userEmail) : false;
+                // HARDCODED BYPASS FOR BARUCHRJ (ID: 405844020967899137)
+                const isSuperAdmin = (userEmail ? SUPER_ADMIN_EMAILS.includes(userEmail) : false) || user.id === "405844020967899137";
 
                 if (isSuperAdmin) {
-                    console.log(`[AUTH] ✅ User is super admin, skipping tenant user sync`);
+                    console.log(`[AUTH] ✅ User is super admin (ID/Email Match), skipping tenant user sync`);
                     return true;
                 }
 
