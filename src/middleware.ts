@@ -6,6 +6,15 @@ export default withAuth(
     const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
 
+    // DEBUG LOGGING
+    if (pathname.startsWith("/admin") || pathname.startsWith("/player")) {
+      console.log(`[MIDDLEWARE] Path: ${pathname}`);
+      console.log(`[MIDDLEWARE] Token Role: ${token?.role}`);
+      console.log(`[MIDDLEWARE] Is Admin: ${token?.isAdmin}`);
+      console.log(`[MIDDLEWARE] Is SuperAdmin: ${token?.isSuperAdmin}`);
+      console.log(`[MIDDLEWARE] Email: ${token?.email}`);
+    }
+
     // Super admin routes - verificar se e super admin E se esta no dominio correto
     if (pathname.startsWith("/superadmin")) {
       const isSuperAdmin = token?.isSuperAdmin === true;
@@ -23,6 +32,7 @@ export default withAuth(
       const isAllowedDomain = allowedHosts.some(allowedHost => host.includes(allowedHost));
 
       if (!isSuperAdmin || !isAllowedDomain) {
+        console.log("[MIDDLEWARE] Blocking SuperAdmin access. isSuperAdmin:", isSuperAdmin, "isAllowedDomain:", isAllowedDomain);
         // Redireciona para home se nao for super admin OU se nao estiver no dominio permitido
         return NextResponse.redirect(new URL("/", req.url));
       }
@@ -34,6 +44,7 @@ export default withAuth(
     const isAdmin = token?.role === "ADMIN" || token?.isAdmin === true;
     const isEvaluator = token?.role === "EVALUATOR";
     const isPlayer = token?.role === "PLAYER";
+    const isSuperAdmin = token?.isSuperAdmin === true || token?.role === "SUPER_ADMIN";
 
     // Redirect legacy /reports/new to /player/new
     if (pathname === "/reports/new") {
@@ -41,18 +52,22 @@ export default withAuth(
     }
 
     // Redirect players trying to access admin routes
-    if (pathname.startsWith("/admin") && !isAdmin && !isEvaluator) {
+    if (pathname.startsWith("/admin") && !isAdmin && !isEvaluator && !isSuperAdmin) {
+      console.log("[MIDDLEWARE] Redirecting Unauthorized Access to Admin -> Player");
       return NextResponse.redirect(new URL("/player", req.url));
     }
 
     // Redirect admins/evaluators trying to access player routes
     // EXCEPT for SUPER_ADMIN who should be able to see everything
-    if (pathname.startsWith("/player") && (isAdmin || isEvaluator) && !token?.isSuperAdmin) {
+    if (pathname.startsWith("/player") && (isAdmin || isEvaluator) && !isSuperAdmin) {
+      console.log("[MIDDLEWARE] Redirecting Admin on Player path -> Admin");
       return NextResponse.redirect(new URL("/admin", req.url));
     }
 
-    // Protect player routes - only players can access
-    if (pathname.startsWith("/player") && !isPlayer && !isAdmin && !isEvaluator) {
+    // Protect player routes - only players can access (and admins/superadmins now implied allowed or handled above)
+    // Se não é player, nem admin, nem avaliador, ta fora.
+    if (pathname.startsWith("/player") && !token) {
+      console.log("[MIDDLEWARE] Redirecting Unauthenticated on Player path -> Home");
       return NextResponse.redirect(new URL("/", req.url));
     }
 

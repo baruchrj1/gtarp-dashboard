@@ -35,8 +35,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // Load from local storage on mount
     useEffect(() => {
-        const savedColor = localStorage.getItem("gta-rp-primary-color");
-        const savedMode = localStorage.getItem("gta-rp-theme-mode") as "dark" | "light" | null;
+        const savedColor = localStorage.getItem("gta-rp-primary-color-v1");
+        const savedMode = localStorage.getItem("gta-rp-theme-mode-v1") as "dark" | "light" | null;
 
         if (savedColor) {
             setPrimaryColorState(savedColor);
@@ -63,7 +63,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const setThemeMode = (mode: "dark" | "light") => {
         setThemeModeState(mode);
-        localStorage.setItem("gta-rp-theme-mode", mode);
+        localStorage.setItem("gta-rp-theme-mode-v1", mode);
         updateThemeClass(mode);
     };
 
@@ -76,7 +76,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const setPrimaryColor = (color: string) => {
         setPrimaryColorState(color);
-        localStorage.setItem("gta-rp-primary-color", color);
+        localStorage.setItem("gta-rp-primary-color-v1", color);
         updateCssVariables(color);
     };
 

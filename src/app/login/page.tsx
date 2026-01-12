@@ -10,13 +10,18 @@ export default function LoginPage() {
     const { status } = useSession();
     const router = useRouter();
 
+    console.log("[LOGIN PAGE] Render. Status:", status);
+
     useEffect(() => {
+        console.log("[LOGIN PAGE] Effect triggered. Status:", status);
         if (status === "authenticated") {
+            console.log("[LOGIN PAGE] Authenticated! Redirecting to /player...");
             router.replace("/player");
         }
     }, [status, router]);
 
     const handleLogin = () => {
+        console.log("[LOGIN PAGE] Login button clicked. Initiating Discord sign in...");
         signIn("discord", { callbackUrl: "/player" });
     };
 
