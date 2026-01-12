@@ -225,14 +225,21 @@ export const DISCORD_COLORS = {
  */
 export async function sendDiscordWebhook(
     webhookKey: "discord_webhook_reports" | "discord_webhook_logs",
-    embed: WebhookEmbed
+    embed: WebhookEmbed,
+    tenantId: string
 ) {
     try {
         // Fetch webhook URL and Server settings in parallel to be fast
         const [webhookSetting, serverNameSetting, serverLogoSetting] = await Promise.all([
-            prisma.systemSetting.findUnique({ where: { key: webhookKey } }),
-            prisma.systemSetting.findUnique({ where: { key: "server_name" } }),
-            prisma.systemSetting.findUnique({ where: { key: "server_logo" } })
+            prisma.systemSetting.findUnique({
+                where: { key_tenantId: { key: webhookKey, tenantId } }
+            }),
+            prisma.systemSetting.findUnique({
+                where: { key_tenantId: { key: "server_name", tenantId } }
+            }),
+            prisma.systemSetting.findUnique({
+                where: { key_tenantId: { key: "server_logo", tenantId } }
+            })
         ]);
 
         if (!webhookSetting?.value) return; // Webhook not configured

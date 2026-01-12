@@ -153,7 +153,7 @@ export async function POST(req: Request) {
                 { name: "Motivo", value: reason, inline: false },
                 { name: "Visualizar", value: `[Abrir no Painel](${process.env.NEXTAUTH_URL}/admin/reports/${report.id})`, inline: false }
             ]
-        }).catch(err => console.error("Webhook error:", err));
+        }, tenantId).catch(err => console.error("Webhook error:", err));
 
         return NextResponse.json({ success: true, report });
     } catch (error) {

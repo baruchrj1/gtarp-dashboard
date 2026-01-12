@@ -88,8 +88,10 @@ export async function PATCH(
         const actionText = status === "APPROVED" ? "Aprovou" :
             status === "REJECTED" ? "Rejeitou" : "Atualizou";
 
+        const tenantId = session.user.tenantId;
+
         // Only send log if status actually changed (simplification: assume typical flow)
-        if (status === "APPROVED" || status === "REJECTED") {
+        if ((status === "APPROVED" || status === "REJECTED") && tenantId) {
             sendDiscordWebhook("discord_webhook_logs", {
                 title: `📝 Denúncia #${updatedReport.id} ${status === "APPROVED" ? "APROVADA" : "REJEITADA"}`,
                 description: `O avaliador **${session.user.name}** finalizou a análise desta denúncia.`,
@@ -100,7 +102,7 @@ export async function PATCH(
                     { name: "Veredito", value: adminNotes || "Sem observações", inline: false },
                     { name: "Link", value: `[Ver Detalhes](${process.env.NEXTAUTH_URL}/admin/reports/${updatedReport.id})`, inline: false }
                 ]
-            }).catch(err => console.error("Webhook Log Error:", err));
+            }, tenantId).catch(err => console.error("Webhook Log Error:", err));
         }
 
         return NextResponse.json({ report: updatedReport });
