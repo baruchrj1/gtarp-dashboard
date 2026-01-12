@@ -6,8 +6,8 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import TopNavigation from "@/components/TopNavigation";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { GlobalSearch } from "@/components/GlobalSearch";
-import { getTenantFromRequest } from "@/lib/tenant";
-import { TenantProvider, toTenantContextValue } from "@/contexts/TenantContext";
+import { getTenantFromRequest, toTenantContextValue } from "@/lib/tenant";
+import { TenantProvider } from "@/contexts/TenantContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -87,9 +87,9 @@ export default async function RootLayout({
   // CSS variables para cores dinamicas
   const cssVariables = tenant
     ? {
-        "--color-primary": tenant.primaryColor,
-        "--color-secondary": tenant.secondaryColor,
-      } as React.CSSProperties
+      "--color-primary": tenant.primaryColor,
+      "--color-secondary": tenant.secondaryColor,
+    } as React.CSSProperties
     : {};
 
   // Conteudo principal

@@ -14,7 +14,7 @@ export default function AdminReportsPage() {
     const isAuthenticated = status === "authenticated";
     const isLoadingAuth = status === "loading";
     const role = session?.user?.role || "PLAYER";
-    const isAdmin = role === "ADMIN";
+    const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN" || session?.user?.isAdmin;
     const isEvaluator = role === "EVALUATOR";
     const hasAccess = isAdmin || isEvaluator;
 

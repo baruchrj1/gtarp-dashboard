@@ -1,0 +1,72 @@
+================================================================
+📋 REQUISITOS PARA CONFIGURAÇÃO DA DASHBOARD (GTA-RP)
+================================================================
+
+Por favor, preencha os dados abaixo para configurarmos o seu painel de denúncias.
+
+----------------------------------------------------------------
+1. IDENTIDADE VISUAL & BÁSICO
+----------------------------------------------------------------
+Nome do Servidor:
+________________________________________________________________
+
+Subdomínio Desejado (ex: nome-da-cidade):
+________________________________________________________________
+
+Domínio Personalizado (Opcional, ex: painel.suacidade.com):
+________________________________________________________________
+
+Cor Primária (Hex Code, ex: #6366f1):
+________________________________________________________________
+
+Cor Secundária (Hex Code, ex: #4f46e5):
+________________________________________________________________
+
+Logo (Link da imagem ou envie o arquivo):
+________________________________________________________________
+
+Favicon (Ícone do navegador - Link ou arquivo):
+________________________________________________________________
+
+
+----------------------------------------------------------------
+2. IDS E CARGOS DO DISCORD
+Para pegar os IDs, ative o "Modo Desenvolvedor" no seu Discord.
+----------------------------------------------------------------
+ID do Servidor (Guild ID):
+________________________________________________________________
+
+ID do Cargo "Admin" (Quem pode gerenciar tudo e ver estatísticas):
+*Separe por vírgula se houver mais de um cargo (ex: Dono, Diretor)
+________________________________________________________________
+
+ID do Cargo "Avaliador" (Quem pode apenas ver e julgar denúncias):
+________________________________________________________________
+
+ID do Cargo "Player" (Cargo padrão do cidadão - Opcional):
+________________________________________________________________
+
+Link do Webhook para Logs (Onde as notificações do painel serão enviadas):
+________________________________________________________________
+
+
+----------------------------------------------------------------
+3. APLICAÇÃO DISCORD (OAUTH2)
+----------------------------------------------------------------
+1. Acesse: https://discord.com/developers/applications
+2. Crie uma "New Application" com o nome do seu servidor.
+3. Vá em "OAuth2" > "General"
+4. Adicione a Redirect URI que lhe enviarei (ex: https://seu-painel.com/api/auth/callback/discord)
+5. Copie os dados abaixo:
+
+Client ID:
+________________________________________________________________
+
+Client Secret:
+________________________________________________________________
+
+*Não esqueça de resetar o Token/Secret se ele for muito antigo ou nunca usado.
+
+================================================================
+Obrigado! Assim que enviar, configuramos sua dashboard em instantes.
+================================================================

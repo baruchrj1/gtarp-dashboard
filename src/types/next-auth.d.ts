@@ -7,6 +7,7 @@ declare module "next-auth" {
             isAdmin: boolean
             isSuperAdmin: boolean
             role: string // PLAYER, EVALUATOR, ADMIN
+            discordRoles: string[] // Array of Discord Role IDs
             tenantId?: string
         } & DefaultSession["user"]
     }
@@ -15,6 +16,7 @@ declare module "next-auth" {
         isAdmin?: boolean
         isSuperAdmin?: boolean
         role?: string
+        discordRoles?: string[]
         tenantId?: string
     }
 }
@@ -25,6 +27,7 @@ declare module "next-auth/jwt" {
         isAdmin: boolean
         isSuperAdmin: boolean
         role: string
+        discordRoles: string[]
         tenantId?: string
     }
 }

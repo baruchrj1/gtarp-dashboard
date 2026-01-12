@@ -33,7 +33,7 @@ export default function RolesManagement() {
     const users = usersData?.users || [];
     const reasons = reasonsData?.reasons || [];
     const organizations = orgsData?.organizations || [];
-    const durations = durationsData || [];
+    const durations = durationsData?.durations || [];
 
     const filteredUsers = users.filter((user: { username: string }) =>
         user.username.toLowerCase().includes(searchQuery.toLowerCase())

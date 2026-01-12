@@ -69,24 +69,32 @@ export default function TopNavigation({ tenantLogo, tenantName }: TopNavigationP
                         {session && (session.user?.role === "ADMIN" || session.user?.role === "EVALUATOR" || session.user?.isAdmin) && (
                             <Link
                                 href="/admin"
-                                className="hidden md:inline-flex items-center justify-center h-9 px-4 rounded bg-primary text-black font-bold text-xs uppercase tracking-wider hover:bg-white transition-colors"
+                                className="hidden md:inline-flex items-center justify-center h-8 px-2 rounded bg-primary text-black font-bold text-xs uppercase tracking-wider hover:bg-white transition-colors"
                             >
                                 Painel Avaliador
+                            </Link>
+                        )}
+                        {session && (session.user?.role === "SUPER_ADMIN" || session.user?.isSuperAdmin) && (
+                            <Link
+                                href="/superadmin"
+                                className="hidden md:inline-flex items-center justify-center h-8 px-2 rounded bg-red-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-red-700 transition-colors"
+                            >
+                                Super Admin
                             </Link>
                         )}
                         <div>
                             {session ? (
                                 <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-3 bg-white/5 py-1.5 px-3 rounded border border-white/10">
+                                    <div className="flex items-center gap-3 bg-white/5 py-2 px-4 rounded-lg border border-white/10">
                                         {session.user?.image ? (
-                                            <img src={session.user.image} alt="Avatar" className="w-8 h-8 rounded bg-zinc-800" />
+                                            <img src={session.user.image} alt="Avatar" className="w-8 h-8 rounded-full bg-zinc-800" />
                                         ) : (
-                                            <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center">
+                                            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
                                                 <User className="w-4 h-4 text-zinc-400" />
                                             </div>
                                         )}
                                         <div className="hidden md:flex flex-col">
-                                            <span className="text-sm font-bold text-white leading-none">{session.user?.name}</span>
+                                            <span className="text-sm font-bold text-white leading-tight">{session.user?.name}</span>
                                             <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Online</span>
                                         </div>
                                     </div>

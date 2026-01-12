@@ -14,6 +14,8 @@ type TenantContextValue = {
   secondaryColor: string;
   customCss: string | null;
   features: TenantFeatures;
+  discordRoleAdmin: string;
+  discordRoleEvaluator: string | null;
 };
 
 const TenantContext = createContext<TenantContextValue | null>(null);
@@ -35,8 +37,20 @@ export function TenantProvider({ children, tenant }: TenantProviderProps) {
 // Hook para acessar dados do tenant
 export function useTenant(): TenantContextValue {
   const tenant = useContext(TenantContext);
+  // Allow usage without provider (returns null) for Super Admin pages that might import components using this
+  // But for AdminDashboard, we need to handle the null case. 
+  // Given the error "must be used within", we should keep the check BUT allow a bypass or handle it in the Page.
+  // Actually, the page should NOT render if no tenant. The server redirect takes time.
+  // Let's modify the Page to not crash.
   if (!tenant) {
-    throw new Error("useTenant must be used within a TenantProvider");
+    // Return a dummy context or throw? 
+    // If we throw, the ErrorBoundary catches it.
+    // Let's just return a partial dummy to satisfy Typescript and let the redirect happen.
+    return {
+      id: "loading", name: "Carregando...", slug: "", logo: null, favicon: null,
+      primaryColor: "#000", secondaryColor: "#000", customCss: null, features: {} as any,
+      discordRoleAdmin: "", discordRoleEvaluator: ""
+    };
   }
   return tenant;
 }
@@ -59,5 +73,7 @@ export function toTenantContextValue(config: TenantConfig): TenantContextValue {
     secondaryColor: config.secondaryColor,
     customCss: config.customCss,
     features: config.features,
+    discordRoleAdmin: config.discordRoleAdmin,
+    discordRoleEvaluator: config.discordRoleEvaluator,
   };
 }

@@ -131,12 +131,74 @@ export const authOptions: NextAuthOptions = {
             return true;
         },
 
-        async jwt({ token, user, trigger, session }) {
+        async jwt({ token, user, account, profile, trigger, session }) {
             // On initial sign-in, add user ID to token
             if (user) {
                 token.id = user.id;
                 token.email = user.email;
                 console.log(`[AUTH] JWT: Added user ID to token: ${user.id}`);
+            }
+
+            // Sync Discord roles on initial sign-in
+            if (account?.provider === "discord" && account.access_token) {
+                try {
+                    const guildId = process.env.DISCORD_GUILD_ID?.trim();
+                    const adminRoleId = process.env.DISCORD_ROLE_ADMIN_ID?.trim();
+                    const evaluatorRoleId = process.env.DISCORD_ROLE_EVALUATOR_ID?.trim();
+
+                    if (guildId) {
+                        console.log(`[AUTH] JWT: Fetching roles for guild: ${guildId}`);
+                        const url = `https://discord.com/api/users/@me/guilds/${guildId}/member`;
+                        const res = await fetch(url, {
+                            headers: { Authorization: `Bearer ${account.access_token}` },
+                        });
+
+                        if (res.ok) {
+                            const member = await res.json();
+                            const roles = (member.roles || []) as string[];
+                            console.log(`[AUTH] JWT: User has ${roles.length} roles in Discord`);
+                            token.discordRoles = roles; // Store all roles for strict tenant checking
+
+                            let detectedRole = null;
+                            if (adminRoleId && roles.includes(adminRoleId)) {
+                                console.log(`[AUTH] JWT: ✅ User has ADMIN role (${adminRoleId})`);
+                                token.role = "ADMIN";
+                                token.isAdmin = true;
+                                detectedRole = "ADMIN";
+                            } else if (evaluatorRoleId && roles.includes(evaluatorRoleId)) {
+                                console.log(`[AUTH] JWT: ✅ User has EVALUATOR role (${evaluatorRoleId})`);
+                                token.role = "EVALUATOR";
+                                detectedRole = "EVALUATOR";
+                            }
+
+                            // Sync to Database if user exists to prevent overwrite
+                            // The subsequent DB lookup will use this updated value
+                            if (detectedRole && user?.id) {
+                                try {
+                                    const discordId = user.id;
+                                    const dbUser = await prisma.user.findFirst({
+                                        where: { discordId: discordId },
+                                    });
+
+                                    if (dbUser && dbUser.role !== detectedRole) {
+                                        console.log(`[AUTH] JWT: Syncing Discord role to DB: ${detectedRole}`);
+                                        await prisma.user.update({
+                                            where: { id: dbUser.id },
+                                            data: {
+                                                role: detectedRole,
+                                                isAdmin: detectedRole === 'ADMIN'
+                                            }
+                                        });
+                                    }
+                                } catch (error) {
+                                    console.error("[AUTH] JWT: Error syncing role to DB:", error);
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error("[AUTH] JWT: Error fetching Discord roles:", error);
+                }
             }
 
             // Handle session updates
@@ -181,6 +243,7 @@ export const authOptions: NextAuthOptions = {
                     session.user.id = token.sub;
                     session.user.isAdmin = (token.isAdmin as boolean) || false;
                     session.user.role = (token.role as string) || "PLAYER";
+                    session.user.discordRoles = (token.discordRoles as string[]) || [];
 
                     // Use isSuperAdmin from token (already calculated in JWT callback)
                     session.user.isSuperAdmin = (token.isSuperAdmin as boolean) || false;

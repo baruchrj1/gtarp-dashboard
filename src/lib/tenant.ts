@@ -79,7 +79,24 @@ export async function getTenantFromRequest(): Promise<TenantConfig | null> {
   const headersList = await headers();
   const tenantSlug = headersList.get("x-tenant-slug");
 
-  if (!tenantSlug) return null;
+  if (!tenantSlug) {
+    // DEV FALLBACK: Se estiver em desenvolvimento e sem subdomínio (localhost:3000), 
+    // usa o primeiro tenant ativo encontrada para permitir testes.
+    if (process.env.NODE_ENV === 'development') {
+      const devTenant = await prisma.tenant.findFirst({
+        where: { isActive: true }
+      });
+
+      if (devTenant) {
+        console.log(`[TENANT] Dev Fallback Active - Using Tenant: ${devTenant.name}`);
+        return {
+          ...devTenant,
+          features: parseFeatures(devTenant.features),
+        };
+      }
+    }
+    return null;
+  }
 
   // Se for dominio customizado, busca pelo dominio
   if (tenantSlug.startsWith("custom:")) {
@@ -210,4 +227,36 @@ export async function listTenants() {
     ...tenant,
     features: parseFeatures(tenant.features),
   }));
+}
+
+// Converte TenantConfig do server para TenantContextValue (remove dados sensiveis)
+// Definindo TenantContextValue localmente aqui para evitar importacao circular ou client components
+export type TenantContextValueShort = {
+  id: string;
+  name: string;
+  slug: string;
+  logo: string | null;
+  favicon: string | null;
+  primaryColor: string;
+  secondaryColor: string;
+  customCss: string | null;
+  features: TenantFeatures;
+  discordRoleAdmin: string;
+  discordRoleEvaluator: string | null;
+};
+
+export function toTenantContextValue(config: TenantConfig): TenantContextValueShort {
+  return {
+    id: config.id,
+    name: config.name,
+    slug: config.slug,
+    logo: config.logo,
+    favicon: config.favicon,
+    primaryColor: config.primaryColor,
+    secondaryColor: config.secondaryColor,
+    customCss: config.customCss,
+    features: config.features,
+    discordRoleAdmin: config.discordRoleAdmin,
+    discordRoleEvaluator: config.discordRoleEvaluator,
+  };
 }

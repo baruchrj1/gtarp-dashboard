@@ -89,7 +89,7 @@ export default function PlayerDashboard() {
                         Bem-vindo, <span className="text-primary">{session?.user?.name}</span>
                     </h1>
                     <p className="text-muted-foreground mt-1 text-sm font-mono uppercase tracking-wider">
-                        Dashboard do Jogador
+                        Dashboard Pessoal
                     </p>
                 </div>
 

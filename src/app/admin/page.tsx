@@ -14,6 +14,8 @@ import {
 } from 'recharts';
 import { useTheme } from "@/context/ThemeContext";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useTenant } from "@/contexts/TenantContext";
+import { hasTenantRole } from "@/lib/permissions";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -23,6 +25,8 @@ export default function AdminDashboard() {
     const router = useRouter();
     const { data: session, status } = useSession();
     const { themeMode } = useTheme();
+    const tenant = useTenant(); // Get current tenant config
+
     const axisColor = themeMode === "dark" ? "#fff" : "#666";
     const gridColor = themeMode === "dark" ? "#333" : "#e5e5e5";
 
@@ -32,13 +36,18 @@ export default function AdminDashboard() {
     const isAuthenticated = status === "authenticated";
     const isLoadingAuth = status === "loading";
 
-    const role = session?.user?.role || "PLAYER";
-    const isSuperAdmin = role === "SUPER_ADMIN" || session?.user?.isSuperAdmin === true;
-    const isEvaluator = role === "EVALUATOR";
-    // Admin is either explicit ADMIN role, SUPER_ADMIN role, or isAdmin flag
-    const isAdmin = role === "ADMIN" || isSuperAdmin || session?.user?.isAdmin === true;
+    // Strict Permission Check
+    const userRoles = session?.user?.discordRoles || [];
+    const isSuperAdmin = session?.user?.isSuperAdmin === true;
 
-    // Allow access if admin (inc. super admin) or evaluator
+    // Check against tenant configuration
+    const isTenantAdmin = hasTenantRole(userRoles, tenant.discordRoleAdmin);
+    const isTenantEvaluator = hasTenantRole(userRoles, tenant.discordRoleEvaluator);
+
+    // Final permissions
+    const isAdmin = isTenantAdmin || isSuperAdmin || session?.user?.isAdmin === true; // Keep session.isAdmin as fallback for legacy/superadmin
+    const isEvaluator = isTenantEvaluator;
+
     const hasAccess = isAdmin || isEvaluator;
 
     useEffect(() => {
@@ -80,11 +89,10 @@ export default function AdminDashboard() {
                 <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-zinc-900 dark:text-white">Acesso Negado</h2>
                 <div className="text-zinc-500 max-w-md text-center">
                     <p className="mb-2">Protocolo de segurança: Nível 4 exigido.</p>
-                    {role === "PLAYER" && (
-                        <p className="text-sm">Seu cargo atual ({role}) não possui permissão para acessar o painel administrativo.</p>
-                    )}
+                    <p className="mb-2">Protocolo de segurança: Nível 4 exigido.</p>
+                    <p className="text-sm">Seus cargos no Discord não correspondem aos configurados para este servidor.</p>
                     <p className="text-xs mt-4 text-zinc-600">ID: {session?.user?.id}</p>
-                    <p className="text-xs text-zinc-600">Role: {role}</p>
+                    <p className="text-xs text-zinc-600">Tenant: {tenant.name}</p>
                 </div>
             </div>
         );
