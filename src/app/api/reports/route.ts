@@ -1,170 +1,96 @@
+
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import { NextResponse } from "next/server";
-import { sendReportNotification, sendDiscordWebhook, DISCORD_COLORS } from "@/lib/discord";
-import { isStaff, AuthErrors } from "@/lib/permissions";
-import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { createReportSchema, validateBody, formatZodErrors } from "@/lib/validation";
+import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { getTenantFromRequest } from "@/lib/tenant";
 
-export async function GET() {
-    const session = await getServerSession(authOptions);
+// Schema for Creating Report
+const createReportSchema = z.object({
+    accusedId: z.string().min(2, "ID do acusado obrigatorio"),
+    accusedName: z.string().optional(),
+    accusedFamily: z.string().optional(),
+    reason: z.string().min(3, "Motivo obrigatorio"),
+    description: z.string().optional(),
+    evidence: z.string().url("Evidence must be a valid URL"),
+});
 
-    if (!session?.user) {
-        return NextResponse.json(AuthErrors.UNAUTHENTICATED, { status: 401 });
-    }
-
+// GET - List Reports
+export async function GET(req: NextRequest) {
     try {
-        // Filter: Staff sees all, Players see only their own
-        const whereClause = isStaff(session) ? {} : { reporterId: session.user.id };
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+            return NextResponse.json({ message: "Nao autenticado" }, { status: 401 });
+        }
 
+        const tenant = await getTenantFromRequest();
+        if (!tenant) {
+            return NextResponse.json({ message: "Tenant nao encontrado" }, { status: 404 });
+        }
+
+        // Filters
+        const isAdmin = session.user.role !== "PLAYER";
+        const status = req.nextUrl.searchParams.get("status");
+
+        // Query
         const reports = await prisma.report.findMany({
-            where: whereClause,
-            orderBy: { createdAt: "desc" },
+            where: {
+                tenantId: tenant.id,
+                // Players only see their own reports. Admins/Evaluators see all.
+                ...(isAdmin ? {} : { reporterId: session.user.id }),
+                ...(status ? { status } : {}),
+            },
             include: {
                 reporter: {
-                    select: {
-                        id: true,
-                        username: true,
-                        avatar: true,
-                    },
-                },
+                    select: { username: true, avatar: true, discordId: true }
+                }
             },
+            orderBy: { createdAt: "desc" },
+            take: 50, // Limit for performance
         });
 
-        // Add reporter name to each report
-        const formattedReports = reports.map((report) => ({
-            ...report,
-            reporter: {
-                ...report.reporter,
-                name: report.reporter?.username || "Anônimo",
-            },
-        }));
-
-        return NextResponse.json({ success: true, reports: formattedReports });
+        return NextResponse.json(reports);
     } catch (error) {
-        console.error("Error fetching reports:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        console.error(`[REPORTS] List Error:`, error);
+        return NextResponse.json({ message: "Erro interno" }, { status: 500 });
     }
 }
 
-export async function POST(req: Request) {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-        return NextResponse.json(AuthErrors.UNAUTHENTICATED, { status: 401 });
-    }
-
-    // Rate limiting: 5 reports per minute per user
-    const rateLimitResult = checkRateLimit(`report:${session.user.id}`, {
-        limit: 5,
-        window: 60000,
-    });
-
-    if (!rateLimitResult.success) {
-        return rateLimitResponse(rateLimitResult.resetIn);
-    }
-
-    // Check daily limit (3 reports per 24 hours) - Database-based
-    // Staff members bypass this limit
-    if (!isStaff(session)) {
-        const { checkReportRateLimit } = await import('@/lib/rate-limit');
-
-        const tenantId = session.user.tenantId;
-        if (!tenantId) {
-            return NextResponse.json(
-                { error: "Tenant ID não encontrado" },
-                { status: 400 }
-            );
-        }
-
-        const rateLimitCheck = await checkReportRateLimit(session.user.id, tenantId);
-
-        if (!rateLimitCheck.allowed) {
-            return NextResponse.json(
-                {
-                    error: "Limite diário atingido",
-                    message: `Você só pode criar 3 denúncias a cada 24 horas. Denúncias restantes: ${rateLimitCheck.remaining}`,
-                    remaining: rateLimitCheck.remaining,
-                    resetAt: rateLimitCheck.resetAt
-                },
-                { status: 429 }
-            );
-        }
-    }
-
+// POST - Create Report
+export async function POST(req: NextRequest) {
     try {
-        // Validate input
-        const validation = await validateBody(req, createReportSchema);
-
-        if (!validation.success) {
-            return NextResponse.json(
-                { error: "Dados inválidos", details: formatZodErrors(validation.error) },
-                { status: 400 }
-            );
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+            return NextResponse.json({ message: "Nao autenticado" }, { status: 401 });
         }
 
-        const { accusedId, accusedName, accusedFamily, reason, description, evidence } = validation.data;
-
-        // Process evidence (string or array)
-        let processedEvidence = "";
-        if (Array.isArray(evidence)) {
-            processedEvidence = JSON.stringify(evidence);
-        } else {
-            processedEvidence = String(evidence);
+        const tenant = await getTenantFromRequest();
+        if (!tenant) {
+            return NextResponse.json({ message: "Tenant nao encontrado" }, { status: 404 });
         }
 
-        const reporterId = session.user.id;
-        const tenantId = session.user.tenantId;
+        const body = await req.json();
+        const data = createReportSchema.parse(body);
 
-        if (!tenantId) {
-            return NextResponse.json(
-                { error: "Tenant ID não encontrado" },
-                { status: 400 }
-            );
-        }
-
+        // Create Report
         const report = await prisma.report.create({
             data: {
-                accusedId: accusedId || "N/A",
-                accusedName: accusedName || (accusedId ? accusedId : "Desconhecido"),
-                accusedFamily: accusedFamily || null,
-                reason,
-                description: description || null,
-                evidence: processedEvidence,
-                reporterId,
-                tenantId,
+                ...data,
+                tenantId: tenant.id,
+                reporterId: session.user.id,
+                status: "PENDING",
             },
         });
 
-        // Send Discord Notification in background (non-blocking)
-        sendReportNotification(report, session.user.name || "Unknown").catch((err) =>
-            console.error("Discord notification error:", err)
-        );
+        // TODO: Send Discord Webhook Notification here
 
-        // NEW: Send Webhook (White Label)
-        sendDiscordWebhook("discord_webhook_reports", {
-            title: "🚨 Nova Denúncia Registrada",
-            description: description || "Sem descrição adicional",
-            color: DISCORD_COLORS.ORANGE,
-            fields: [
-                { name: "ID", value: `#${report.id}`, inline: true },
-                { name: "Autor", value: session.user.name || "Desconhecido", inline: true },
-                { name: "Acusado", value: `${accusedName || accusedId}`, inline: true },
-                { name: "Motivo", value: reason, inline: false },
-                { name: "Visualizar", value: `[Abrir no Painel](${process.env.NEXTAUTH_URL}/admin/reports/${report.id})`, inline: false }
-            ]
-        }, tenantId).catch(err => console.error("Webhook error:", err));
-
-        return NextResponse.json({ success: true, report });
+        return NextResponse.json(report, { status: 201 });
     } catch (error) {
-        console.error("Error saving report:", error);
-        const message =
-            process.env.NODE_ENV === "production"
-                ? "Erro ao criar denúncia"
-                : error instanceof Error
-                    ? error.message
-                    : "Internal Server Error";
-        return NextResponse.json({ error: message }, { status: 500 });
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ message: error.issues[0].message }, { status: 400 });
+        }
+        console.error(`[REPORTS] Create Error:`, error);
+        return NextResponse.json({ message: "Erro interno" }, { status: 500 });
     }
 }

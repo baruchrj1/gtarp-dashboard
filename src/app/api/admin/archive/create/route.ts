@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
                     duration: punishment.duration,
                     expiresAt: punishment.expiresAt,
                     organization: punishment.organization,
-                    userId: punishment.userId,
+                    userId: punishment.userId ?? "",
                     userName: punishment.user?.username || null,
                     adminId: punishment.adminId,
                     adminName: punishment.admin?.username || null,

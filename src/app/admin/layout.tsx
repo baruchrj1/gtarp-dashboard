@@ -19,17 +19,9 @@ export default async function AdminLayout({
 
     const tenant = await getTenantFromRequest();
 
-    // If no tenant (globally accessing admin?), allow only Super Admin
+    // If no tenant, redirect to home
     if (!tenant) {
-        if (session.user.isSuperAdmin) {
-            redirect("/superadmin");
-        }
         redirect("/");
-    }
-
-    // Super Admin Bypass
-    if (session.user.isSuperAdmin) {
-        return <>{children}</>;
     }
 
     // Check Permissions

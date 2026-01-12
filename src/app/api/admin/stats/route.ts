@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getTenantFromRequest } from "@/lib/tenant";
 
 export async function GET(req: Request) {
     const session = await getServerSession(authOptions);
@@ -9,6 +10,10 @@ export async function GET(req: Request) {
     if (!session?.user?.isAdmin && session?.user?.role !== "ADMIN") {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
+
+    const tenant = await getTenantFromRequest();
+    if (!tenant) return NextResponse.json({ error: "Tenant Not Found" }, { status: 404 });
+    const tenantId = tenant.id;
 
     const { searchParams } = new URL(req.url);
     const range = searchParams.get("range") || "7d"; // 7d, 30d, month
@@ -35,47 +40,34 @@ export async function GET(req: Request) {
     }
 
     try {
-        // 1. Overview counts - Apply filter
+        // 1. Overview counts - Apply filter + TenantId
         const [total, pending, investigating, approved, rejected] = await Promise.all([
-            prisma.report.count({ where: { createdAt: dateFilter } }),
-            prisma.report.count({ where: { status: "PENDING", createdAt: dateFilter } }),
-            prisma.report.count({ where: { status: "INVESTIGATING", createdAt: dateFilter } }),
-            prisma.report.count({ where: { status: "APPROVED", createdAt: dateFilter } }),
-            prisma.report.count({ where: { status: "REJECTED", createdAt: dateFilter } }),
+            prisma.report.count({ where: { tenantId, createdAt: dateFilter } }),
+            prisma.report.count({ where: { tenantId, status: "PENDING", createdAt: dateFilter } }),
+            prisma.report.count({ where: { tenantId, status: "INVESTIGATING", createdAt: dateFilter } }),
+            prisma.report.count({ where: { tenantId, status: "APPROVED", createdAt: dateFilter } }),
+            prisma.report.count({ where: { tenantId, status: "REJECTED", createdAt: dateFilter } }),
         ]);
 
-        // 2. Reports by Reason (Top 5) - Apply filter
+        // 2. Reports by Reason (Top 5)
         const reportsByReason = await prisma.report.groupBy({
             by: ["reason"],
-            _count: {
-                reason: true,
-            },
-            where: {
-                createdAt: dateFilter,
-            },
-            orderBy: {
-                _count: {
-                    reason: "desc",
-                },
-            },
+            _count: { reason: true },
+            where: { tenantId, createdAt: dateFilter },
+            orderBy: { _count: { reason: "desc" } },
             take: 5,
         });
 
         // 3. Activity Chart
         const activityReports = await prisma.report.findMany({
-            where: {
-                createdAt: dateFilter,
-            },
-            select: {
-                createdAt: true,
-            },
+            where: { tenantId, createdAt: dateFilter },
+            select: { createdAt: true },
         });
 
         // Group by day manually
         const dailyActivityMap = new Map<string, number>();
 
         // Calculate days in range
-        const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
         // Use realistic loop limit based on range type, max 31 for month/30d, 7 for 7d
         const daysToLoop = range === "month" ? endDate.getDate() : (range === "30d" ? 30 : 7);
 
@@ -114,34 +106,24 @@ export async function GET(req: Request) {
             .sort((a, b) => a.fullDate.localeCompare(b.fullDate));
 
 
-        // 4. Staff Performance (Top Evaluators) - using groupBy on handledBy
-        // Since handledBy is a string ID, we need to fetch usernames separately
+        // 4. Staff Performance (Top Evaluators)
         const evaluatorStats = await prisma.report.groupBy({
             by: ["handledBy"],
-            _count: {
-                handledBy: true, // Count reports handled by this user
-            },
+            _count: { handledBy: true },
             where: {
+                tenantId,
                 createdAt: dateFilter,
-                handledBy: {
-                    not: null,
-                },
-                status: {
-                    in: ["APPROVED", "REJECTED"], // Only count validated reports
-                },
+                handledBy: { not: null },
+                status: { in: ["APPROVED", "REJECTED"] },
             },
-            orderBy: {
-                _count: {
-                    handledBy: "desc",
-                },
-            },
+            orderBy: { _count: { handledBy: "desc" } },
             take: 5,
         });
 
         // Enrich with usernames
         const staffIds = evaluatorStats.map(stat => stat.handledBy).filter(Boolean) as string[];
         const staffUsers = await prisma.user.findMany({
-            where: { id: { in: staffIds } },
+            where: { id: { in: staffIds }, tenantId }, // Also ensure users belong to this tenant
             select: { id: true, username: true, role: true },
         });
 
@@ -157,21 +139,14 @@ export async function GET(req: Request) {
         // 5. Top Punished Groups (Organizations)
         const topGroupsData = await prisma.report.groupBy({
             by: ["accusedFamily"],
-            _count: {
-                accusedFamily: true,
-            },
+            _count: { accusedFamily: true },
             where: {
+                tenantId,
                 status: "APPROVED",
                 createdAt: dateFilter,
-                accusedFamily: {
-                    not: null,
-                },
+                accusedFamily: { not: null },
             },
-            orderBy: {
-                _count: {
-                    accusedFamily: "desc",
-                },
-            },
+            orderBy: { _count: { accusedFamily: "desc" } },
             take: 5,
         });
 
@@ -183,18 +158,13 @@ export async function GET(req: Request) {
         // 6. Top Punished Players
         const topAccusedData = await prisma.report.groupBy({
             by: ["accusedId", "accusedName"],
-            _count: {
-                id: true,
-            },
+            _count: { id: true },
             where: {
+                tenantId,
                 status: "APPROVED",
                 createdAt: dateFilter,
             },
-            orderBy: {
-                _count: {
-                    id: "desc",
-                },
-            },
+            orderBy: { _count: { id: "desc" } },
             take: 5,
         });
 

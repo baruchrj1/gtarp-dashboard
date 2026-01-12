@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { isStaff, AuthErrors } from "@/lib/permissions";
+import { getTenantFromRequest } from "@/lib/tenant";
 
 export async function GET(req: Request) {
     const session = await getServerSession(authOptions);
@@ -16,6 +17,12 @@ export async function GET(req: Request) {
         return NextResponse.json(AuthErrors.STAFF_REQUIRED, { status: 403 });
     }
 
+    // Tenant Isolation
+    const tenant = await getTenantFromRequest();
+    if (!tenant) {
+        return NextResponse.json({ error: "Tenant Not Found" }, { status: 404 });
+    }
+
     try {
         const { searchParams } = new URL(req.url);
         const page = parseInt(searchParams.get("page") || "1");
@@ -26,12 +33,12 @@ export async function GET(req: Request) {
         const skip = (page - 1) * limit;
 
         const where = {
+            tenantId: tenant.id, // Enforce Tenant Isolation
             ...(status && status !== "ALL" && { status }),
             ...(search && {
                 OR: [
                     { accusedId: { contains: search, mode: "insensitive" as const } },
                     { reporter: { username: { contains: search, mode: "insensitive" as const } } },
-                    { id: { equals: parseInt(search) } },
                 ],
             }),
         };

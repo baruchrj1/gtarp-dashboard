@@ -61,9 +61,8 @@ export default function PlayerSidebar() {
                             {session?.user?.name || "Jogador"}
                         </p>
                         <p className="text-muted-foreground text-xs uppercase tracking-wider">
-                            {session?.user?.role === "SUPER_ADMIN" ? "Super Admin" :
-                                session?.user?.role === "ADMIN" ? "Admin" :
-                                    session?.user?.role === "EVALUATOR" ? "Avaliador" : "Jogador"}
+                            {session?.user?.role === "ADMIN" ? "Admin" :
+                                session?.user?.role === "EVALUATOR" ? "Avaliador" : "Jogador"}
                         </p>
                     </div>
                 </div>

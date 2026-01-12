@@ -63,10 +63,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create punishment record
+        // Create punishment record (accusedId is required field in Punishment model)
         const punishment = await prisma.punishment.create({
             data: {
-                userId: validatedData.userId,
+                accusedId: validatedData.userId,
                 type: validatedData.type,
                 reason: validatedData.reason,
                 duration: validatedData.duration,

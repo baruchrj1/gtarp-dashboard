@@ -11,10 +11,15 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
+    const tenantId = session.user.tenantId;
+    if (!tenantId) {
+        return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
+    }
+
     try {
         const setting = await prisma.systemSetting.findFirst({
             where: {
-                tenantId: session.user.tenantId,
+                tenantId,
                 key: 'fivem_secret_token'
             }
         });
@@ -31,6 +36,11 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
+    const tenantId = session.user.tenantId;
+    if (!tenantId) {
+        return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
+    }
+
     try {
         // Generate new token
         const newToken = crypto.randomBytes(32).toString('hex');
@@ -40,7 +50,7 @@ export async function POST(req: Request) {
             where: {
                 key_tenantId: {
                     key: 'fivem_secret_token',
-                    tenantId: session.user.tenantId
+                    tenantId
                 }
             },
             update: {
@@ -51,7 +61,7 @@ export async function POST(req: Request) {
                 key: 'fivem_secret_token',
                 value: newToken,
                 description: 'Secret token for FiveM Server Integration',
-                tenantId: session.user.tenantId
+                tenantId
             }
         });
 

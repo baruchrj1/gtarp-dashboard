@@ -33,6 +33,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [primaryColor, setPrimaryColorState] = useState<string>(THEME_COLORS[0].value);
     const [themeMode, setThemeModeState] = useState<"dark" | "light">("dark");
 
+    const updateThemeClass = (mode: "dark" | "light") => {
+        const root = document.documentElement;
+        if (mode === "dark") {
+            root.classList.add("dark");
+        } else {
+            root.classList.remove("dark");
+        }
+    };
+
+    const updateCssVariables = (color: string) => {
+        const root = document.documentElement;
+        // Update both to be safe, but --primary is the source of truth now
+        root.style.setProperty("--primary", color);
+        root.style.setProperty("--color-primary", color);
+    };
+
     // Load from local storage on mount
     useEffect(() => {
         const savedColor = localStorage.getItem("gta-rp-primary-color-v1");
@@ -50,28 +66,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             // Default to dark if no preference
             updateThemeClass("dark");
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const updateThemeClass = (mode: "dark" | "light") => {
-        const root = document.documentElement;
-        if (mode === "dark") {
-            root.classList.add("dark");
-        } else {
-            root.classList.remove("dark");
-        }
-    };
 
     const setThemeMode = (mode: "dark" | "light") => {
         setThemeModeState(mode);
         localStorage.setItem("gta-rp-theme-mode-v1", mode);
         updateThemeClass(mode);
-    };
-
-    const updateCssVariables = (color: string) => {
-        const root = document.documentElement;
-        // Update both to be safe, but --primary is the source of truth now
-        root.style.setProperty("--primary", color);
-        root.style.setProperty("--color-primary", color);
     };
 
     const setPrimaryColor = (color: string) => {

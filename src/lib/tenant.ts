@@ -146,7 +146,7 @@ export async function requireTenant(): Promise<TenantConfig> {
   return tenant;
 }
 
-// Cria um novo tenant (usado no painel super admin)
+// Cria um novo tenant
 export async function createTenant(data: {
   name: string;
   slug: string;
@@ -217,7 +217,7 @@ export async function updateTenantFeatures(
   };
 }
 
-// Lista todos os tenants (para super admin)
+// Lista todos os tenants
 export async function listTenants() {
   const tenants = await prisma.tenant.findMany({
     orderBy: { createdAt: "desc" },

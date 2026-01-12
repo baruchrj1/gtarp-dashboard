@@ -37,11 +37,8 @@ export function TenantProvider({ children, tenant }: TenantProviderProps) {
 // Hook para acessar dados do tenant
 export function useTenant(): TenantContextValue {
   const tenant = useContext(TenantContext);
-  // Allow usage without provider (returns null) for Super Admin pages that might import components using this
-  // But for AdminDashboard, we need to handle the null case. 
-  // Given the error "must be used within", we should keep the check BUT allow a bypass or handle it in the Page.
-  // Actually, the page should NOT render if no tenant. The server redirect takes time.
-  // Let's modify the Page to not crash.
+  // Handle the null case gracefully - return a loading state
+  // The server redirect takes time, so we return a partial dummy to satisfy TypeScript
   if (!tenant) {
     // Return a dummy context or throw? 
     // If we throw, the ErrorBoundary catches it.

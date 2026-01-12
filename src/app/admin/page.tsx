@@ -38,14 +38,13 @@ export default function AdminDashboard() {
 
     // Strict Permission Check
     const userRoles = session?.user?.discordRoles || [];
-    const isSuperAdmin = session?.user?.isSuperAdmin === true;
 
     // Check against tenant configuration
     const isTenantAdmin = hasTenantRole(userRoles, tenant.discordRoleAdmin);
     const isTenantEvaluator = hasTenantRole(userRoles, tenant.discordRoleEvaluator);
 
     // Final permissions
-    const isAdmin = isTenantAdmin || isSuperAdmin || session?.user?.isAdmin === true; // Keep session.isAdmin as fallback for legacy/superadmin
+    const isAdmin = isTenantAdmin || session?.user?.isAdmin === true;
     const isEvaluator = isTenantEvaluator;
 
     const hasAccess = isAdmin || isEvaluator;

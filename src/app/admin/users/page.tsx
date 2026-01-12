@@ -21,7 +21,7 @@ export default function UsersPage() {
     const isAuthenticated = status === "authenticated";
     const isLoadingAuth = status === "loading";
     const role = session?.user?.role || "PLAYER";
-    const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN" || session?.user?.isAdmin;
+    const isAdmin = role === "ADMIN" || session?.user?.isAdmin;
     const isEvaluator = role === "EVALUATOR";
     const canAccess = isAdmin || isEvaluator;
 

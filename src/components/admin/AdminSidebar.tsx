@@ -17,55 +17,55 @@ export default function AdminSidebar() {
             name: "VISÃO GERAL",
             href: "/admin",
             icon: <LayoutDashboard className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "SUPER_ADMIN"]
+            allowedRoles: ["ADMIN"]
         },
         {
             name: "USUÁRIOS",
             href: "/admin/users",
             icon: <Users className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "EVALUATOR", "SUPER_ADMIN"]
+            allowedRoles: ["ADMIN", "EVALUATOR"]
         },
         {
             name: "DENÚNCIAS",
             href: "/admin/reports",
             icon: <FileText className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "EVALUATOR", "SUPER_ADMIN"]
+            allowedRoles: ["ADMIN", "EVALUATOR"]
         },
         {
             name: "MINHAS DENÚNCIAS",
             href: "/admin/my-reports",
             icon: <UserCheck className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "EVALUATOR", "SUPER_ADMIN"]
+            allowedRoles: ["ADMIN", "EVALUATOR"]
         },
         {
             name: "PUNIÇÃO",
             href: "/admin/punishments",
             icon: <Gavel className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "EVALUATOR", "SUPER_ADMIN"]
+            allowedRoles: ["ADMIN", "EVALUATOR"]
         },
         {
             name: "HISTÓRICO",
             href: "/admin/history",
             icon: <ShieldCheck className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "EVALUATOR", "SUPER_ADMIN"]
+            allowedRoles: ["ADMIN", "EVALUATOR"]
         },
         {
             name: "GERENCIAMENTO",
             href: "/admin/roles",
             icon: <Shield className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "SUPER_ADMIN"]
+            allowedRoles: ["ADMIN"]
         },
         {
             name: "AVALIADORES",
             href: "/admin/evaluators",
             icon: <UserCheck className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "SUPER_ADMIN"]
+            allowedRoles: ["ADMIN"]
         },
         {
             name: "CONFIGURAÇÕES",
             href: "/admin/settings",
             icon: <Settings className="w-5 h-5" />,
-            allowedRoles: ["ADMIN", "SUPER_ADMIN"]
+            allowedRoles: ["ADMIN"]
         },
     ];
 

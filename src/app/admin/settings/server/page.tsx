@@ -65,11 +65,10 @@ export default function ServerSettingsPage() {
                     <div className="flex gap-4 items-center">
                         <div className="relative flex-1">
                             <input
-                                type="text"
                                 readOnly
                                 value={token || "Nenhum token gerado"}
                                 className="w-full bg-secondary border border-border rounded-lg px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-primary"
-                                type="password" // Ocultar por segurança visual inicial? Ou deixar texto
+                                type="password"
                             />
                             {/* Make it togglable visible later? For now just text, assume admin access implies permission to see */}
                         </div>

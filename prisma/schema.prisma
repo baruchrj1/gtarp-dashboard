@@ -62,14 +62,6 @@ model Tenant {
   @@index([slug])
 }
 
-// Super admins da plataforma (voce)
-model SuperAdmin {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-}
-
 // ============================================
 // TENANT DATA
 // ============================================
@@ -162,8 +154,12 @@ model Punishment {
   isActive  Boolean   @default(true)
   organization String? // Organization/Family of the punished player
 
-  userId    String
-  user      User      @relation("PunishmentReceiver", fields: [userId], references: [id])
+  // Target Details (Flexible: Can be In-Game ID or Dashboard User)
+  accusedId String    // In-Game ID (Required)
+  accusedName String? // In-Game Name
+
+  userId    String?   // Optional: Link to Dashboard User if they exist
+  user      User?     @relation("PunishmentReceiver", fields: [userId], references: [id])
 
   adminId   String
   admin     User      @relation("PunishmentGiver", fields: [adminId], references: [id])
