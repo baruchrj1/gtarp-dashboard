@@ -192,3 +192,78 @@ export async function sendPlayerReportStatusNotification(
     }
 }
 
+
+// ==========================================
+// NEW WEBHOOK SYSTEM (White Label Compatible)
+// ==========================================
+
+import { prisma } from "@/lib/db";
+
+interface WebhookEmbed {
+    title: string;
+    description?: string;
+    color?: number; // Decimal color
+    fields?: { name: string; value: string; inline?: boolean }[];
+    thumbnail?: { url: string };
+    image?: { url: string };
+    url?: string;
+}
+
+export const DISCORD_COLORS = {
+    BLUE: 3447003,
+    GREEN: 5763719,
+    RED: 15548997,
+    YELLOW: 16776960,
+    ORANGE: 15105570,
+    PURPLE: 10181046,
+    GREY: 9807270,
+};
+
+/**
+ * Sends a rich embed via Discord Webhook using dynamic settings from DB.
+ * This does NOT require a Bot Token.
+ */
+export async function sendDiscordWebhook(
+    webhookKey: "discord_webhook_reports" | "discord_webhook_logs",
+    embed: WebhookEmbed
+) {
+    try {
+        // Fetch webhook URL and Server settings in parallel to be fast
+        const [webhookSetting, serverNameSetting, serverLogoSetting] = await Promise.all([
+            prisma.systemSetting.findUnique({ where: { key: webhookKey } }),
+            prisma.systemSetting.findUnique({ where: { key: "server_name" } }),
+            prisma.systemSetting.findUnique({ where: { key: "server_logo" } })
+        ]);
+
+        if (!webhookSetting?.value) return; // Webhook not configured
+
+        const serverName = serverNameSetting?.value || "System Reports";
+        const serverLogo = serverLogoSetting?.value || "";
+
+        const payload = {
+            username: serverName,
+            avatar_url: serverLogo || undefined,
+            embeds: [{
+                ...embed,
+                footer: {
+                    text: `${serverName} • Sistema de Denúncias`,
+                    icon_url: serverLogo || undefined
+                },
+                timestamp: new Date().toISOString()
+            }]
+        };
+
+        const response = await fetch(webhookSetting.value, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            console.error(`Webhook failed with status ${response.status} ${response.statusText}`);
+        }
+    } catch (error) {
+        // Silently fail to not break app flow, but log
+        console.error("Failed to send Discord webhook:", error);
+    }
+}

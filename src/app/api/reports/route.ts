@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { sendReportNotification } from "@/lib/discord";
+import { sendReportNotification, sendDiscordWebhook, DISCORD_COLORS } from "@/lib/discord";
 import { isStaff, AuthErrors } from "@/lib/permissions";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { createReportSchema, validateBody, formatZodErrors } from "@/lib/validation";
@@ -131,6 +131,20 @@ export async function POST(req: Request) {
         sendReportNotification(report, session.user.name || "Unknown").catch((err) =>
             console.error("Discord notification error:", err)
         );
+
+        // NEW: Send Webhook (White Label)
+        sendDiscordWebhook("discord_webhook_reports", {
+            title: "🚨 Nova Denúncia Registrada",
+            description: description || "Sem descrição adicional",
+            color: DISCORD_COLORS.ORANGE,
+            fields: [
+                { name: "ID", value: `#${report.id}`, inline: true },
+                { name: "Autor", value: session.user.name || "Desconhecido", inline: true },
+                { name: "Acusado", value: `${accusedName || accusedId}`, inline: true },
+                { name: "Motivo", value: reason, inline: false },
+                { name: "Visualizar", value: `[Abrir no Painel](${process.env.NEXTAUTH_URL}/admin/reports/${report.id})`, inline: false }
+            ]
+        }).catch(err => console.error("Webhook error:", err));
 
         return NextResponse.json({ success: true, report });
     } catch (error) {

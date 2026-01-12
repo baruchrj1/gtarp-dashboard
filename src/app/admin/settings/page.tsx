@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { Settings, Save, Layout } from "lucide-react";
+import { Settings, Save, Layout, MessageSquare } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useToast } from "@/components/ui/Toast";
 
@@ -19,18 +19,31 @@ export default function SettingsPage() {
         server_name: "",
         server_logo: "",
         theme_color: "",
+        discord_webhook_reports: "",
+        discord_webhook_logs: "",
     });
 
-    // Load initial data
+    // Load initial data from Admin API to get all fields including secrets
     useEffect(() => {
-        if (settings) {
-            setFormData({
-                server_name: settings.server_name || "",
-                server_logo: settings.server_logo || "",
-                theme_color: settings.theme_color || "#8b5cf6",
-            });
+        async function loadSettings() {
+            try {
+                const res = await fetch("/api/admin/settings");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.settings) {
+                        setFormData((prev) => ({
+                            ...prev,
+                            ...data.settings
+                        }));
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load settings", error);
+                toast.error("Erro", "Falha ao carregar configurações atuais.");
+            }
         }
-    }, [settings]);
+        loadSettings();
+    }, []);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -146,6 +159,44 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <p className="text-[10px] text-zinc-500 mt-1">Define a cor de destaque em todo o sistema.</p>
+                            </div>
+
+                            {/* Discord Integration Section */}
+                            <div className="pt-6 border-t border-white/10">
+                                <div className="flex items-center gap-2 mb-6 text-zinc-400">
+                                    <MessageSquare className="w-5 h-5" />
+                                    <h2 className="font-bold uppercase tracking-wider text-sm">Integração Discord</h2>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
+                                            Webhook para Novas Denúncias
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.discord_webhook_reports}
+                                            onChange={(e) => setFormData({ ...formData, discord_webhook_reports: e.target.value })}
+                                            className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm"
+                                            placeholder="https://discord.com/api/webhooks/..."
+                                        />
+                                        <p className="text-[10px] text-zinc-500 mt-1">Sempre que uma denúncia for criada, uma notificação será enviada aqui.</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
+                                            Webhook para Logs (Aprovações/Rejeições)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.discord_webhook_logs}
+                                            onChange={(e) => setFormData({ ...formData, discord_webhook_logs: e.target.value })}
+                                            className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm"
+                                            placeholder="https://discord.com/api/webhooks/..."
+                                        />
+                                        <p className="text-[10px] text-zinc-500 mt-1">Logs de ações da staff (aprovar, rejeitar, banir) serão enviados aqui.</p>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="pt-4 border-t border-white/10 flex justify-end">

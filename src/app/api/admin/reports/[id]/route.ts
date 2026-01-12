@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { sendReportNotification, sendPlayerReportStatusNotification } from "@/lib/discord";
+import { sendReportNotification, sendPlayerReportStatusNotification, sendDiscordWebhook, DISCORD_COLORS } from "@/lib/discord";
 
 // GET: Fetch single report details
 export async function GET(
@@ -79,6 +79,28 @@ export async function PATCH(
                 status: updatedReport.status,
                 adminNotes: updatedReport.adminNotes,
             });
+        }
+
+        // NEW: Send Webhook Log (White Label Staff Logs)
+        const embedColor = status === "APPROVED" ? DISCORD_COLORS.GREEN :
+            status === "REJECTED" ? DISCORD_COLORS.RED : DISCORD_COLORS.BLUE;
+
+        const actionText = status === "APPROVED" ? "Aprovou" :
+            status === "REJECTED" ? "Rejeitou" : "Atualizou";
+
+        // Only send log if status actually changed (simplification: assume typical flow)
+        if (status === "APPROVED" || status === "REJECTED") {
+            sendDiscordWebhook("discord_webhook_logs", {
+                title: `📝 Denúncia #${updatedReport.id} ${status === "APPROVED" ? "APROVADA" : "REJEITADA"}`,
+                description: `O avaliador **${session.user.name}** finalizou a análise desta denúncia.`,
+                color: embedColor,
+                fields: [
+                    { name: "Acusado", value: updatedReport.accusedName || updatedReport.accusedId, inline: true },
+                    { name: "Motivo Original", value: updatedReport.reason, inline: true },
+                    { name: "Veredito", value: adminNotes || "Sem observações", inline: false },
+                    { name: "Link", value: `[Ver Detalhes](${process.env.NEXTAUTH_URL}/admin/reports/${updatedReport.id})`, inline: false }
+                ]
+            }).catch(err => console.error("Webhook Log Error:", err));
         }
 
         return NextResponse.json({ report: updatedReport });

@@ -8,10 +8,15 @@ export async function GET() {
         const settings = await prisma.systemSetting.findMany();
 
         // Convert array to object for easier access
-        const settingsMap = settings.reduce((acc, current) => {
-            acc[current.key] = current.value;
-            return acc;
-        }, {} as Record<string, string>);
+        // Explicitly whitelist public keys to avoid leaking webhooks
+        const publicKeys = ["server_name", "server_logo", "theme_color"];
+
+        const settingsMap = settings
+            .filter(s => publicKeys.includes(s.key))
+            .reduce((acc, current) => {
+                acc[current.key] = current.value;
+                return acc;
+            }, {} as Record<string, string>);
 
         // Default values if not set
         const defaults = {

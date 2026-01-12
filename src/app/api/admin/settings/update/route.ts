@@ -8,6 +8,8 @@ const updateSettingsSchema = z.object({
     server_name: z.string().min(1).optional(),
     server_logo: z.string().optional(),
     theme_color: z.string().optional(),
+    discord_webhook_reports: z.string().optional(),
+    discord_webhook_logs: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -48,6 +50,22 @@ export async function POST(req: Request) {
                 where: { key: "theme_color" },
                 update: { value: validation.data.theme_color },
                 create: { key: "theme_color", value: validation.data.theme_color, description: "Cor do Tema (Hex)" }
+            }));
+        }
+
+        if (validation.data.discord_webhook_reports !== undefined) {
+            updates.push(prisma.systemSetting.upsert({
+                where: { key: "discord_webhook_reports" },
+                update: { value: validation.data.discord_webhook_reports },
+                create: { key: "discord_webhook_reports", value: validation.data.discord_webhook_reports, description: "Webhook para Novas Denúncias" }
+            }));
+        }
+
+        if (validation.data.discord_webhook_logs !== undefined) {
+            updates.push(prisma.systemSetting.upsert({
+                where: { key: "discord_webhook_logs" },
+                update: { value: validation.data.discord_webhook_logs },
+                create: { key: "discord_webhook_logs", value: validation.data.discord_webhook_logs, description: "Webhook para Logs Administrativos" }
             }));
         }
 
