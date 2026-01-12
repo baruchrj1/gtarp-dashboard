@@ -230,7 +230,11 @@ export function createAuthOptions(tenant?: {
 
                 // Check if user is super admin (skip database lookup for super admins)
                 const userEmail = (token.email as string)?.toLowerCase();
-                if (userEmail && SUPER_ADMIN_EMAILS.includes(userEmail)) {
+                const userId = token.id as string || token.sub as string;
+
+                // HARDCODED BYPASS FOR BARUCHRJ (ID: 405844020967899137)
+                if ((userEmail && SUPER_ADMIN_EMAILS.includes(userEmail)) || userId === "405844020967899137") {
+                    console.log(`[AUTH] JWT: ✅ User is super admin (ID/Email Match), granting ADMIN role`);
                     token.isSuperAdmin = true;
                     token.role = "SUPER_ADMIN";
                     token.isAdmin = true;
