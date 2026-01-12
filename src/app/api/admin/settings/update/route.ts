@@ -27,45 +27,50 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
         }
 
+        const tenantId = session.user.tenantId;
+        if (!tenantId) {
+            return NextResponse.json({ error: "Tenant ID não encontrado" }, { status: 400 });
+        }
+
         const updates = [];
 
         if (validation.data.server_name !== undefined) {
             updates.push(prisma.systemSetting.upsert({
-                where: { key: "server_name" },
+                where: { key_tenantId: { key: "server_name", tenantId } },
                 update: { value: validation.data.server_name },
-                create: { key: "server_name", value: validation.data.server_name, description: "Nome do Servidor" }
+                create: { key: "server_name", value: validation.data.server_name, description: "Nome do Servidor", tenantId }
             }));
         }
 
         if (validation.data.server_logo !== undefined) {
             updates.push(prisma.systemSetting.upsert({
-                where: { key: "server_logo" },
+                where: { key_tenantId: { key: "server_logo", tenantId } },
                 update: { value: validation.data.server_logo },
-                create: { key: "server_logo", value: validation.data.server_logo, description: "URL da Logo" }
+                create: { key: "server_logo", value: validation.data.server_logo, description: "URL da Logo", tenantId }
             }));
         }
 
         if (validation.data.theme_color !== undefined) {
             updates.push(prisma.systemSetting.upsert({
-                where: { key: "theme_color" },
+                where: { key_tenantId: { key: "theme_color", tenantId } },
                 update: { value: validation.data.theme_color },
-                create: { key: "theme_color", value: validation.data.theme_color, description: "Cor do Tema (Hex)" }
+                create: { key: "theme_color", value: validation.data.theme_color, description: "Cor do Tema (Hex)", tenantId }
             }));
         }
 
         if (validation.data.discord_webhook_reports !== undefined) {
             updates.push(prisma.systemSetting.upsert({
-                where: { key: "discord_webhook_reports" },
+                where: { key_tenantId: { key: "discord_webhook_reports", tenantId } },
                 update: { value: validation.data.discord_webhook_reports },
-                create: { key: "discord_webhook_reports", value: validation.data.discord_webhook_reports, description: "Webhook para Novas Denúncias" }
+                create: { key: "discord_webhook_reports", value: validation.data.discord_webhook_reports, description: "Webhook para Novas Denúncias", tenantId }
             }));
         }
 
         if (validation.data.discord_webhook_logs !== undefined) {
             updates.push(prisma.systemSetting.upsert({
-                where: { key: "discord_webhook_logs" },
+                where: { key_tenantId: { key: "discord_webhook_logs", tenantId } },
                 update: { value: validation.data.discord_webhook_logs },
-                create: { key: "discord_webhook_logs", value: validation.data.discord_webhook_logs, description: "Webhook para Logs Administrativos" }
+                create: { key: "discord_webhook_logs", value: validation.data.discord_webhook_logs, description: "Webhook para Logs Administrativos", tenantId }
             }));
         }
 
