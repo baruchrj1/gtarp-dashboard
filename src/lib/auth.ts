@@ -54,7 +54,12 @@ export const authOptions: NextAuthOptions = {
             // Sync Discord Roles on Sign In (Access Token available)
             if (account?.provider === "discord" && account.access_token) {
                 try {
-                    const guildId = process.env.DISCORD_GUILD_ID;
+                    // First, get the tenant to know which guild and roles to check
+                    const { getTenantFromRequest } = await import("./tenant");
+                    const tenant = await getTenantFromRequest();
+
+                    // Use tenant-specific guild ID, fallback to env for backwards compatibility
+                    const guildId = tenant?.discordGuildId || process.env.DISCORD_GUILD_ID;
 
                     if (guildId) {
                         const res = await fetch(`https://discord.com/api/users/@me/guilds/${guildId}/member`, {
@@ -65,9 +70,14 @@ export const authOptions: NextAuthOptions = {
                             const member = await res.json();
                             const roles = (member.roles || []) as string[];
 
-                            // Role ID Definitions
-                            const adminRoleIds = (process.env.DISCORD_ROLE_ADMIN_ID || "").split(",").map(id => id.trim()).filter(Boolean);
-                            const evaluatorRoleIds = (process.env.DISCORD_ROLE_EVALUATOR_ID || "").split(",").map(id => id.trim()).filter(Boolean);
+                            // Role ID Definitions - Use tenant-specific roles if available
+                            const adminRoleIds = tenant?.discordRoleAdmin
+                                ? [tenant.discordRoleAdmin]
+                                : (process.env.DISCORD_ROLE_ADMIN_ID || "").split(",").map(id => id.trim()).filter(Boolean);
+
+                            const evaluatorRoleIds = tenant?.discordRoleEvaluator
+                                ? [tenant.discordRoleEvaluator]
+                                : (process.env.DISCORD_ROLE_EVALUATOR_ID || "").split(",").map(id => id.trim()).filter(Boolean);
 
                             // Determine Role
                             let determinedRole = "PLAYER";
@@ -87,47 +97,36 @@ export const authOptions: NextAuthOptions = {
                             token.isAdmin = isAdmin;
                             token.discordRoles = roles;
 
-                            // Sync to Database SKIPPED for now to prevent build errors with Multi-tenant schema
-                            // The User table requires tenantId which is context-dependent.
-                            // Roles are already trusted from the Token for this session.
-
                             // Sync to Database
-                            if (account?.provider === "discord" && user) {
+                            if (tenant && user) {
                                 try {
-                                    // 1. Resolve Tenant (Hack: We need context. In Next 13 App Dir, headers() works in Server Contexts)
-                                    // We will dynamically import to avoid circular dep issues if any
-                                    const { getTenantFromRequest } = await import("./tenant");
-                                    const tenant = await getTenantFromRequest();
-
-                                    if (tenant) {
-                                        // 2. Upsert User
-                                        const dbUser = await prisma.user.upsert({
-                                            where: {
-                                                discordId_tenantId: {
-                                                    discordId: user.id,
-                                                    tenantId: tenant.id
-                                                }
-                                            },
-                                            update: {
-                                                username: user.name || "Unknown",
-                                                avatar: user.image,
-                                                role: token.role as string, // Synced from Discord Role above
-                                                isAdmin: token.isAdmin as boolean,
-                                            },
-                                            create: {
+                                    // Upsert User
+                                    const dbUser = await prisma.user.upsert({
+                                        where: {
+                                            discordId_tenantId: {
                                                 discordId: user.id,
-                                                username: user.name || "Unknown",
-                                                avatar: user.image,
-                                                role: token.role as string,
-                                                isAdmin: token.isAdmin as boolean,
                                                 tenantId: tenant.id
                                             }
-                                        });
+                                        },
+                                        update: {
+                                            username: user.name || "Unknown",
+                                            avatar: user.image,
+                                            role: token.role as string,
+                                            isAdmin: token.isAdmin as boolean,
+                                        },
+                                        create: {
+                                            discordId: user.id,
+                                            username: user.name || "Unknown",
+                                            avatar: user.image,
+                                            role: token.role as string,
+                                            isAdmin: token.isAdmin as boolean,
+                                            tenantId: tenant.id
+                                        }
+                                    });
 
-                                        // 3. Attach DB ID to Token
-                                        token.dbId = dbUser.id;
-                                        token.tenantId = tenant.id;
-                                    }
+                                    // Attach DB ID and Tenant ID to Token
+                                    token.dbId = dbUser.id;
+                                    token.tenantId = tenant.id;
                                 } catch (err) {
                                     console.error("[AUTH] DB Sync Error:", err);
                                 }
