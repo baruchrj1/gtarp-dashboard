@@ -4,114 +4,87 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useCallback } from "react";
 import PlayerSidebar from "@/components/player/PlayerSidebar";
-import { ShieldAlert, Send, Plus, Trash2 } from "lucide-react";
+import { ShieldAlert, Send, Trash2, AlertTriangle, FileText, User, Link as LinkIcon, AlertCircle } from "lucide-react";
 import { PageLoading } from "@/components/ui/LoadingSpinner";
 import { useToast } from "@/components/ui/Toast";
 import { PageTransition } from "@/components/ui/PageTransition";
-import useSWR from "swr"; // Added import
+import useSWR from "swr";
+import clsx from "clsx";
 
-// Component for dynamic fetching
+// --- Components ---
+
 function ReasonSelector({ value, onChange }: { value: string, onChange: (val: string) => void }) {
     const { data, isLoading } = useSWR("/api/admin/config/reasons");
     const reasons = data?.reasons || [];
 
-    // Fallback options
     const defaultReasons = [
-        { value: "RDM", label: "RDM (Random Death Match)" },
-        { value: "VDM", label: "VDM (Vehicle Death Match)" },
+        { value: "RDM", label: "RDM" },
+        { value: "VDM", label: "VDM" },
         { value: "Dark RP", label: "Dark RP" },
         { value: "Power Gaming", label: "Power Gaming" },
         { value: "Combat Logging", label: "Combat Logging" },
         { value: "Metagaming", label: "Metagaming" },
-        { value: "Bugs", label: "Aproveitamento de Bugs" },
-        { value: "Insulto", label: "Ofensas/Xingamentos" },
+        { value: "Bugs", label: "Bugs" },
+        { value: "Insulto", label: "Insulto" },
         { value: "Outros", label: "Outros" }
     ];
 
     const displayReasons = reasons.length > 0 ? reasons : defaultReasons;
 
     return (
-        <div className="relative">
-            <select
-                id="reason"
-                name="reason"
-                required
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="w-full bg-secondary border border-border rounded-lg pl-12 pr-4 py-4 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
-            >
-                <option value="" className="bg-card text-muted-foreground">
-                    {isLoading ? "Carregando motivos..." : "Selecione um motivo..."}
-                </option>
-                {displayReasons.map((r: any) => (
-                    <option key={r.value} value={r.value} className="bg-card">
-                        {r.label}
-                    </option>
-                ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted-foreground">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-            </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {displayReasons.map((r: any) => (
+                <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => onChange(r.value)}
+                    className={clsx(
+                        "p-4 rounded-lg border text-left text-sm font-semibold transition-all duration-200 hover:scale-[1.02]",
+                        value === r.value
+                            ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                            : "bg-zinc-950/50 border-white/10 text-zinc-400 hover:bg-zinc-900 hover:border-white/20 hover:text-white"
+                    )}
+                >
+                    {r.label}
+                </button>
+            ))}
         </div>
     );
 }
 
-
-// Component for dynamic fetching
 function OrganizationSelector({ value, onChange }: { value: string, onChange: (val: string) => void }) {
     const { data, isLoading } = useSWR("/api/admin/config/organizations");
     const orgs = data?.organizations || [];
 
-    // Fallback options
     const defaultOrgs = [
-        { name: "LSPD" },
-        { name: "EMS" },
-        { name: "Ballas" },
-        { name: "Vagos" },
-        { name: "Mecânica" }
+        { name: "LSPD" }, { name: "EMS" }, { name: "Ballas" }, { name: "Vagos" }, { name: "Mecânica" }
     ];
 
     const displayOrgs = orgs.length > 0 ? orgs : defaultOrgs;
 
     return (
-        <div className="relative">
-            <select
-                id="accusedFamily"
-                name="accusedFamily"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="w-full bg-secondary border border-border rounded-lg pl-12 pr-4 py-4 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
-            >
-                <option value="" className="bg-card text-muted-foreground">
-                    {isLoading ? "Carregando organizações..." : "Selecione uma organização (Opcional)..."}
-                </option>
-                {displayOrgs.map((o: any) => (
-                    <option key={o.id || o.name} value={o.name} className="bg-card">
-                        {o.name}
-                    </option>
-                ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted-foreground">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-            </div>
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-muted-foreground">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-            </div>
-        </div>
+        <select
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full bg-zinc-950/50 border border-white/10 rounded-lg p-3 text-white placeholder-zinc-500 focus:border-primary outline-none transition-colors appearance-none"
+        >
+            <option value="" className="bg-zinc-900 text-zinc-500">Selecione uma organização (Opcional)</option>
+            {displayOrgs.map((o: any) => (
+                <option key={o.id || o.name} value={o.name} className="bg-zinc-900 text-white">{o.name}</option>
+            ))}
+        </select>
     );
 }
+
+// --- Main Page ---
 
 export default function NewPlayerReportPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const toast = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Form Data
     const [formData, setFormData] = useState({
         accusedId: "",
         accusedName: "",
@@ -120,50 +93,53 @@ export default function NewPlayerReportPage() {
         description: "",
         evidence: [""],
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const isLoadingAuth = status === "loading";
     const isAuthenticated = status === "authenticated";
 
-    const handleEvidenceChange = useCallback((index: number, value: string) => {
-        setFormData((prev) => {
+    // Helpers
+    const updateField = (field: string, value: any) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleEvidenceChange = (index: number, value: string) => {
+        setFormData(prev => {
             const newEvidence = [...prev.evidence];
             newEvidence[index] = value;
             return { ...prev, evidence: newEvidence };
         });
-    }, []);
+    };
 
-    const addEvidenceField = useCallback(() => {
-        setFormData((prev) => ({ ...prev, evidence: [...prev.evidence, ""] }));
-    }, []);
+    const addEvidenceField = () => {
+        setFormData(prev => ({ ...prev, evidence: [...prev.evidence, ""] }));
+    };
 
-    const removeEvidenceField = useCallback((index: number) => {
-        setFormData((prev) => {
+    const removeEvidenceField = (index: number) => {
+        setFormData(prev => {
             if (prev.evidence.length > 1) {
                 return { ...prev, evidence: prev.evidence.filter((_, i) => i !== index) };
             }
             return prev;
         });
-    }, []);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation
+        if (!formData.reason) {
+            toast.error("Erro", "Selecione um motivo.");
+            return;
+        }
+        const validEvidence = formData.evidence.filter((link) => link.trim() !== "");
+        if (validEvidence.length === 0) {
+            toast.error("Erro", "Adicione pelo menos uma prova.");
+            return;
+        }
+
         setIsSubmitting(true);
-
         try {
-            // Filter out empty evidence links
-            const validEvidence = formData.evidence.filter((link) => link.trim() !== "");
-
-            if (validEvidence.length === 0) {
-                toast.error("Erro de validacao", "Voce deve fornecer pelo menos um link de prova.");
-                setIsSubmitting(false);
-                return;
-            }
-
-            const payload = {
-                ...formData,
-                evidence: validEvidence,
-            };
+            const payload = { ...formData, evidence: validEvidence };
 
             const res = await fetch("/api/reports", {
                 method: "POST",
@@ -171,42 +147,31 @@ export default function NewPlayerReportPage() {
                 body: JSON.stringify(payload),
             });
 
+            const data = await res.json();
+
             if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.message || data.error || "Erro ao enviar denuncia");
+                if (res.status === 429) {
+                    throw new Error(data.message || "Limite de denúncias atingido.");
+                }
+                throw new Error(data.message || data.error || "Erro ao enviar denúncia");
             }
 
-            toast.success("Denuncia enviada!", "Sua denuncia foi registrada com sucesso.");
-
-            // Small delay for user to see the success message
-            setTimeout(() => {
-                router.push("/player/reports");
-            }, 1000);
-        } catch (err) {
-            toast.error("Erro", err instanceof Error ? err.message : "Erro ao enviar denuncia");
+            toast.success("Denúncia Enviada!", "Sua denúncia foi registrada com sucesso.");
+            setTimeout(() => router.push("/player/reports"), 1500);
+        } catch (err: any) {
+            toast.error("Erro", err.message);
             setIsSubmitting(false);
         }
     };
 
-    if (isLoadingAuth) {
-        return <PageLoading text="Verificando autenticacao..." />;
-    }
+    if (isLoadingAuth) return <PageLoading text="Carregando..." />;
 
-    if (!isAuthenticated) {
-        return (
-            <PageTransition>
-                <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                    <div className="w-24 h-24 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center mb-6 animate-pulse">
-                        <ShieldAlert className="w-10 h-10 text-red-500" />
-                    </div>
-                    <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-foreground">
-                        Acesso Negado
-                    </h2>
-                    <p className="text-muted-foreground">Voce precisa estar autenticado para acessar esta area.</p>
-                </div>
-            </PageTransition>
-        );
-    }
+    if (!isAuthenticated) return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <ShieldAlert className="w-12 h-12 text-red-500 mb-4" />
+            <h2 className="text-2xl font-bold">Acesso Negado</h2>
+        </div>
+    );
 
     return (
         <PageTransition>
@@ -217,148 +182,152 @@ export default function NewPlayerReportPage() {
 
                 <main className="flex-1 min-w-0">
                     {/* Header */}
-                    <div className="bg-card p-6 rounded border border-border mb-8 fade-in">
-                        <h1 className="text-3xl font-bold text-foreground tracking-widest uppercase font-display">
-                            Nova <span className="text-primary">Denuncia</span>
+                    <div className="mb-8">
+                        <h1 className="text-3xl font-bold font-display uppercase tracking-wider flex items-center gap-3 text-white">
+                            <span className="text-primary">NOVA</span> DENÚNCIA
                         </h1>
-                        <p className="text-muted-foreground mt-1 text-sm font-mono uppercase tracking-wider">
-                            Preencha o formulario com detalhes precisos. Falsas denuncias sao passiveis de punicao.
-                        </p>
+                        <p className="text-zinc-400 mt-2">Preencha o formulário abaixo com as informações da infração.</p>
                     </div>
 
-                    {/* Form */}
-                    <div className="gta-card p-6 fade-in" style={{ animationDelay: "100ms" }}>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                        ID do Acusado (Passaporte)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-secondary border border-border rounded px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
-                                        placeholder="Ex: 12345 (Opcional)"
-                                        value={formData.accusedId}
-                                        onChange={(e) => setFormData({ ...formData, accusedId: e.target.value })}
-                                    />
-                                </div>
+                    <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                        Nome do Acusado (Opcional)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-secondary border border-border rounded px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
-                                        placeholder="Ex: Joao Silva"
-                                        value={formData.accusedName}
-                                        onChange={(e) => setFormData({ ...formData, accusedName: e.target.value })}
-                                    />
-                                </div>
+                        {/* Coluna Esquerda: Dados Principais */}
+                        <div className="xl:col-span-2 space-y-6">
 
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                        Organização / Família (Opcional)
-                                    </label>
-                                    <OrganizationSelector
-                                        value={formData.accusedFamily}
-                                        onChange={(val) => setFormData({ ...formData, accusedFamily: val })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
-                                    Motivo da Denuncia <span className="text-red-500">*</span>
-                                </label>
+                            {/* Card: Motivo */}
+                            <div className="bg-card/50 backdrop-blur-sm border border-white/5 rounded-xl p-6 shadow-xl">
+                                <h2 className="text-lg font-bold mb-5 flex items-center gap-3 text-white">
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <AlertTriangle className="w-5 h-5 text-primary" />
+                                    </div>
+                                    Motivo da Denúncia <span className="text-red-500 text-sm ml-1">*</span>
+                                </h2>
                                 <ReasonSelector
                                     value={formData.reason}
-                                    onChange={(val) => setFormData({ ...formData, reason: val })}
+                                    onChange={(val) => updateField('reason', val)}
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="block text-sm font-bold text-zinc-400 uppercase tracking-wider">
-                                    Descricao Detalhada
-                                </label>
-                                <textarea
-                                    className="w-full bg-secondary border border-border rounded px-4 py-3 text-foreground focus:border-primary outline-none min-h-[120px] placeholder-muted-foreground transition-all focus:ring-2 focus:ring-primary/20 resize-y"
-                                    placeholder="Descreva exatamente o que aconteceu, incluindo o contexto..."
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                        Links das Provas <span className="text-red-500">*</span>
-                                    </label>
-                                    <button
-                                        type="button"
-                                        onClick={addEvidenceField}
-                                        className="text-xs font-bold text-primary hover:text-white uppercase tracking-wider flex items-center gap-1 transition-all px-2 py-1 rounded hover:bg-white/5 active:scale-95"
-                                    >
-                                        <Plus className="w-3 h-3" /> Adicionar Link
-                                    </button>
-                                </div>
-
-                                <div className="space-y-3">
-                                    {formData.evidence.map((link, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex gap-2 group fade-in"
-                                            style={{ animationDelay: `${index * 50}ms` }}
-                                        >
-                                            <input
-                                                type="url"
-                                                required
-                                                className="w-full bg-secondary border border-border rounded px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none transition-all focus:ring-2 focus:ring-primary/20"
-                                                placeholder="https://youtube.com/..."
-                                                value={link}
-                                                onChange={(e) => handleEvidenceChange(index, e.target.value)}
-                                            />
-                                            {formData.evidence.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeEvidenceField(index)}
-                                                    className="px-4 py-2 bg-secondary text-muted-foreground rounded border border-border hover:bg-red-500 hover:text-white hover:border-red-500 transition-all group-hover:border-red-500/30 active:scale-95"
-                                                    title="Remover link"
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </button>
-                                            )}
+                            {/* Card: Descrição e Provas */}
+                            <div className="bg-card/50 backdrop-blur-sm border border-white/5 rounded-xl p-6 shadow-xl space-y-6">
+                                <div>
+                                    <h2 className="text-lg font-bold mb-5 flex items-center gap-3 text-white">
+                                        <div className="p-2 bg-primary/10 rounded-lg">
+                                            <FileText className="w-5 h-5 text-primary" />
                                         </div>
-                                    ))}
+                                        Detalhes do Ocorrido
+                                    </h2>
+                                    <textarea
+                                        className="w-full h-40 bg-zinc-950/50 border border-white/10 rounded-lg p-4 text-white focus:border-primary outline-none resize-none placeholder-zinc-500 font-medium"
+                                        placeholder="Descreva exatamente o que aconteceu..."
+                                        value={formData.description}
+                                        onChange={(e) => updateField('description', e.target.value)}
+                                        required
+                                    />
                                 </div>
 
-                                <p className="text-xs text-muted-foreground mt-2 flex items-center">
-                                    <ShieldAlert className="w-3 h-3 mr-1" />
-                                    Links aceitos: YouTube, Imgur, Discord, Medal.tv.
-                                </p>
+                                <div>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <label className="text-sm font-bold text-zinc-300 flex items-center gap-2">
+                                            <LinkIcon className="w-4 h-4 text-zinc-500" /> Provas (Links) <span className="text-red-500">*</span>
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={addEvidenceField}
+                                            className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-md hover:bg-primary/20 font-bold transition-colors"
+                                        >
+                                            + Adicionar Link
+                                        </button>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {formData.evidence.map((link, idx) => (
+                                            <div key={idx} className="flex gap-2 group">
+                                                <input
+                                                    type="url"
+                                                    className="w-full bg-zinc-950/50 border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none transition-all placeholder-zinc-500"
+                                                    placeholder="https://youtube.com/..."
+                                                    value={link}
+                                                    onChange={(e) => handleEvidenceChange(idx, e.target.value)}
+                                                />
+                                                {formData.evidence.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeEvidenceField(idx)}
+                                                        className="px-4 bg-red-500/10 text-red-500 rounded-lg border border-red-500/10 hover:bg-red-500/20 hover:border-red-500/30 transition-all opacity-50 group-hover:opacity-100"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="pt-6">
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="w-full gta-btn h-14 text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.01] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                                >
-                                    {isSubmitting ? (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
-                                            ENVIANDO...
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <Send className="w-5 h-5" />
-                                            ENVIAR DENUNCIA
-                                        </span>
-                                    )}
-                                </button>
+                        </div>
+
+                        {/* Coluna Direita: Acusado (Sticky) */}
+                        <div className="xl:col-span-1">
+                            <div className="bg-card/50 backdrop-blur-sm border border-white/5 rounded-xl p-6 shadow-xl sticky top-6">
+                                <h2 className="text-lg font-bold mb-5 flex items-center gap-3 text-white">
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <User className="w-5 h-5 text-primary" />
+                                    </div>
+                                    Acusado
+                                </h2>
+
+                                <div className="space-y-5">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide ml-1">ID (Passaporte)</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-zinc-950/50 border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none transition-colors placeholder-zinc-600 font-mono"
+                                            placeholder="Ex: 12345"
+                                            value={formData.accusedId}
+                                            onChange={(e) => updateField('accusedId', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide ml-1">Nome (Opcional)</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-zinc-950/50 border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none transition-colors placeholder-zinc-600"
+                                            placeholder="Ex: João Silva"
+                                            value={formData.accusedName}
+                                            onChange={(e) => updateField('accusedName', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide ml-1">Organização</label>
+                                        <OrganizationSelector
+                                            value={formData.accusedFamily}
+                                            onChange={(val) => updateField('accusedFamily', val)}
+                                        />
+                                    </div>
+
+                                    <div className="pt-6 border-t border-white/5 mt-6">
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="w-full py-4 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2 font-bold disabled:opacity-50 hover:scale-[1.02] active:scale-95 text-sm tracking-wide uppercase"
+                                        >
+                                            {isSubmitting ? (
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <Send className="w-5 h-5" /> Confirmar Envio
+                                                </>
+                                            )}
+                                        </button>
+                                        <p className="text-[10px] text-center text-zinc-500 mt-4 leading-relaxed">
+                                            Ao enviar, você confirma sob pena de punição que todas as informações são verdadeiras.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+
+                    </form>
                 </main>
             </div>
         </PageTransition>
