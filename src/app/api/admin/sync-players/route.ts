@@ -57,12 +57,25 @@ export async function GET() {
 
         console.log(`Found ${players.length} players with "jogador" role`);
 
+        const tenantId = session.user.tenantId;
+        if (!tenantId) {
+            return NextResponse.json(
+                { error: "Tenant ID não encontrado" },
+                { status: 400 }
+            );
+        }
+
         // Sync players to database
         const syncedPlayers = [];
         for (const member of players) {
             try {
                 const player = await prisma.user.upsert({
-                    where: { id: member.user.id },
+                    where: {
+                        discordId_tenantId: {
+                            discordId: member.user.id,
+                            tenantId
+                        }
+                    },
                     update: {
                         username: member.user.username || member.nick || "Unknown",
                         avatar: member.user.avatar
@@ -70,13 +83,14 @@ export async function GET() {
                             : null,
                     },
                     create: {
-                        id: member.user.id,
+                        discordId: member.user.id,
                         username: member.user.username || member.nick || "Unknown",
                         avatar: member.user.avatar
                             ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png`
                             : null,
                         role: "PLAYER",
                         isAdmin: false,
+                        tenantId,
                     },
                 });
                 syncedPlayers.push(player);
