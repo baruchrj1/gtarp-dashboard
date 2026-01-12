@@ -97,14 +97,17 @@ export function createAuthOptions(tenant?: {
                                 console.log(`[AUTH] User has ${roles.length} roles in Discord`);
 
                                 // Check for Admin role
-                                if (adminRoleId && roles.includes(adminRoleId)) {
-                                    console.log(`[AUTH] ✅ User has ADMIN role (${adminRoleId})`);
+                                const adminRoleIds = adminRoleId ? adminRoleId.split(',').map(r => r.trim()) : [];
+                                const evaluatorRoleIds = evaluatorRoleId ? evaluatorRoleId.split(',').map(r => r.trim()) : [];
+
+                                if (adminRoleIds.some(id => roles.includes(id))) {
+                                    console.log(`[AUTH] ✅ User has ADMIN role (matched one of: ${adminRoleIds.join(', ')})`);
                                     role = "ADMIN";
                                     isAdmin = true;
                                 }
                                 // Check for Evaluator role
-                                else if (evaluatorRoleId && roles.includes(evaluatorRoleId)) {
-                                    console.log(`[AUTH] ✅ User has EVALUATOR role (${evaluatorRoleId})`);
+                                else if (evaluatorRoleIds.some(id => roles.includes(id))) {
+                                    console.log(`[AUTH] ✅ User has EVALUATOR role (matched one of: ${evaluatorRoleIds.join(', ')})`);
                                     role = "EVALUATOR";
                                 } else {
                                     console.log("[AUTH] User has PLAYER role (no special roles found)");
@@ -168,13 +171,16 @@ export function createAuthOptions(tenant?: {
                                 token.discordRoles = roles; // Store all roles for strict tenant checking
 
                                 let detectedRole = null;
-                                if (adminRoleId && roles.includes(adminRoleId)) {
-                                    console.log(`[AUTH] JWT: ✅ User has ADMIN role (${adminRoleId})`);
+                                const adminRoleIds = adminRoleId ? adminRoleId.split(',').map(r => r.trim()) : [];
+                                const evaluatorRoleIds = evaluatorRoleId ? evaluatorRoleId.split(',').map(r => r.trim()) : [];
+
+                                if (adminRoleIds.some(id => roles.includes(id))) {
+                                    console.log(`[AUTH] JWT: ✅ User has ADMIN role (matched one of: ${adminRoleIds.join(', ')})`);
                                     token.role = "ADMIN";
                                     token.isAdmin = true;
                                     detectedRole = "ADMIN";
-                                } else if (evaluatorRoleId && roles.includes(evaluatorRoleId)) {
-                                    console.log(`[AUTH] JWT: ✅ User has EVALUATOR role (${evaluatorRoleId})`);
+                                } else if (evaluatorRoleIds.some(id => roles.includes(id))) {
+                                    console.log(`[AUTH] JWT: ✅ User has EVALUATOR role (matched one of: ${evaluatorRoleIds.join(', ')})`);
                                     token.role = "EVALUATOR";
                                     detectedRole = "EVALUATOR";
                                 }
