@@ -7,18 +7,31 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function LoginPage() {
-    const { status } = useSession();
+    const { data: session, status } = useSession();
     const router = useRouter();
 
     console.log("[LOGIN PAGE] Render. Status:", status);
 
     useEffect(() => {
         console.log("[LOGIN PAGE] Effect triggered. Status:", status);
-        if (status === "authenticated") {
-            console.log("[LOGIN PAGE] Authenticated! Redirecting to /player...");
-            router.replace("/player");
+        if (status === "authenticated" && session?.user) {
+            console.log("[LOGIN PAGE] Authenticated! Determining redirect...");
+
+            // Check if Super Admin on Main Domain
+            const isSuperAdmin = session.user.isSuperAdmin || session.user.role === "SUPER_ADMIN";
+            const hostname = window.location.hostname;
+            const isMainDomain = hostname === "gtarp-dashboard.vercel.app" || hostname === "localhost";
+
+            if (isSuperAdmin && isMainDomain) {
+                console.log("[LOGIN PAGE] User is Super Admin on Main Domain -> /superadmin");
+                router.replace("/superadmin");
+            } else {
+                // Default to player dashboard for tenants or regular users
+                console.log("[LOGIN PAGE] Redirecting to /player...");
+                router.replace("/player");
+            }
         }
-    }, [status, router]);
+    }, [status, session, router]);
 
     const handleLogin = () => {
         console.log("[LOGIN PAGE] Login button clicked. Initiating Discord sign in...");
