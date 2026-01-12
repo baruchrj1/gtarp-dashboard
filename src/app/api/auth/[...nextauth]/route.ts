@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import NextAuth from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
-import { authOptions } from "@/lib/auth";
+import { authOptions, createAuthOptions } from "@/lib/auth"; // Import factory
 import { getTenantBySubdomain, getTenantByCustomDomain } from "@/lib/tenant";
 import { NextRequest } from "next/server";
 
@@ -10,47 +10,27 @@ async function getAuthOptions(req: NextRequest): Promise<NextAuthOptions> {
     const url = new URL(req.url);
     const host = req.headers.get("host") || "";
 
-    // Identificar tenant pelo domínio/subdomínio
-    // OBS: Em localhost/vercel.app genérico, isso talvez não funcione sem subdomínio
-    // Mas para produção (painel-client-1.vercel.app), deve funcionar se o domínio estiver cadastrado
-
     // Tenta achar tenant
     // 1. Custom Domain
     let tenant = await getTenantByCustomDomain(host);
 
-    // 2. Subdomain check (logic simplified for brevity)
+    // 2. Subdomain check
     if (!tenant) {
         const subdomain = host.split('.')[0];
         tenant = await getTenantBySubdomain(subdomain);
     }
 
-    // Se achou tenant e ele tem credentials customizadas do Discord
-    if (tenant && tenant.discordClientId && tenant.discordClientSecret) {
-        // Clone base options logic
-        const dynamicOptions: NextAuthOptions = {
-            ...authOptions,
-            providers: [
-                DiscordProvider({
-                    clientId: tenant.discordClientId,
-                    clientSecret: tenant.discordClientSecret,
-                    authorization: {
-                        params: {
-                            scope: "identify email guilds.members.read",
-                        },
-                    },
-                }),
-            ],
-            // Precisamos passar dados do tenant para os callbacks, se necessario
-            callbacks: {
-                ...authOptions.callbacks,
-                // Podemos injetar logica extra aqui se precisar
-            }
-        };
-        return dynamicOptions;
-    }
-
-    // Fallback para config global (.env) se não achar tenant ou travar
-    return authOptions;
+    // Retorna opções customizadas com base no tenant (se existir) ou global
+    // O factory createAuthOptions agora lida com tudo (providers E role syncing)
+    return createAuthOptions(
+        tenant ? {
+            discordClientId: tenant.discordClientId,
+            discordClientSecret: tenant.discordClientSecret,
+            discordGuildId: tenant.discordGuildId,
+            discordRoleAdmin: tenant.discordRoleAdmin,
+            discordRoleEvaluator: tenant.discordRoleEvaluator
+        } : null
+    );
 }
 
 const handler = async (req: NextRequest, context: any) => {

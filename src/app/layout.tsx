@@ -111,7 +111,7 @@ export default async function RootLayout({
           <ThemeProvider>
             <ServiceWorkerRegistration />
             <GlobalSearch />
-            <TopNavigation tenantLogo={tenant?.logo} tenantName={tenant?.name} />
+            <TopNavigation tenantLogo={tenant?.logo} tenantName={tenant?.name} isTenantContext={!!tenant} />
             <main className="flex-1 p-6 relative">
               <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('/noise.svg')] mix-blend-overlay"></div>
               {children}

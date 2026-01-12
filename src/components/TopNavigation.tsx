@@ -11,9 +11,10 @@ import { useSettings } from "@/contexts/SettingsContext";
 type TopNavigationProps = {
     tenantLogo?: string | null;
     tenantName?: string | null;
+    isTenantContext?: boolean;
 };
 
-export default function TopNavigation({ tenantLogo, tenantName }: TopNavigationProps) {
+export default function TopNavigation({ tenantLogo, tenantName, isTenantContext }: TopNavigationProps) {
     const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const { settings } = useSettings();
@@ -66,7 +67,7 @@ export default function TopNavigation({ tenantLogo, tenantName }: TopNavigationP
 
                     {/* User Menu */}
                     <div className="flex items-center gap-4">
-                        {session && (session.user?.role === "ADMIN" || session.user?.role === "EVALUATOR" || session.user?.isAdmin) && (
+                        {session && (session.user?.role === "ADMIN" || session.user?.role === "EVALUATOR" || session.user?.isAdmin) && isTenantContext && (
                             <Link
                                 href="/admin"
                                 className="hidden md:inline-flex items-center justify-center h-8 px-2 rounded bg-primary text-black font-bold text-xs uppercase tracking-wider hover:bg-white transition-colors"

@@ -59,10 +59,11 @@ export default withAuth(
 
     // Redirect admins/evaluators trying to access player routes
     // EXCEPT for SUPER_ADMIN who should be able to see everything
-    if (pathname.startsWith("/player") && (isAdmin || isEvaluator) && !isSuperAdmin) {
+    // MOVED: Allow Admins/Evaluators to access player dashboard if they want (e.g. to make a report themselves)
+    /* if (pathname.startsWith("/player") && (isAdmin || isEvaluator) && !isSuperAdmin) {
       console.log("[MIDDLEWARE] Redirecting Admin on Player path -> Admin");
       return NextResponse.redirect(new URL("/admin", req.url));
-    }
+    } */
 
     // Protect player routes - only players can access (and admins/superadmins now implied allowed or handled above)
     // Se não é player, nem admin, nem avaliador, ta fora.
