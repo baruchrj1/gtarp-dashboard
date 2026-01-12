@@ -19,9 +19,9 @@ export default async function AdminLayout({
 
     const tenant = await getTenantFromRequest();
 
-    // If no tenant, redirect to home
+    // If no tenant, redirect to player dashboard (not "/" to avoid redirect loop with middleware)
     if (!tenant) {
-        redirect("/");
+        redirect("/player");
     }
 
     // Check Permissions
