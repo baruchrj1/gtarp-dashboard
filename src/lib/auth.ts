@@ -151,6 +151,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.role = (token.role as string) || "PLAYER";
                 session.user.isAdmin = (token.isAdmin as boolean) || false;
                 session.user.discordRoles = (token.discordRoles as string[]) || [];
+                session.user.tenantId = (token.tenantId as string) || undefined;
             }
             return session;
         }
