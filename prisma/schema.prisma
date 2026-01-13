@@ -19,6 +19,7 @@ model Tenant {
   // Dominios
   subdomain   String   @unique // cidadealta.suaplataforma.com
   customDomain String? @unique // dashboard.cidadealta.com.br
+  discordGuildId String @unique // Index for faster Discord bot lookups
 
   // Branding
   logo           String?  // URL do logo
@@ -31,7 +32,7 @@ model Tenant {
   features    String   @default("{\"archive\":true,\"punishments\":true,\"discordNotify\":true}")
 
   // Discord OAuth (cada cliente tem seu proprio app)
-  discordGuildId      String
+  // discordGuildId moved up for @unique constraint
   discordClientId     String
   discordClientSecret String
   discordBotToken     String?
@@ -89,6 +90,7 @@ model User {
   @@index([tenantId])
   @@index([role])
   @@index([isAdmin])
+  @@index([username]) // Index for search performance
   @@index([createdAt(sort: Desc)])
 }
 

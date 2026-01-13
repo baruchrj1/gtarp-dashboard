@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
 
   // Enable compression
   compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
 
   // Optimize images
   images: {
