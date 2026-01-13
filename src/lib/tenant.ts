@@ -3,7 +3,6 @@ import { cache } from "react";
 import { prisma } from "./prisma";
 import { getTenantFromSupabase } from "./supabase";
 
-// Tipo do tenant com features parseadas
 export type TenantConfig = {
   id: string;
   name: string;
@@ -34,7 +33,18 @@ export type TenantFeatures = {
   discordNotify?: boolean;
 };
 
-// Cache para evitar multiplas queries por request
+function parseFeatures(featuresJson: string): TenantFeatures {
+  try {
+    return JSON.parse(featuresJson);
+  } catch {
+    return {
+      archive: true,
+      punishments: true,
+      discordNotify: true,
+    };
+  }
+}
+
 export const getTenantBySlug = cache(async (slug: string): Promise<TenantConfig | null> => {
   const tenant = await prisma.tenant.findUnique({
     where: { slug, isActive: true },
@@ -48,47 +58,6 @@ export const getTenantBySlug = cache(async (slug: string): Promise<TenantConfig 
   };
 });
 
-export const getTenantBySubdomain = cache(async (subdomain: string): Promise<TenantConfig | null> => {
-  const tenant = await prisma.tenant.findUnique({
-    where: { subdomain, isActive: true },
-  });
-
-  if (!tenant) return null;
-
-  return {
-    ...tenant,
-    features: parseFeatures(tenant.features),
-  };
-});
-
-export const getTenantByCustomDomain = cache(async (domain: string): Promise<TenantConfig | null> => {
-  const tenant = await prisma.tenant.findUnique({
-    where: { customDomain: domain, isActive: true },
-  });
-
-  if (!tenant) return null;
-
-  return {
-    ...tenant,
-    features: parseFeatures(tenant.features),
-  };
-});
-
-// Versão SEM cache para uso em contextos onde headers() não está disponível (ex: NextAuth route)
-export async function getTenantBySubdomainDirect(subdomain: string): Promise<TenantConfig | null> {
-  const tenant = await prisma.tenant.findUnique({
-    where: { subdomain, isActive: true },
-  });
-
-  if (!tenant) return null;
-
-  return {
-    ...tenant,
-    features: parseFeatures(tenant.features),
-  };
-});
-
-// Busca tenant pelo slug diretamente (sem cache)
 export async function getTenantBySlugDirect(slug: string): Promise<TenantConfig | null> {
   const tenant = await prisma.tenant.findUnique({
     where: { slug, isActive: true },
@@ -100,9 +69,21 @@ export async function getTenantBySlugDirect(slug: string): Promise<TenantConfig 
     ...tenant,
     features: parseFeatures(tenant.features),
   };
-};
+}
 
-// Busca o primeiro tenant ativo (fallback para desenvolvimento)
+export async function getTenantBySubdomainDirect(subdomain: string): Promise<TenantConfig | null> {
+  const tenant = await prisma.tenant.findUnique({
+    where: { subdomain, isActive: true },
+  });
+
+  if (!tenant) return null;
+
+  return {
+    ...tenant,
+    features: parseFeatures(tenant.features),
+  };
+}
+
 export async function getFirstActiveTenant(): Promise<TenantConfig | null> {
   const tenant = await prisma.tenant.findFirst({
     where: { isActive: true },
@@ -116,194 +97,138 @@ export async function getFirstActiveTenant(): Promise<TenantConfig | null> {
   };
 }
 
-// Busca tenant pelo domínio customizado
-export async function getTenantByCustomDomain(domain: string): Promise<TenantConfig | null> {
-  const tenant = await prisma.tenant.findUnique({
-    where: { customDomain: domain, isActive: true },
-  });
-
-  if (!tenant) return null;
-
-  return {
-    ...tenant,
-    features: parseFeatures(tenant.features),
-  };
+export async function getTenantFromSupabaseByHost(host: string): Promise<TenantConfig | null> {
+  const supabaseTenant = await getTenantFromSupabase(host);
+  if (supabaseTenant) {
+    return {
+      id: supabaseTenant.id,
+      name: supabaseTenant.name,
+      slug: supabaseTenant.slug,
+      subdomain: supabaseTenant.subdomain,
+      customDomain: supabaseTenant.customDomain,
+      logo: supabaseTenant.logo,
+      favicon: supabaseTenant.favicon,
+      primaryColor: supabaseTenant.primaryColor,
+      secondaryColor: supabaseTenant.secondaryColor,
+      customCss: supabaseTenant.customCss,
+      features: typeof supabaseTenant.features === 'string' 
+        ? JSON.parse(supabaseTenant.features)
+        : supabaseTenant.features,
+      discordGuildId: supabaseTenant.discordGuildId,
+      discordClientId: supabaseTenant.discordClientId,
+      discordClientSecret: supabaseTenant.discordClientSecret,
+      discordBotToken: supabaseTenant.discordBotToken,
+      discordWebhookUrl: supabaseTenant.discordWebhookUrl,
+      discordAdminChannel: supabaseTenant.discordAdminChannel,
+      discordRoleAdmin: supabaseTenant.discordRoleAdmin,
+      discordRoleEvaluator: supabaseTenant.discordRoleEvaluator,
+      discordRolePlayer: supabaseTenant.discordRolePlayer,
+      isActive: supabaseTenant.isActive,
+    };
+  }
+  return null;
 }
 
-// Busca tenant a partir do header definido pelo middleware
-export async function getTenantFromRequestOriginal(): Promise<TenantConfig | null> {
+export async function getTenantFromRequest(): Promise<TenantConfig | null> {
   const headersList = await headers();
-  const tenantSlug = headersList.get("x-tenant-slug");
+  const host = headersList.get("host") || "";
 
-  if (!tenantSlug) {
-    // DEV FALLBACK: Se estiver em desenvolvimento e sem subdomínio (localhost:3000), 
-    // usa o primeiro tenant ativo encontrada para permitir testes.
-    if (process.env.NODE_ENV === 'development') {
-      const devTenant = await prisma.tenant.findFirst({
-        where: { isActive: true }
-      });
+  if (!host) return null;
 
-      if (devTenant) {
-        console.log(`[TENANT] Dev Fallback Active - Using Tenant: ${devTenant.name} (${devTenant.subdomain})`);
-        return {
-          ...devTenant,
-          features: parseFeatures(devTenant.features),
-        };
-      }
+  // 1. Try Supabase first (NEW - Central management)
+  const supabaseTenant = await getTenantFromSupabase(host);
+  if (supabaseTenant) {
+    console.log(`[Tenant] Using Supabase tenant: ${supabaseTenant.name}`);
+    return getTenantFromSupabaseByHost(host);
+  }
+
+  // 2. Fallback: DATABASE_URL (Backward Compatibility)
+  console.warn('[Tenant] Supabase not available, using DATABASE_URL fallback');
+
+  // DEFAULT TENANT - para domínio principal
+  if (host.includes('.vercel.app') && host.startsWith('gtarp-dashboard')) {
+    const defaultTenant = await prisma.tenant.findUnique({
+      where: { slug: 'default', isActive: true },
+    });
+
+    if (defaultTenant) {
+      console.log('[Tenant] Using default tenant from database');
+      return {
+        ...defaultTenant,
+        features: parseFeatures(defaultTenant.features),
+      };
     }
-
-    return null;
   }
 
-  // Se for domínio customizado, busca pelo domínio
-  if (tenantSlug.startsWith("custom:")) {
-    const customDomain = tenantSlug.replace("custom:", "");
-    return getTenantByCustomDomain(customDomain);
+  // DEV FALLBACK
+  if (process.env.NODE_ENV === 'development' && !host.includes('localhost:3000')) {
+    const devTenant = await prisma.tenant.findFirst({
+      where: { isActive: true }
+    });
+
+    if (devTenant) {
+      console.log(`[Tenant] Dev Fallback Active - Using Tenant: ${devTenant.name} (${devTenant.subdomain})`);
+      return {
+        ...devTenant,
+        features: parseFeatures(devTenant.features),
+      };
+    }
   }
 
-  // Primeiro tenta buscar pelo subdomain (ex: painel-client-1)
-  const tenantBySubdomain = await getTenantBySubdomain(tenantSlug);
-  if (tenantBySubdomain) return tenantBySubdomain;
+  // Buscar por subdomínio
+  if (host.includes('.vercel.app') && !host.startsWith('gtarp-dashboard')) {
+    const subdomain = host.split('.')[0];
+    const tenant = await prisma.tenant.findUnique({
+      where: { subdomain, isActive: true },
+    });
 
-  // Fallback: busca pelo slug
-  return getTenantBySlug(tenantSlug);
+    if (tenant) {
+      return {
+        ...tenant,
+        features: parseFeatures(tenant.features),
+      };
+    }
+  }
+
+  // Domínio customizado
+  if (!host.includes('localhost') && !host.includes('127.0.0.1')) {
+    const customDomain = host;
+    const tenant = await prisma.tenant.findUnique({
+      where: { customDomain, isActive: true },
+    });
+
+    if (tenant) {
+      console.log(`[Tenant] Found custom domain tenant: ${tenant.name}`);
+      return {
+        ...tenant,
+        features: parseFeatures(tenant.features),
+      };
+    }
+  }
+
+  // Fallback
+  console.warn('[Tenant] No tenant found, using DATABASE_URL fallback');
+  return null;
 }
 
-// Retorna o tenantId do request atual (para uso em queries)
 export async function getCurrentTenantId(): Promise<string> {
-  const tenant = await getTenantFromRequestOriginal();
+  const tenant = await getTenantFromRequest();
   if (!tenant) {
     throw new Error("Tenant not found");
   }
   return tenant.id;
 }
 
-// Parse features JSON para objeto tipado
-function parseFeatures(featuresJson: string): TenantFeatures {
-  try {
-    return JSON.parse(featuresJson);
-  } catch {
-    return {
-      archive: true,
-      punishments: true,
-      discordNotify: true,
-    };
-  }
-}
-
-// Verifica se uma feature está habilitada para o tenant
-export async function isFeatureEnabled(feature: keyof TenantFeatures): Promise<boolean> {
-  const tenant = await getTenantFromRequestOriginal();
-  if (!tenant) return false;
-  return tenant.features[feature] === true;
-}
-
-// Helper para uso em server components - retorna tenant ou redireciona
 export async function requireTenant(): Promise<TenantConfig> {
-  const tenant = await getTenantFromRequestOriginal();
+  const tenant = await getTenantFromRequest();
   if (!tenant) {
     throw new Error("Tenant not found");
   }
   return tenant;
 }
 
-// Cria um novo tenant
-export async function createTenant(data: {
-  name: string;
-  slug: string;
-  discordGuildId: string;
-  discordClientId: string;
-  discordClientSecret: string;
-  discordRoleAdmin: string;
-  discordRoleEvaluator?: string;
-  discordRolePlayer?: string;
-}): Promise<TenantConfig> {
-  const tenant = await prisma.tenant.create({
-    data: {
-      name: data.name,
-      slug: data.slug,
-      subdomain: data.slug, // Mesmo que o slug inicialmente
-      discordGuildId: data.discordGuildId,
-      discordClientId: data.discordClientId,
-      discordClientSecret: data.discordClientSecret,
-      discordRoleAdmin: data.discordRoleAdmin,
-      discordRoleEvaluator: data.discordRoleEvaluator,
-      discordRolePlayer: data.discordRolePlayer,
-    },
-  });
-
-  return {
-    ...tenant,
-    features: parseFeatures(tenant.features),
-  };
-}
-
-// Atualiza branding do tenant
-export async function updateTenantBranding(
-  tenantId: string,
-  data: {
-    logo?: string;
-    favicon?: string;
-    primaryColor?: string;
-    secondaryColor?: string;
-    customCss?: string;
-  }
-): Promise<TenantConfig> {
-  const tenant = await prisma.tenant.update({
-    where: { id: tenantId },
-    data,
-  });
-
-  return {
-    ...tenant,
-    features: parseFeatures(tenant.features),
-  };
-}
-
-// Atualiza features do tenant
-export async function updateTenantFeatures(
-  tenantId: string,
-  features: TenantFeatures
-): Promise<TenantConfig> {
-  const tenant = await prisma.tenant.update({
-    where: { id: tenantId },
-    data: {
-      features: JSON.stringify(features),
-    },
-  });
-
-  return {
-    ...tenant,
-    features: parseFeatures(tenant.features),
-  };
-}
-
-// Lista todos os tenants
-export async function listTenants() {
-  const tenants = await prisma.tenant.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-
-  return tenants.map((tenant) => ({
-    ...tenant,
-    features: parseFeatures(tenant.features),
-  }));
-}
-
-// Converte TenantConfig do server para TenantContextValue (remove dados sensiveis)
-export function toTenantContextValue(config: TenantConfig) {
-  return {
-    id: config.id,
-    name: config.name,
-    slug: config.slug,
-    logo: config.logo,
-    favicon: config.favicon,
-    primaryColor: config.primaryColor,
-    secondaryColor: config.secondaryColor,
-    customCss: config.customCss,
-    features: config.features,
-    discordRoleAdmin: config.discordRoleAdmin,
-    discordRoleEvaluator: config.discordRoleEvaluator,
-    discordRolePlayer: config.discordRolePlayer,
-  };
+export async function isFeatureEnabled(feature: keyof TenantFeatures): Promise<boolean> {
+  const tenant = await getTenantFromRequest();
+  if (!tenant) return false;
+  return tenant.features[feature] === true;
 }
