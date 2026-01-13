@@ -19,8 +19,47 @@ import {
  * It receives subdomain/slug extracted from host header.
  */
 export async function resolveTenantForAuth(tenantSlug: string | null): Promise<TenantConfig | null> {
-    // 1. DEFAULT TENANT - for main domain access
+// 1. DEFAULT TENANT - for main domain access
     if (tenantSlug === "default") {
+        const defaultTenant = await prisma.tenant.findUnique({
+            where: { slug: "default", isActive: true },
+        });
+        if (defaultTenant) {
+            console.log(`[AUTH] Using default tenant: ${defaultTenant.name}`);
+            return {
+                ...defaultTenant,
+                features: JSON.parse(defaultTenant.features),
+            };
+        }
+        console.warn("[AUTH] Default tenant not found in database");
+    }
+
+    // 2. Try to find by subdomain/slug (com verificação de Supabase adicionada)
+    if (tenantSlug && tenantSlug !== "default") {
+        const supabaseTenant = await getTenantFromSupabase(host || '');
+        if (supabaseTenant) {
+            console.log(`[AUTH] Using Supabase tenant for ${tenantSlug}: ${supabaseTenant.name}`);
+            return {
+                ...supabaseTenant,
+                features: typeof supabaseTenant.features === 'string' 
+                    ? JSON.parse(supabaseTenant.features) 
+                    : supabaseTenant.features,
+            };
+        }
+    }
+
+    // 3. Fallback to DATABASE_URL (Backward Compatibility)
+    console.warn('[AUTH] No tenant found, using DATABASE_URL fallback');
+    return getTenantBySlug(tenantSlug || 'default');
+}
+        }
+
+        // If Supabase not available, try DATABASE_URL fallback
+        if (!supabaseTenant) {
+            console.warn('[AUTH] Supabase not available for default tenant, trying DATABASE_URL fallback');
+            // Continue with existing DATABASE_URL approach
+        }
+    }
         const defaultTenant = await prisma.tenant.findUnique({
             where: { slug: "default", isActive: true },
         });
@@ -137,6 +176,12 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                 // Sync Discord Roles on Sign In (Access Token available)
                 if (account?.provider === "discord" && account.access_token) {
                     try {
+                        // MODIFIED: Check if tenant has Discord credentials (might be from Supabase)
+                        if (!tenant.discordGuildId || !tenant.discordClientId || !tenant.discordClientSecret) {
+                            console.warn(`[AUTH] Tenant ${tenant.name} has no Discord credentials, skipping role sync`);
+                            return token;
+                        }
+
                         // Use tenant-specific guild ID from database
                         const guildId = tenant.discordGuildId;
 
