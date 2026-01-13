@@ -3,11 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   serverExternalPackages: ["discord.js", "zlib-sync", "utf-8-validate", "bufferutil"],
 
-  // Expose environment variables to runtime
-  env: {
-    DATABASE_URL: process.env.DATABASE_URL,
-  },
-
   // Enable compression
   compress: true,
 
