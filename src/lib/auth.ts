@@ -59,13 +59,11 @@ export async function resolveTenantForAuth(tenantSlug: string | null): Promise<T
         if (tenantBySlug) return tenantBySlug;
     }
 
-    // 3. Dev fallback: use first active tenant
-    if (process.env.NODE_ENV === "development") {
-        const devTenant = await getFirstActiveTenant();
-        if (devTenant) {
-            console.log(`[AUTH] Dev Fallback - Using Tenant: ${devTenant.name} (${devTenant.subdomain})`);
-            return devTenant;
-        }
+    // 3. Fallback: use first active tenant (both dev AND production)
+    const fallbackTenant = await getFirstActiveTenant();
+    if (fallbackTenant) {
+        console.log(`[AUTH] Fallback - Using Tenant: ${fallbackTenant.name} (${fallbackTenant.subdomain})`);
+        return fallbackTenant;
     }
 
     return null;
