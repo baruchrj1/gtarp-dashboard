@@ -104,7 +104,13 @@ export async function getTenantFromRequest(): Promise<TenantConfig | null> {
     return getTenantByCustomDomain(customDomain);
   }
 
-  // Busca pelo slug
+  // Primeiro tenta buscar pelo subdomain (ex: painel-client-1)
+  const tenantBySubdomain = await getTenantBySubdomain(tenantSlug);
+  if (tenantBySubdomain) {
+    return tenantBySubdomain;
+  }
+
+  // Fallback: busca pelo slug
   return getTenantBySlug(tenantSlug);
 }
 
