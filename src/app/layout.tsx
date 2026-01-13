@@ -9,6 +9,8 @@ import { GlobalSearch } from "@/components/GlobalSearch";
 import { getTenantFromRequest, toTenantContextValue } from "@/lib/tenant";
 import { TenantProvider } from "@/contexts/TenantContext";
 
+export const dynamic = "force-dynamic";
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
