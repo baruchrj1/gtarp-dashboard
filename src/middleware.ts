@@ -36,17 +36,33 @@ export default withAuth(
 
     // Player Routes are accessible by everyone logged in (Admins might want to see their own reports)
 
-    // --- 3. Tenant Logic (Preserved) ---
+    // --- 3. Tenant Logic (Multi-tenant support) ---
+    // Extract subdomain from host to identify the tenant
     const host = req.headers.get("host") || "";
     let tenantSlug: string | null = null;
+
+    // Vercel subdomain pattern: {subdomain}.vercel.app
+    // Exclude main project domain (gtarp-dashboard.vercel.app)
     if (host.includes(".vercel.app") && !host.startsWith("gtarp-dashboard")) {
       tenantSlug = host.split(".")[0];
-    } else if (!host.includes("localhost") && !host.includes("127.0.0.1")) {
+    }
+    // Custom domain (not localhost)
+    else if (!host.includes("localhost") && !host.includes("127.0.0.1")) {
       tenantSlug = `custom:${host}`;
     }
 
+    // Debug logging in development
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[MIDDLEWARE] Host: ${host}, Tenant Slug: ${tenantSlug || "none (dev fallback)"}`);
+    }
+
     const response = NextResponse.next();
-    if (tenantSlug) response.headers.set("x-tenant-slug", tenantSlug);
+
+    // Always set the tenant header if we have a slug
+    if (tenantSlug) {
+      response.headers.set("x-tenant-slug", tenantSlug);
+    }
+
     return response;
   },
   {

@@ -1,11 +1,11 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 // POST - Sync user roles from Discord
 export async function POST(req: Request) {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
 
     // Check admin permissions
     if (!session?.user?.isAdmin && session?.user?.role !== "ADMIN") {
@@ -133,3 +133,4 @@ export async function POST(req: Request) {
         }, { status: 500 });
     }
 }
+

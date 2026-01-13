@@ -61,6 +61,48 @@ export const getTenantBySubdomain = cache(async (subdomain: string): Promise<Ten
   };
 });
 
+// Versão SEM cache para uso em contextos onde headers() não está disponível (ex: NextAuth route)
+export async function getTenantBySubdomainDirect(subdomain: string): Promise<TenantConfig | null> {
+  const tenant = await prisma.tenant.findUnique({
+    where: { subdomain, isActive: true },
+  });
+
+  if (!tenant) return null;
+
+  return {
+    ...tenant,
+    features: parseFeatures(tenant.features),
+  };
+}
+
+// Busca tenant pelo slug diretamente (sem cache)
+export async function getTenantBySlugDirect(slug: string): Promise<TenantConfig | null> {
+  const tenant = await prisma.tenant.findUnique({
+    where: { slug, isActive: true },
+  });
+
+  if (!tenant) return null;
+
+  return {
+    ...tenant,
+    features: parseFeatures(tenant.features),
+  };
+}
+
+// Busca o primeiro tenant ativo (fallback para desenvolvimento)
+export async function getFirstActiveTenant(): Promise<TenantConfig | null> {
+  const tenant = await prisma.tenant.findFirst({
+    where: { isActive: true },
+  });
+
+  if (!tenant) return null;
+
+  return {
+    ...tenant,
+    features: parseFeatures(tenant.features),
+  };
+}
+
 export const getTenantByCustomDomain = cache(async (domain: string): Promise<TenantConfig | null> => {
   const tenant = await prisma.tenant.findUnique({
     where: { customDomain: domain, isActive: true },

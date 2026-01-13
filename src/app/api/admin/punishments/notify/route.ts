@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { getServerSession } from "@/lib/auth";
 
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
@@ -61,7 +61,7 @@ function getPunishmentIcon(type: string): string {
 
 export async function POST(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession();
 
         // Check if user is authenticated and is an ADMIN or EVALUATOR
         if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "EVALUATOR")) {
@@ -305,3 +305,4 @@ async function sendWebhookNotification(playerName: string, embed: any) {
         })
     });
 }
+

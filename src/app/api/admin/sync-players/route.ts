@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 import { isStaff, AuthErrors } from "@/lib/permissions";
@@ -11,7 +11,7 @@ const DISCORD_ROLE_PLAYER_ID = process.env.DISCORD_ROLE_PLAYER_ID;
 
 export async function GET() {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession();
 
         // Check if user is authenticated and is STAFF
         if (!session?.user) {
@@ -118,3 +118,4 @@ export async function GET() {
         );
     }
 }
+

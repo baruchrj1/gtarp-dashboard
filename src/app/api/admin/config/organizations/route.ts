@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 
@@ -10,7 +10,7 @@ const createOrgSchema = z.object({
 
 export async function GET() {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession();
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
@@ -28,7 +28,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession();
 
         if (!session?.user?.isAdmin) {
             return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession();
 
         if (!session?.user?.isAdmin) {
             return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
@@ -85,3 +85,4 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ error: "Erro ao remover organização" }, { status: 500 });
     }
 }
+

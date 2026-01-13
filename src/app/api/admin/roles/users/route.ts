@@ -1,11 +1,11 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 // GET - List all users with their roles
 export async function GET() {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
 
     if (!session?.user?.isAdmin && session?.user?.role !== "ADMIN") {
         return NextResponse.json({ error: "Admin access required" }, { status: 403 });
@@ -33,7 +33,7 @@ export async function GET() {
 
 // PATCH - Update user role
 export async function PATCH(req: Request) {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
 
     if (!session?.user?.isAdmin && session?.user?.role !== "ADMIN") {
         return NextResponse.json({ error: "Admin access required" }, { status: 403 });
@@ -75,3 +75,4 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isStaff } from "@/lib/permissions";
 import crypto from "crypto";
 
 export async function GET(req: Request) {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user || !isStaff(session)) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
@@ -31,7 +31,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user || !isStaff(session)) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
@@ -71,3 +71,4 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Internal Error" }, { status: 500 });
     }
 }
+

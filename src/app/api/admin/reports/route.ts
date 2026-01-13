@@ -1,12 +1,12 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { isStaff, AuthErrors } from "@/lib/permissions";
 import { getTenantFromRequest } from "@/lib/tenant";
 
 export async function GET(req: Request) {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
 
     // Allow both ADMIN and EVALUATOR to access reports
     if (!session?.user) {
@@ -72,3 +72,4 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+

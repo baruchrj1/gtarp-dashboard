@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { sendReportNotification, sendPlayerReportStatusNotification, sendDiscordWebhook, DISCORD_COLORS } from "@/lib/discord";
@@ -9,7 +8,7 @@ export async function GET(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
 
     const isStaff = session?.user?.role === "ADMIN" || session?.user?.role === "EVALUATOR" || session?.user?.isAdmin;
 
@@ -45,7 +44,7 @@ export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
 
     const isStaff = session?.user?.role === "ADMIN" || session?.user?.role === "EVALUATOR" || session?.user?.isAdmin;
 

@@ -1,5 +1,5 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { getServerSession } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 // Simulated config storage (in production, this would be in the database)
@@ -11,7 +11,7 @@ let roleConfig = {
 
 // GET - Get current configuration
 export async function GET() {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
 
     if (!session?.user?.isAdmin && session?.user?.role !== "ADMIN") {
         return NextResponse.json({ error: "Admin access required" }, { status: 403 });
@@ -22,7 +22,7 @@ export async function GET() {
 
 // PATCH - Update configuration
 export async function PATCH(req: Request) {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
 
     if (!session?.user?.isAdmin && session?.user?.role !== "ADMIN") {
         return NextResponse.json({ error: "Admin access required" }, { status: 403 });
@@ -47,3 +47,4 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+

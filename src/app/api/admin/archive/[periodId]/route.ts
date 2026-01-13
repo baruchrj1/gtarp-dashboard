@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 // GET - Get archive period details with reports and punishments
@@ -9,7 +8,7 @@ export async function GET(
     context: { params: Promise<{ periodId: string }> }
 ) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession();
 
         if (!session?.user) {
             return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
@@ -61,7 +60,7 @@ export async function DELETE(
     context: { params: Promise<{ periodId: string }> }
 ) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession();
 
         if (!session?.user) {
             return NextResponse.json({ error: "Não autenticado" }, { status: 401 });

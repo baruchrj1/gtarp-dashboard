@@ -1,7 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getTenantFromRequest } from "@/lib/tenant";
@@ -19,7 +18,7 @@ const createReportSchema = z.object({
 // GET - List Reports
 export async function GET(req: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession();
         if (!session?.user) {
             return NextResponse.json({ message: "Nao autenticado" }, { status: 401 });
         }
@@ -60,7 +59,7 @@ export async function GET(req: NextRequest) {
 // POST - Create Report
 export async function POST(req: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession();
         if (!session?.user) {
             return NextResponse.json({ message: "Nao autenticado" }, { status: 401 });
         }
