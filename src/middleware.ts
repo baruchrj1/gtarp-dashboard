@@ -42,9 +42,15 @@ export default withAuth(
     let tenantSlug: string | null = null;
 
     // Vercel subdomain pattern: {subdomain}.vercel.app
-    // Exclude main project domain (gtarp-dashboard.vercel.app)
-    if (host.includes(".vercel.app") && !host.startsWith("gtarp-dashboard")) {
-      tenantSlug = host.split(".")[0];
+    if (host.includes(".vercel.app")) {
+      // MAIN DOMAIN - use default tenant
+      if (host.startsWith("gtarp-dashboard")) {
+        tenantSlug = "default";
+      }
+      // SUBDOMAIN - extract first part
+      else {
+        tenantSlug = host.split(".")[0];
+      }
     }
     // Custom domain (not localhost)
     else if (!host.includes("localhost") && !host.includes("127.0.0.1")) {

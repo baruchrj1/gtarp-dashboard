@@ -14,12 +14,27 @@ import {
 // ============================================
 
 /**
- * Resolve the tenant from the request.
- * This function works outside the normal request context (no headers()).
- * It receives the subdomain/slug extracted from the host header.
+ * Resolve tenant from request.
+ * This function works outside normal request context (no headers()).
+ * It receives subdomain/slug extracted from host header.
  */
 export async function resolveTenantForAuth(tenantSlug: string | null): Promise<TenantConfig | null> {
-    // 1. Try to find by subdomain first
+    // 1. DEFAULT TENANT - for main domain access
+    if (tenantSlug === "default") {
+        const defaultTenant = await prisma.tenant.findUnique({
+            where: { slug: "default", isActive: true },
+        });
+        if (defaultTenant) {
+            console.log(`[AUTH] Using default tenant: ${defaultTenant.name}`);
+            return {
+                ...defaultTenant,
+                features: JSON.parse(defaultTenant.features),
+            };
+        }
+        console.warn("[AUTH] Default tenant not found in database");
+    }
+
+    // 2. Try to find by subdomain/slug
     if (tenantSlug) {
         // Handle custom domain prefix
         if (tenantSlug.startsWith("custom:")) {
@@ -44,7 +59,7 @@ export async function resolveTenantForAuth(tenantSlug: string | null): Promise<T
         if (tenantBySlug) return tenantBySlug;
     }
 
-    // 2. Dev fallback: use first active tenant
+    // 3. Dev fallback: use first active tenant
     if (process.env.NODE_ENV === "development") {
         const devTenant = await getFirstActiveTenant();
         if (devTenant) {
@@ -58,14 +73,18 @@ export async function resolveTenantForAuth(tenantSlug: string | null): Promise<T
 
 /**
  * Extract tenant slug from host header.
- * This is used in the NextAuth route handler.
+ * This is used in NextAuth route handler.
  */
 export function extractTenantSlugFromHost(host: string | null): string | null {
     if (!host) return null;
 
     // Vercel subdomain pattern: {subdomain}.vercel.app
-    // But NOT the main project: gtarp-dashboard.vercel.app
-    if (host.includes(".vercel.app") && !host.startsWith("gtarp-dashboard")) {
+    if (host.includes(".vercel.app")) {
+        // MAIN DOMAIN - use default tenant
+        if (host.startsWith("gtarp-dashboard")) {
+            return "default";
+        }
+        // SUBDOMAIN - extract first part
         return host.split(".")[0];
     }
 
@@ -79,8 +98,8 @@ export function extractTenantSlugFromHost(host: string | null): string | null {
 }
 
 /**
- * Build NextAuth options dynamically based on the tenant.
- * Each tenant has its own Discord OAuth credentials stored in the database.
+ * Build NextAuth options dynamically based on tenant.
+ * Each tenant has its own Discord OAuth credentials stored in database.
  */
 export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
     return {
@@ -132,7 +151,7 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                 const member = await res.json();
                                 const roles = (member.roles || []) as string[];
 
-                                // Parse admin roles (can be comma-separated in the database)
+                                // Parse admin roles (can be comma-separated in database)
                                 const adminRoleIds = tenant.discordRoleAdmin
                                     .split(",")
                                     .map((id) => id.trim())
@@ -269,14 +288,14 @@ export const fallbackAuthOptions: NextAuthOptions = {
 // COMPATIBILITY LAYER
 // ============================================
 // These exports maintain compatibility with existing code that uses
-// getServerSession(authOptions). They automatically resolve the tenant
-// and build the appropriate auth options.
+// getServerSession(authOptions). They automatically resolve tenant
+// and build appropriate auth options.
 
 /**
- * Get auth options for the current request.
- * This function reads headers to determine the tenant and returns
- * the appropriate auth options.
- * 
+ * Get auth options for current request.
+ * This function reads headers to determine tenant and returns
+ * appropriate auth options.
+ *
  * @deprecated Use buildAuthOptions(tenant) for new code
  */
 export async function getAuthOptions(): Promise<NextAuthOptions> {
@@ -292,7 +311,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
         const tenant = await resolveTenantForAuth(tenantSlug);
 
         if (!tenant) {
-            console.warn("[AUTH] No tenant found, using fallback options");
+            console.warn("[AUTH] No tenant found for slug:", tenantSlug, "- using fallback options");
             return fallbackAuthOptions;
         }
 
@@ -305,18 +324,18 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
 
 /**
  * authOptions export for compatibility with existing code.
- * 
+ *
  * WARNING: This is a static fallback. For proper multi-tenant auth,
- * use getServerSession() which dynamically resolves the tenant.
- * 
+ * use getServerSession() which dynamically resolves tenant.
+ *
  * @deprecated Use getServerSession() instead
  */
 export const authOptions: NextAuthOptions = fallbackAuthOptions;
 
 /**
- * Get the server session with automatic tenant resolution.
+ * Get server session with automatic tenant resolution.
  * This replaces direct calls to getServerSession(authOptions).
- * 
+ *
  * Usage:
  *   import { getServerSession } from "@/lib/auth";
  *   const session = await getServerSession();
