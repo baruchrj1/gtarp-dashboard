@@ -282,13 +282,18 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
  * Fallback auth options used when tenant cannot be resolved.
  * This uses empty credentials which will fail gracefully.
  */
+/**
+ * Fallback auth options used when tenant cannot be resolved.
+ * This checks for Environment Variables (for initial bootstrapping)
+ * or defaults to invalid credentials if envs are missing.
+ */
 export const fallbackAuthOptions: NextAuthOptions = {
     debug: process.env.NODE_ENV === "development",
     secret: process.env.NEXTAUTH_SECRET,
     providers: [
         DiscordProvider({
-            clientId: "INVALID_NO_TENANT",
-            clientSecret: "INVALID_NO_TENANT",
+            clientId: process.env.DISCORD_CLIENT_ID || "INVALID_NO_TENANT",
+            clientSecret: process.env.DISCORD_CLIENT_SECRET || "INVALID_NO_TENANT",
             authorization: { params: { scope: "identify email guilds.members.read" } },
         }),
     ],
@@ -298,10 +303,39 @@ export const fallbackAuthOptions: NextAuthOptions = {
     },
     callbacks: {
         async signIn() {
-            // Block all sign ins when no tenant
-            console.error("[AUTH] Sign in blocked: No tenant resolved");
+            // Allow sign in if we are using Env Vars (Bootstrapping Mode)
+            if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+                console.log("[AUTH] Bootstrapping Mode: Using Environment Variables for Auth");
+                return true;
+            }
+
+            // Block sign ins if we really have no credentials
+            console.error("[AUTH] Sign in blocked: No tenant resolved and no Env Vars provided");
             return false;
         },
+        async jwt({ token, user, account }) {
+            // Basic role sync for bootstrap user (Super Admin check only)
+            if (user) {
+                const superAdminsRaw = process.env.SUPER_ADMIN_IDS || "";
+                const superAdmins = superAdminsRaw.split(",").map(id => id.trim());
+                if (user.id && superAdmins.includes(user.id)) {
+                    token.isSuperAdmin = true;
+                    token.role = "ADMIN"; // Force Admin for bootstrap user
+                    token.isAdmin = true;
+                }
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            if (session.user) {
+                (session.user as any).isSuperAdmin = token.isSuperAdmin || false;
+                // Set a fake tenantId for bootstrap session so it doesn't crash parts of the app expecting it
+                session.user.tenantId = "system-bootstrap";
+                session.user.role = (token.role as string) || "PLAYER";
+                session.user.isAdmin = (token.isAdmin as boolean) || false;
+            }
+            return session;
+        }
     },
     pages: {
         signIn: "/login",
