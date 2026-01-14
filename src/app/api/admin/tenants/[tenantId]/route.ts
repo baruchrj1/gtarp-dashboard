@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function PATCH(req: NextRequest, { params }: { params: { tenantId: string } }) {
+// Fix for Next.js 15+: params is a Promise
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ tenantId: string }> }) {
+    const { tenantId } = await params;
     const session = await getServerSession();
 
     // Confirm Super Admin
@@ -28,7 +30,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { tenantId: 
         } = body;
 
         const updatedTenant = await prisma.tenant.update({
-            where: { id: params.tenantId },
+            where: { id: tenantId },
             data: {
                 name,
                 slug,
