@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import { cache } from "react";
 import { prisma } from "./prisma";
-import { getTenantFromSupabase } from "./supabase";
 
 export type TenantConfig = {
   id: string;
@@ -97,62 +96,20 @@ export async function getFirstActiveTenant(): Promise<TenantConfig | null> {
   };
 }
 
-export async function getTenantFromSupabaseByHost(host: string): Promise<TenantConfig | null> {
-  const supabaseTenant = await getTenantFromSupabase(host);
-  if (supabaseTenant) {
-    return {
-      id: supabaseTenant.id,
-      name: supabaseTenant.name,
-      slug: supabaseTenant.slug,
-      subdomain: supabaseTenant.subdomain,
-      customDomain: supabaseTenant.customDomain,
-      logo: supabaseTenant.logo,
-      favicon: supabaseTenant.favicon,
-      primaryColor: supabaseTenant.primaryColor,
-      secondaryColor: supabaseTenant.secondaryColor,
-      customCss: supabaseTenant.customCss,
-      features: typeof supabaseTenant.features === 'string' 
-        ? JSON.parse(supabaseTenant.features)
-        : supabaseTenant.features,
-      discordGuildId: supabaseTenant.discordGuildId,
-      discordClientId: supabaseTenant.discordClientId,
-      discordClientSecret: supabaseTenant.discordClientSecret,
-      discordBotToken: supabaseTenant.discordBotToken,
-      discordWebhookUrl: supabaseTenant.discordWebhookUrl,
-      discordAdminChannel: supabaseTenant.discordAdminChannel,
-      discordRoleAdmin: supabaseTenant.discordRoleAdmin,
-      discordRoleEvaluator: supabaseTenant.discordRoleEvaluator,
-      discordRolePlayer: supabaseTenant.discordRolePlayer,
-      isActive: supabaseTenant.isActive,
-    };
-  }
-  return null;
-}
-
 export async function getTenantFromRequest(): Promise<TenantConfig | null> {
   const headersList = await headers();
   const host = headersList.get("host") || "";
 
   if (!host) return null;
 
-  // 1. Try Supabase first (NEW - Central management)
-  const supabaseTenant = await getTenantFromSupabase(host);
-  if (supabaseTenant) {
-    console.log(`[Tenant] Using Supabase tenant: ${supabaseTenant.name}`);
-    return getTenantFromSupabaseByHost(host);
-  }
-
-  // 2. Fallback: DATABASE_URL (Backward Compatibility)
-  console.warn('[Tenant] Supabase not available, using DATABASE_URL fallback');
-
-  // DEFAULT TENANT - para domínio principal
+  // 1. DEFAULT TENANT - para domínio principal
   if (host.includes('.vercel.app') && host.startsWith('gtarp-dashboard')) {
     const defaultTenant = await prisma.tenant.findUnique({
       where: { slug: 'default', isActive: true },
     });
 
     if (defaultTenant) {
-      console.log('[Tenant] Using default tenant from database');
+      // console.log('[Tenant] Using default tenant from database');
       return {
         ...defaultTenant,
         features: parseFeatures(defaultTenant.features),
@@ -160,22 +117,32 @@ export async function getTenantFromRequest(): Promise<TenantConfig | null> {
     }
   }
 
-  // DEV FALLBACK
-  if (process.env.NODE_ENV === 'development' && !host.includes('localhost:3000')) {
-    const devTenant = await prisma.tenant.findFirst({
+  // 2. DEV FALLBACK (Localhost)
+  if (process.env.NODE_ENV === 'development' && (host.includes('localhost') || host.includes('127.0.0.1'))) {
+    // Tenta pegar o tenant 'default' ou o primeiro que encontrar
+    const defaultTenant = await prisma.tenant.findUnique({
+      where: { slug: 'default', isActive: true }
+    });
+
+    if (defaultTenant) {
+      // console.log(`[Tenant] Dev Environment - Using 'default' tenant`);
+      return { ...defaultTenant, features: parseFeatures(defaultTenant.features) };
+    }
+
+    const firstTenant = await prisma.tenant.findFirst({
       where: { isActive: true }
     });
 
-    if (devTenant) {
-      console.log(`[Tenant] Dev Fallback Active - Using Tenant: ${devTenant.name} (${devTenant.subdomain})`);
+    if (firstTenant) {
+      console.log(`[Tenant] Dev Fallback - Using First Tenant: ${firstTenant.name} (${firstTenant.subdomain})`);
       return {
-        ...devTenant,
-        features: parseFeatures(devTenant.features),
+        ...firstTenant,
+        features: parseFeatures(firstTenant.features),
       };
     }
   }
 
-  // Buscar por subdomínio
+  // 3. Buscar por subdomínio (Vercel ou outro domínio com sub)
   if (host.includes('.vercel.app') && !host.startsWith('gtarp-dashboard')) {
     const subdomain = host.split('.')[0];
     const tenant = await prisma.tenant.findUnique({
@@ -190,8 +157,8 @@ export async function getTenantFromRequest(): Promise<TenantConfig | null> {
     }
   }
 
-  // Domínio customizado
-  if (!host.includes('localhost') && !host.includes('127.0.0.1')) {
+  // 4. Domínio customizado
+  if (!host.includes('localhost') && !host.includes('127.0.0.1') && !host.includes('.vercel.app')) {
     const customDomain = host;
     const tenant = await prisma.tenant.findUnique({
       where: { customDomain, isActive: true },
@@ -207,7 +174,7 @@ export async function getTenantFromRequest(): Promise<TenantConfig | null> {
   }
 
   // Fallback
-  console.warn('[Tenant] No tenant found, using DATABASE_URL fallback');
+  console.warn('[Tenant] No tenant found');
   return null;
 }
 
@@ -231,4 +198,22 @@ export async function isFeatureEnabled(feature: keyof TenantFeatures): Promise<b
   const tenant = await getTenantFromRequest();
   if (!tenant) return false;
   return tenant.features[feature] === true;
+}
+
+export function toTenantContextValue(tenant: TenantConfig) {
+  return {
+    id: tenant.id,
+    name: tenant.name,
+    slug: tenant.slug,
+    subdomain: tenant.subdomain,
+    customDomain: tenant.customDomain,
+    logo: tenant.logo,
+    favicon: tenant.favicon,
+    primaryColor: tenant.primaryColor,
+    secondaryColor: tenant.secondaryColor,
+    customCss: tenant.customCss,
+    features: tenant.features,
+    discordRoleAdmin: tenant.discordRoleAdmin,
+    discordRoleEvaluator: tenant.discordRoleEvaluator,
+  };
 }

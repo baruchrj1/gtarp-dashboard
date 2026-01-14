@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { cache } from "react";
 import { prisma } from "./prisma";
-import { getTenantFromSupabase } from "./supabase";
+
 
 export type TenantConfig = {
   id: string;
@@ -33,13 +33,6 @@ export type TenantFeatures = {
   discordNotify?: boolean;
 };
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
-
-export const prisma = globalForPrisma.prisma || new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-})
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 function parseFeatures(featuresJson: string): TenantFeatures {
   try {
@@ -136,37 +129,9 @@ export async function getTenantFromRequestHybrid(): Promise<TenantConfig | null>
 
   if (!host) return null;
 
-  // 1. Try Supabase first
-  const supabaseTenant = await getTenantFromSupabase(host);
-  if (supabaseTenant) {
-    console.log(`[Tenant] Using Supabase tenant: ${supabaseTenant.name}`);
-
-    return {
-      id: supabaseTenant.id,
-      name: supabaseTenant.name,
-      slug: supabaseTenant.slug,
-      subdomain: supabaseTenant.subdomain,
-      customDomain: supabaseTenant.customDomain,
-      logo: supabaseTenant.logo,
-      favicon: supabaseTenant.favicon,
-      primaryColor: supabaseTenant.primaryColor,
-      secondaryColor: supabaseTenant.secondaryColor,
-      customCss: supabaseTenant.customCss,
-      features: typeof supabaseTenant.features === 'string'
-        ? JSON.parse(supabaseTenant.features)
-        : supabaseTenant.features,
-      discordGuildId: supabaseTenant.discordGuildId,
-      discordClientId: supabaseTenant.discordClientId,
-      discordClientSecret: supabaseTenant.discordClientSecret,
-      discordBotToken: supabaseTenant.discordBotToken,
-      discordWebhookUrl: supabaseTenant.discordWebhookUrl,
-      discordAdminChannel: supabaseTenant.discordAdminChannel,
-      discordRoleAdmin: supabaseTenant.discordRoleAdmin,
-      discordRoleEvaluator: supabaseTenant.discordRoleEvaluator,
-      discordRolePlayer: supabaseTenant.discordRolePlayer,
-      isActive: supabaseTenant.isActive,
-    };
-  }
+  // 1. Try Supabase first (REMOVED - Deprecated)
+  // const supabaseTenant = await getTenantFromSupabase(host);
+  // if (supabaseTenant) { ... }
 
   // 2. Fallback: Use DATABASE_URL (Backward Compatibility)
   console.warn('[Tenant] Supabase not available, using DATABASE_URL fallback');

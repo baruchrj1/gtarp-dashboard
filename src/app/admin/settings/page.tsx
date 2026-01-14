@@ -17,8 +17,6 @@ export default function SettingsPage() {
     // Local state for form
     const [formData, setFormData] = useState({
         server_name: "",
-        server_logo: "",
-        theme_color: "",
         discord_webhook_reports: "",
         discord_webhook_logs: "",
     });
@@ -33,7 +31,10 @@ export default function SettingsPage() {
                     if (data.settings) {
                         setFormData((prev) => ({
                             ...prev,
-                            ...data.settings
+                            // Only load fields we allow editing
+                            server_name: data.settings.server_name || "",
+                            discord_webhook_reports: data.settings.discord_webhook_reports || "",
+                            discord_webhook_logs: data.settings.discord_webhook_logs || "",
                         }));
                     }
                 }
@@ -62,7 +63,7 @@ export default function SettingsPage() {
             }
 
             await refreshSettings();
-            toast.success("Configurações Salvas", "A aparência do sistema foi atualizada com sucesso.");
+            toast.success("Configurações Salvas", "As configurações do servidor foram atualizadas.");
         } catch (error) {
             console.error(error);
             toast.error("Erro", error instanceof Error ? error.message : "Erro ao salvar configurações.");
@@ -89,7 +90,7 @@ export default function SettingsPage() {
                         <Settings className="w-8 h-8 text-primary" />
                         Configurações Gerais
                     </h1>
-                    <p className="text-zinc-400 mt-2">Personalize a identidade visual e informações do sistema.</p>
+                    <p className="text-zinc-400 mt-2">Gerencie as informações principais do servidor.</p>
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -97,7 +98,7 @@ export default function SettingsPage() {
                     <div className="bg-card border border-border rounded-lg p-6">
                         <div className="flex items-center gap-2 mb-6 text-zinc-400">
                             <Layout className="w-5 h-5" />
-                            <h2 className="font-bold uppercase tracking-wider text-sm">Personalização</h2>
+                            <h2 className="font-bold uppercase tracking-wider text-sm">Informações Básicas</h2>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -114,51 +115,6 @@ export default function SettingsPage() {
                                     placeholder="Ex: CIDADE ALTA"
                                 />
                                 <p className="text-[10px] text-zinc-500 mt-1">Aparece na aba do navegador e no topo do site.</p>
-                            </div>
-
-                            {/* Logo URL */}
-                            <div>
-                                <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
-                                    URL da Logo (Imagem)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.server_logo}
-                                    onChange={(e) => setFormData({ ...formData, server_logo: e.target.value })}
-                                    className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm"
-                                    placeholder="https://exemplo.com/logo.png"
-                                />
-                                <p className="text-[10px] text-zinc-500 mt-1">Recomendado: PNG Transparente. Deixe vazio para usar apenas texto.</p>
-                            </div>
-
-                            {/* Theme Color */}
-                            <div>
-                                <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
-                                    Cor Principal (Tema)
-                                </label>
-                                <div className="flex gap-4 items-center">
-                                    <div className="relative group">
-                                        <input
-                                            type="color"
-                                            value={formData.theme_color}
-                                            onChange={(e) => setFormData({ ...formData, theme_color: e.target.value })}
-                                            className="h-12 w-16 p-0 bg-transparent border-0 rounded cursor-pointer opacity-0 absolute inset-0 z-10"
-                                        />
-                                        <div
-                                            className="h-12 w-16 rounded border border-white/20 shadow-lg"
-                                            style={{ backgroundColor: formData.theme_color }}
-                                        />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={formData.theme_color}
-                                        onChange={(e) => setFormData({ ...formData, theme_color: e.target.value })}
-                                        className="flex-1 bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm uppercase"
-                                        placeholder="#8B5CF6"
-                                        maxLength={7}
-                                    />
-                                </div>
-                                <p className="text-[10px] text-zinc-500 mt-1">Define a cor de destaque em todo o sistema.</p>
                             </div>
 
                             {/* Discord Integration Section */}
@@ -213,40 +169,23 @@ export default function SettingsPage() {
                         </form>
                     </div>
 
-                    {/* Preview Panel */}
+                    {/* Preview Panel - Simplified */}
                     <div className="space-y-6">
                         <div className="bg-card border border-border rounded-lg p-6">
                             <h3 className="text-xs font-bold text-zinc-400 mb-4 uppercase tracking-wide">Preview: Topo do Site</h3>
 
                             <div className="bg-black/80 border-b border-white/10 p-4 rounded-lg relative overflow-hidden">
                                 <div className="flex items-center gap-2">
-                                    {formData.server_logo ? (
-                                        <img src={formData.server_logo} alt="Logo" className="h-10 w-auto object-contain" />
-                                    ) : (
-                                        <div className="flex items-center gap-2">
-                                            <div className="bg-primary/20 p-2 rounded" style={{ backgroundColor: `${formData.theme_color}33` }}>
-                                                <div className="w-6 h-6" style={{ color: formData.theme_color }}>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-                                                </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="bg-primary/20 p-2 rounded">
+                                            <div className="w-6 h-6 text-primary">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
                                             </div>
-                                            <span className="text-xl font-display font-bold text-white tracking-wider uppercase">
-                                                {formData.server_name || "NOME DO SERVIDOR"}
-                                            </span>
                                         </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-card border border-border rounded-lg p-6">
-                            <h3 className="text-xs font-bold text-zinc-400 mb-4 uppercase tracking-wide">Preview: Cores</h3>
-                            <div className="space-y-4">
-                                <button className="w-full py-3 rounded font-bold text-black uppercase tracking-wider transition-opacity hover:opacity-90" style={{ backgroundColor: formData.theme_color }}>
-                                    Botão Primário
-                                </button>
-                                <div className="p-4 rounded border border-l-4 bg-zinc-900" style={{ borderLeftColor: formData.theme_color, borderColor: 'rgba(255,255,255,0.1)' }}>
-                                    <h4 className="font-bold text-white mb-1">Card de Exemplo</h4>
-                                    <p className="text-sm text-zinc-400">Este é um exemplo de como a cor será aplicada em bordas e detalhes.</p>
+                                        <span className="text-xl font-display font-bold text-white tracking-wider uppercase">
+                                            {formData.server_name || "NOME DO SERVIDOR"}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

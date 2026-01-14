@@ -3,7 +3,7 @@ import { PrismaClient, Prisma } from '@prisma/client'
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 
 export const prisma = globalForPrisma.prisma || new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
 })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
@@ -20,7 +20,7 @@ export async function switchToTenantDatabase(databaseUrl: string, directUrl?: st
     }
 
     console.log(`[DB] Switching to tenant database: ${databaseUrl.substring(0, 20)}...`);
-    
+
     if (globalForPrisma.prisma) {
         await globalForPrisma.prisma.$disconnect();
     }
@@ -30,7 +30,6 @@ export async function switchToTenantDatabase(databaseUrl: string, directUrl?: st
         datasources: {
             db: {
                 url: databaseUrl,
-                directUrl: directUrl,
             },
         },
     });

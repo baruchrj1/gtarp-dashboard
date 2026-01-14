@@ -3,11 +3,7 @@ import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ThemeProvider } from "@/context/ThemeContext";
-import TopNavigation from "@/components/TopNavigation";
-import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
-import { GlobalSearch } from "@/components/GlobalSearch";
-import { getTenantFromRequest, toTenantContextValue } from "@/lib/tenant";
-import { TenantProvider } from "@/contexts/TenantContext";
+import { getTenantFromRequest } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +30,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-// Metadata dinamica baseada no tenant
+// Metadata dinamica baseada no tenant - MANTÉM, pois metadata sobe
 export async function generateMetadata(): Promise<Metadata> {
   const tenant = await getTenantFromRequest();
 
@@ -83,55 +79,26 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Busca tenant atual (se existir)
-  const tenant = await getTenantFromRequest();
+  // O RootLayout agora é apenas o Shell global.
+  // A UI do Tenant (TopNav, Padding) foi movida para (tenant)/layout.tsx
+  // A UI do Master (Sidebar) está em master/layout.tsx
 
-  // CSS variables para cores dinamicas
-  const cssVariables = tenant
-    ? {
-      "--color-primary": tenant.primaryColor,
-      "--color-secondary": tenant.secondaryColor,
-    } as React.CSSProperties
-    : {};
-
-  // Conteudo principal
-  const content = (
+  return (
     <html
       lang="pt-BR"
       className="dark scroll-smooth"
       data-scroll-behavior="smooth"
-      style={cssVariables}
     >
       <head>
-        {/* CSS customizado do tenant */}
-        {tenant?.customCss && (
-          <style dangerouslySetInnerHTML={{ __html: tenant.customCss }} />
-        )}
+        {/* Global Head Scripts if any */}
       </head>
       <body className={`${inter.variable} ${oswald.variable} bg-background font-sans min-h-screen flex flex-col`}>
         <Providers>
           <ThemeProvider>
-            <ServiceWorkerRegistration />
-            <GlobalSearch />
-            <TopNavigation tenantLogo={tenant?.logo} tenantName={tenant?.name} isTenantContext={!!tenant} />
-            <main className="flex-1 p-6 relative">
-              <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('/noise.svg')] mix-blend-overlay"></div>
-              {children}
-            </main>
+            {children}
           </ThemeProvider>
         </Providers>
       </body>
     </html>
   );
-
-  // Se tem tenant, envolve com TenantProvider
-  if (tenant) {
-    return (
-      <TenantProvider tenant={toTenantContextValue(tenant)}>
-        {content}
-      </TenantProvider>
-    );
-  }
-
-  return content;
 }

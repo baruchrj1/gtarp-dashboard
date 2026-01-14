@@ -6,7 +6,8 @@ import {
     TenantConfig,
     getTenantBySubdomainDirect,
     getTenantBySlugDirect,
-    getFirstActiveTenant
+    getFirstActiveTenant,
+    getTenantBySlug
 } from "./tenant";
 
 // ============================================
@@ -19,47 +20,8 @@ import {
  * It receives subdomain/slug extracted from host header.
  */
 export async function resolveTenantForAuth(tenantSlug: string | null): Promise<TenantConfig | null> {
-// 1. DEFAULT TENANT - for main domain access
+    // 1. DEFAULT TENANT - for main domain access
     if (tenantSlug === "default") {
-        const defaultTenant = await prisma.tenant.findUnique({
-            where: { slug: "default", isActive: true },
-        });
-        if (defaultTenant) {
-            console.log(`[AUTH] Using default tenant: ${defaultTenant.name}`);
-            return {
-                ...defaultTenant,
-                features: JSON.parse(defaultTenant.features),
-            };
-        }
-        console.warn("[AUTH] Default tenant not found in database");
-    }
-
-    // 2. Try to find by subdomain/slug (com verificação de Supabase adicionada)
-    if (tenantSlug && tenantSlug !== "default") {
-        const supabaseTenant = await getTenantFromSupabase(host || '');
-        if (supabaseTenant) {
-            console.log(`[AUTH] Using Supabase tenant for ${tenantSlug}: ${supabaseTenant.name}`);
-            return {
-                ...supabaseTenant,
-                features: typeof supabaseTenant.features === 'string' 
-                    ? JSON.parse(supabaseTenant.features) 
-                    : supabaseTenant.features,
-            };
-        }
-    }
-
-    // 3. Fallback to DATABASE_URL (Backward Compatibility)
-    console.warn('[AUTH] No tenant found, using DATABASE_URL fallback');
-    return getTenantBySlug(tenantSlug || 'default');
-}
-        }
-
-        // If Supabase not available, try DATABASE_URL fallback
-        if (!supabaseTenant) {
-            console.warn('[AUTH] Supabase not available for default tenant, trying DATABASE_URL fallback');
-            // Continue with existing DATABASE_URL approach
-        }
-    }
         const defaultTenant = await prisma.tenant.findUnique({
             where: { slug: "default", isActive: true },
         });
@@ -125,13 +87,13 @@ export function extractTenantSlugFromHost(host: string | null): string | null {
         return host.split(".")[0];
     }
 
-    // Custom domain
-    if (!host.includes("localhost") && !host.includes("127.0.0.1")) {
-        return `custom:${host}`;
+    // Localhost - default tenant
+    if (host.includes("localhost") || host.includes("127.0.0.1")) {
+        return "default";
     }
 
-    // Localhost - no subdomain
-    return null;
+    // Custom domain
+    return `custom:${host}`;
 }
 
 /**
@@ -155,9 +117,16 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
             maxAge: 24 * 60 * 60, // 24 hours
         },
         callbacks: {
-            async signIn({ user }) {
+            async signIn({ user, account, profile }) {
+                // console.log("[AUTH] SignIn logic...");
+                if (account?.error) {
+                    console.error("[AUTH DEBUG] Account Error:", account.error);
+                }
                 // Basic validation
-                if (!user.email && !user.id) return false;
+                if (!user.email && !user.id) {
+                    // console.log("[AUTH DEBUG] SignIn Failed: Missing email/id");
+                    return false;
+                }
                 return true;
             },
 
@@ -166,6 +135,15 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                 if (user) {
                     token.id = user.id;
                     token.email = user.email;
+
+                    // Super Admin Check (Env based)
+                    const superAdminsRaw = process.env.SUPER_ADMIN_IDS || "";
+                    const superAdmins = superAdminsRaw.split(",").map(id => id.trim());
+
+                    if (user.id && superAdmins.includes(user.id)) {
+                        // console.log(`[AUTH] User ${user.id} matched Super Admin list.`);
+                        token.isSuperAdmin = true;
+                    }
                 }
 
                 // Handle Session Updates (client-side triggers)
@@ -176,7 +154,7 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                 // Sync Discord Roles on Sign In (Access Token available)
                 if (account?.provider === "discord" && account.access_token) {
                     try {
-                        // MODIFIED: Check if tenant has Discord credentials (might be from Supabase)
+                        // MODIFIED: Check if tenant has Discord credentials
                         if (!tenant.discordGuildId || !tenant.discordClientId || !tenant.discordClientSecret) {
                             console.warn(`[AUTH] Tenant ${tenant.name} has no Discord credentials, skipping role sync`);
                             return token;
@@ -281,6 +259,9 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                     session.user.isAdmin = (token.isAdmin as boolean) || false;
                     session.user.discordRoles = (token.discordRoles as string[]) || [];
                     session.user.tenantId = (token.tenantId as string) || tenant.id;
+
+                    // Expose Super Admin status
+                    (session.user as any).isSuperAdmin = token.isSuperAdmin || false;
                 }
                 return session;
             },
@@ -384,6 +365,7 @@ export const authOptions: NextAuthOptions = fallbackAuthOptions;
  *   const session = await getServerSession();
  */
 export async function getServerSession() {
-    const options = await getAuthOptions();
-    return nextAuthGetServerSession(options);
+    const nextAuthOptions = await getAuthOptions();
+    return nextAuthGetServerSession(nextAuthOptions);
 }
+

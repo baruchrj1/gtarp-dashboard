@@ -5,6 +5,7 @@ declare module "next-auth" {
         user: {
             id: string
             isAdmin: boolean
+            isSuperAdmin?: boolean // Master Admin
             role: string // PLAYER, EVALUATOR, ADMIN
             discordRoles: string[] // Array of Discord Role IDs
             discordId: string
@@ -14,6 +15,7 @@ declare module "next-auth" {
 
     interface User extends DefaultUser {
         isAdmin?: boolean
+        isSuperAdmin?: boolean
         role?: string
         discordRoles?: string[]
         tenantId?: string
@@ -24,6 +26,7 @@ declare module "next-auth/jwt" {
     interface JWT {
         id: string
         isAdmin: boolean
+        isSuperAdmin?: boolean
         role: string
         discordRoles: string[]
         tenantId?: string
