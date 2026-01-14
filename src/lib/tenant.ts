@@ -98,123 +98,128 @@ export async function getFirstActiveTenant(): Promise<TenantConfig | null> {
 
 // Wrapped in cache to prevent multiple DB calls per request (e.g. Layout + Page + Internal usage)
 export const getTenantFromRequest = cache(async (): Promise<TenantConfig | null> => {
-  const headersList = await headers();
-  const host = headersList.get("host") || "";
-  const headerSlug = headersList.get("x-tenant-slug");
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host") || "";
+    const headerSlug = headersList.get("x-tenant-slug");
 
-  // 0. Middleware Override (Masquerade or Pre-resolved)
-  if (headerSlug) {
-    if (headerSlug === "default") {
+    // 0. Middleware Override (Masquerade or Pre-resolved)
+    if (headerSlug) {
+      if (headerSlug === "default") {
+        const defaultTenant = await prisma.tenant.findUnique({
+          where: { slug: "default", isActive: true },
+        });
+        if (defaultTenant) {
+          return {
+            ...defaultTenant,
+            features: parseFeatures(defaultTenant.features),
+          };
+        }
+      } else if (headerSlug.startsWith("custom:")) {
+        const customDomain = headerSlug.replace("custom:", "");
+        const tenant = await prisma.tenant.findUnique({
+          where: { customDomain, isActive: true },
+        });
+        if (tenant) {
+          return {
+            ...tenant,
+            features: parseFeatures(tenant.features),
+          };
+        }
+      } else {
+        const tenant = await prisma.tenant.findUnique({
+          where: { slug: headerSlug, isActive: true },
+        });
+        if (tenant) {
+          return {
+            ...tenant,
+            features: parseFeatures(tenant.features),
+          };
+        }
+      }
+    }
+
+    // Fallback if header not present (e.g. direct component usage outside middleware scope - rare in App Dir but possible)
+    if (!host) return null;
+
+    // 1. DEFAULT TENANT - para domínio principal
+    if (host.includes('.vercel.app') && host.startsWith('gtarp-dashboard')) {
       const defaultTenant = await prisma.tenant.findUnique({
-        where: { slug: "default", isActive: true },
+        where: { slug: 'default', isActive: true },
       });
+
       if (defaultTenant) {
+        // console.log('[Tenant] Using default tenant from database');
         return {
           ...defaultTenant,
           features: parseFeatures(defaultTenant.features),
         };
       }
-    } else if (headerSlug.startsWith("custom:")) {
-      const customDomain = headerSlug.replace("custom:", "");
+    }
+
+    // 2. DEV FALLBACK (Localhost)
+    if (process.env.NODE_ENV === 'development' && (host.includes('localhost') || host.includes('127.0.0.1'))) {
+      // Tenta pegar o tenant 'default' ou o primeiro que encontrar
+      const defaultTenant = await prisma.tenant.findUnique({
+        where: { slug: 'default', isActive: true }
+      });
+
+      if (defaultTenant) {
+        // console.log(`[Tenant] Dev Environment - Using 'default' tenant`);
+        return { ...defaultTenant, features: parseFeatures(defaultTenant.features) };
+      }
+
+      const firstTenant = await prisma.tenant.findFirst({
+        where: { isActive: true }
+      });
+
+      if (firstTenant) {
+        console.log(`[Tenant] Dev Fallback - Using First Tenant: ${firstTenant.name} (${firstTenant.subdomain})`);
+        return {
+          ...firstTenant,
+          features: parseFeatures(firstTenant.features),
+        };
+      }
+    }
+
+    // 3. Buscar por subdomínio (Vercel ou outro domínio com sub)
+    if (host.includes('.vercel.app') && !host.startsWith('gtarp-dashboard')) {
+      const subdomain = host.split('.')[0];
+      const tenant = await prisma.tenant.findUnique({
+        where: { subdomain, isActive: true },
+      });
+
+      if (tenant) {
+        return {
+          ...tenant,
+          features: parseFeatures(tenant.features),
+        };
+      }
+    }
+
+    // 4. Domínio customizado
+    if (!host.includes('localhost') && !host.includes('127.0.0.1') && !host.includes('.vercel.app')) {
+      const customDomain = host;
       const tenant = await prisma.tenant.findUnique({
         where: { customDomain, isActive: true },
       });
+
       if (tenant) {
-        return {
-          ...tenant,
-          features: parseFeatures(tenant.features),
-        };
-      }
-    } else {
-      const tenant = await prisma.tenant.findUnique({
-        where: { slug: headerSlug, isActive: true },
-      });
-      if (tenant) {
+        console.log(`[Tenant] Found custom domain tenant: ${tenant.name}`);
         return {
           ...tenant,
           features: parseFeatures(tenant.features),
         };
       }
     }
+
+    // Fallback
+    console.warn('[Tenant] No tenant found');
+    return null;
+  } catch (error) {
+    console.error("[CRITICAL] Error resolving tenant:", error);
+    return null;
   }
-
-  // Fallback if header not present (e.g. direct component usage outside middleware scope - rare in App Dir but possible)
-  if (!host) return null;
-
-  // 1. DEFAULT TENANT - para domínio principal
-  if (host.includes('.vercel.app') && host.startsWith('gtarp-dashboard')) {
-    const defaultTenant = await prisma.tenant.findUnique({
-      where: { slug: 'default', isActive: true },
-    });
-
-    if (defaultTenant) {
-      // console.log('[Tenant] Using default tenant from database');
-      return {
-        ...defaultTenant,
-        features: parseFeatures(defaultTenant.features),
-      };
-    }
-  }
-
-  // 2. DEV FALLBACK (Localhost)
-  if (process.env.NODE_ENV === 'development' && (host.includes('localhost') || host.includes('127.0.0.1'))) {
-    // Tenta pegar o tenant 'default' ou o primeiro que encontrar
-    const defaultTenant = await prisma.tenant.findUnique({
-      where: { slug: 'default', isActive: true }
-    });
-
-    if (defaultTenant) {
-      // console.log(`[Tenant] Dev Environment - Using 'default' tenant`);
-      return { ...defaultTenant, features: parseFeatures(defaultTenant.features) };
-    }
-
-    const firstTenant = await prisma.tenant.findFirst({
-      where: { isActive: true }
-    });
-
-    if (firstTenant) {
-      console.log(`[Tenant] Dev Fallback - Using First Tenant: ${firstTenant.name} (${firstTenant.subdomain})`);
-      return {
-        ...firstTenant,
-        features: parseFeatures(firstTenant.features),
-      };
-    }
-  }
-
-  // 3. Buscar por subdomínio (Vercel ou outro domínio com sub)
-  if (host.includes('.vercel.app') && !host.startsWith('gtarp-dashboard')) {
-    const subdomain = host.split('.')[0];
-    const tenant = await prisma.tenant.findUnique({
-      where: { subdomain, isActive: true },
-    });
-
-    if (tenant) {
-      return {
-        ...tenant,
-        features: parseFeatures(tenant.features),
-      };
-    }
-  }
-
-  // 4. Domínio customizado
-  if (!host.includes('localhost') && !host.includes('127.0.0.1') && !host.includes('.vercel.app')) {
-    const customDomain = host;
-    const tenant = await prisma.tenant.findUnique({
-      where: { customDomain, isActive: true },
-    });
-
-    if (tenant) {
-      console.log(`[Tenant] Found custom domain tenant: ${tenant.name}`);
-      return {
-        ...tenant,
-        features: parseFeatures(tenant.features),
-      };
-    }
-  }
-
-  // Fallback
-  console.warn('[Tenant] No tenant found');
-  return null;
 });
 
 export async function getCurrentTenantId(): Promise<string> {
