@@ -96,10 +96,49 @@ export async function getFirstActiveTenant(): Promise<TenantConfig | null> {
   };
 }
 
-export async function getTenantFromRequest(): Promise<TenantConfig | null> {
+// Wrapped in cache to prevent multiple DB calls per request (e.g. Layout + Page + Internal usage)
+export const getTenantFromRequest = cache(async (): Promise<TenantConfig | null> => {
   const headersList = await headers();
   const host = headersList.get("host") || "";
+  const headerSlug = headersList.get("x-tenant-slug");
 
+  // 0. Middleware Override (Masquerade or Pre-resolved)
+  if (headerSlug) {
+    if (headerSlug === "default") {
+      const defaultTenant = await prisma.tenant.findUnique({
+        where: { slug: "default", isActive: true },
+      });
+      if (defaultTenant) {
+        return {
+          ...defaultTenant,
+          features: parseFeatures(defaultTenant.features),
+        };
+      }
+    } else if (headerSlug.startsWith("custom:")) {
+      const customDomain = headerSlug.replace("custom:", "");
+      const tenant = await prisma.tenant.findUnique({
+        where: { customDomain, isActive: true },
+      });
+      if (tenant) {
+        return {
+          ...tenant,
+          features: parseFeatures(tenant.features),
+        };
+      }
+    } else {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug: headerSlug, isActive: true },
+      });
+      if (tenant) {
+        return {
+          ...tenant,
+          features: parseFeatures(tenant.features),
+        };
+      }
+    }
+  }
+
+  // Fallback if header not present (e.g. direct component usage outside middleware scope - rare in App Dir but possible)
   if (!host) return null;
 
   // 1. DEFAULT TENANT - para domínio principal
@@ -176,7 +215,7 @@ export async function getTenantFromRequest(): Promise<TenantConfig | null> {
   // Fallback
   console.warn('[Tenant] No tenant found');
   return null;
-}
+});
 
 export async function getCurrentTenantId(): Promise<string> {
   const tenant = await getTenantFromRequest();

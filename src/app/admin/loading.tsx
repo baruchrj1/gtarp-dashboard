@@ -1,0 +1,5 @@
+import { PageLoading } from "@/components/ui/LoadingSpinner";
+
+export default function Loading() {
+    return <PageLoading text="Carregando painel administrativo..." />;
+}

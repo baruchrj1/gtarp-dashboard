@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { LoadingButton } from "@/components/ui/LoadingButton";
+import { PageLoading } from "@/components/ui/LoadingSpinner";
 import { Settings, Save, Layout, MessageSquare } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useToast } from "@/components/ui/Toast";
@@ -13,6 +14,7 @@ export default function SettingsPage() {
     const { settings, refreshSettings } = useSettings();
     const toast = useToast();
     const [isLoading, setIsLoading] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
 
     // Local state for form
     const [formData, setFormData] = useState({
@@ -41,6 +43,8 @@ export default function SettingsPage() {
             } catch (error) {
                 console.error("Failed to load settings", error);
                 toast.error("Erro", "Falha ao carregar configurações atuais.");
+            } finally {
+                setIsInitialLoading(false);
             }
         }
         loadSettings();
@@ -78,6 +82,10 @@ export default function SettingsPage() {
                 ACESSO NEGADO
             </div>
         );
+    }
+
+    if (isInitialLoading) {
+        return <PageLoading text="Carregando configurações..." />;
     }
 
     return (

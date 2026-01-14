@@ -7,7 +7,8 @@ import {
     getTenantBySubdomainDirect,
     getTenantBySlugDirect,
     getFirstActiveTenant,
-    getTenantBySlug
+    getTenantBySlug,
+    getTenantFromRequest
 } from "./tenant";
 
 // ============================================
@@ -324,18 +325,11 @@ export const fallbackAuthOptions: NextAuthOptions = {
  */
 export async function getAuthOptions(): Promise<NextAuthOptions> {
     try {
-        const headersList = await headers();
-        let tenantSlug = headersList.get("x-tenant-slug");
-
-        if (!tenantSlug) {
-            const host = headersList.get("host");
-            tenantSlug = extractTenantSlugFromHost(host);
-        }
-
-        const tenant = await resolveTenantForAuth(tenantSlug);
+        // Use the cached tenant from request (handles headers, middleware, etc.)
+        const tenant = await getTenantFromRequest();
 
         if (!tenant) {
-            console.warn("[AUTH] No tenant found for slug:", tenantSlug, "- using fallback options");
+            console.warn("[AUTH] No tenant found via getTenantFromRequest - using fallback options");
             return fallbackAuthOptions;
         }
 

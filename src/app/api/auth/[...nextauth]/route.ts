@@ -3,9 +3,8 @@ import { headers } from "next/headers";
 import {
     buildAuthOptions,
     fallbackAuthOptions,
-    resolveTenantForAuth,
-    extractTenantSlugFromHost
 } from "@/lib/auth";
+import { getTenantFromRequest } from "@/lib/tenant";
 
 /**
  * Build the NextAuth handler for the current tenant.
@@ -13,23 +12,11 @@ import {
  * tenant-specific Discord OAuth credentials from the database.
  */
 async function getHandler() {
-    // Get headers to extract tenant information
-    const headersList = await headers();
-
-    // Try to get tenant slug from middleware header first
-    let tenantSlug = headersList.get("x-tenant-slug");
-
-    // If not set by middleware, try to extract from host
-    if (!tenantSlug) {
-        const host = headersList.get("host");
-        tenantSlug = extractTenantSlugFromHost(host);
-    }
-
-    // Resolve the tenant from the database
-    const tenant = await resolveTenantForAuth(tenantSlug);
+    // Resolve the tenant using the unified, cached function
+    const tenant = await getTenantFromRequest();
 
     if (!tenant) {
-        console.error(`[AUTH] No tenant found for slug: ${tenantSlug}`);
+        console.error(`[AUTH] No tenant found via getTenantFromRequest`);
         // Use fallback options which will block sign in
         return NextAuth(fallbackAuthOptions);
     }
