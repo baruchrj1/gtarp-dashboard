@@ -30,10 +30,18 @@ type RouteContext = { params: Promise<{ nextauth: string[] }> };
 
 export async function GET(request: Request, context: RouteContext) {
     const handlers = await getAuthHandlers();
+    // Check if handlers is a function (standard v4) or object (v5/beta/interop)
+    if (typeof handlers === 'function') {
+        return handlers(request, context as any);
+    }
     return handlers.GET(request, context as any);
 }
 
 export async function POST(request: Request, context: RouteContext) {
     const handlers = await getAuthHandlers();
+    // Check if handlers is a function (standard v4) or object (v5/beta/interop)
+    if (typeof handlers === 'function') {
+        return handlers(request, context as any);
+    }
     return handlers.POST(request, context as any);
 }
