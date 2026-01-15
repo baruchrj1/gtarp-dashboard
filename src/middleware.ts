@@ -17,6 +17,8 @@ export async function middleware(req: NextRequest) {
     if (
       pathname === "/" ||
       pathname === "/login" ||
+      pathname === "/access-denied" || // Allow access denied page
+      pathname === "/auth-reset" ||    // Allow reset handler
       pathname.startsWith("/api/") || // Allow all API, specific protection in API routes
       pathname.startsWith("/_next") ||
       pathname.startsWith("/static") ||
@@ -81,7 +83,8 @@ export async function middleware(req: NextRequest) {
     if (pathname.startsWith("/master")) {
       const isSuperAdmin = (token as any)?.isSuperAdmin === true;
       if (!isSuperAdmin) {
-        return NextResponse.redirect(new URL("/login", req.url));
+        // Stop the loop: Don't send to login (which sends back here), send to explicit denial
+        return NextResponse.redirect(new URL("/access-denied", req.url));
       }
     }
 
