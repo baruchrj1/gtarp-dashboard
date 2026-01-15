@@ -238,11 +238,13 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                 const member = await res.json();
                                 const roles = (member.roles || []) as string[];
 
-                                // Parse roles
-                                const adminRoleIds = tenant.discordRoleAdmin.split(",").map((id) => id.trim()).filter(Boolean);
-                                const evaluatorRoleIds = tenant.discordRoleEvaluator ? tenant.discordRoleEvaluator.split(",").map((id) => id.trim()).filter(Boolean) : [];
+                                // Parse roles with aggressive sanitization
+                                const sanitize = (str: string) => str.trim();
 
-                                // DEBUG: Inspect Role Matching
+                                const adminRoleIds = tenant.discordRoleAdmin.split(",").map(sanitize).filter(Boolean);
+                                const evaluatorRoleIds = tenant.discordRoleEvaluator ? tenant.discordRoleEvaluator.split(",").map(sanitize).filter(Boolean) : [];
+
+                                // DEBUG: Inspect Role Matching (Post-Sanitizing)
                                 // Forced Redeploy Timestamp: ${new Date().toISOString()}
                                 console.log(`[AUTH ROLE DEBUG] User: ${userId}`);
                                 console.log(`[AUTH ROLE DEBUG] Discord Roles (API):`, roles);
@@ -252,13 +254,21 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                 let determinedRole = "PLAYER";
                                 let isAdmin = false;
 
-                                // Check Discord roles
-                                if (adminRoleIds.some((id) => roles.includes(id))) {
+                                // Check Discord roles checking EXACT match
+                                const hasRole = (allowedIds: string[], userRoles: string[]) => {
+                                    return allowedIds.some(allowed => userRoles.some(userRole => userRole.trim() === allowed));
+                                };
+
+                                if (hasRole(adminRoleIds, roles)) {
                                     determinedRole = "ADMIN";
                                     isAdmin = true;
-                                } else if (evaluatorRoleIds.some((id) => roles.includes(id))) {
+                                    console.log(`[AUTH MATCH] User ${userId} matched ADMIN role.`);
+                                } else if (hasRole(evaluatorRoleIds, roles)) {
                                     determinedRole = "EVALUATOR";
                                     isAdmin = false;
+                                    console.log(`[AUTH MATCH] User ${userId} matched EVALUATOR role.`);
+                                } else {
+                                    console.log(`[AUTH MATCH] User ${userId} did NOT match any roles. Defaulting to PLAYER.`);
                                 }
 
                                 // FORCE ADMIN if Env Super Admin
