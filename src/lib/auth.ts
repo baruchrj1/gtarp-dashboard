@@ -182,8 +182,13 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                     }
                 }
 
-                // Sync Discord Roles on Sign In
-                if (account?.provider === "discord" && account.access_token) {
+                // Sync Discord Roles optimized: Only on SignIn or if roles missing
+                // This prevents spamming Discord API on every page load/refresh
+                const shouldSync =
+                    (account?.provider === "discord" && account.access_token) &&
+                    (trigger === "signIn" || user || !token.discordRoles);
+
+                if (shouldSync) {
                     try {
                         if (!tenant.discordGuildId || !tenant.discordClientId || !tenant.discordClientSecret) {
                             console.warn(`[AUTH] Tenant ${tenant.name} has no Discord credentials, skipping role sync`);
@@ -191,9 +196,13 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                         }
 
                         const guildId = tenant.discordGuildId;
-                        if (guildId) {
+                        // Use access_token from account if available, otherwise try to use what we might have stored (complex with JWT)
+                        // In NextAuth JWT strategy, account is only available on sign in.
+                        const accessToken = account?.access_token;
+
+                        if (guildId && accessToken) {
                             const res = await fetch(`https://discord.com/api/users/@me/guilds/${guildId}/member`, {
-                                headers: { Authorization: `Bearer ${account.access_token}` },
+                                headers: { Authorization: `Bearer ${accessToken}` },
                             });
 
                             if (res.ok) {
@@ -223,13 +232,14 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                 }
 
                                 // Sync to Database
-                                if (user) {
+                                if (user || token.id) {
                                     try {
+                                        const targetUserId = (user?.id) || (token.id as string);
                                         // 1. Fetch existing user (Anti-Downgrade)
                                         const existingUser = await prisma.user.findUnique({
                                             where: {
                                                 discordId_tenantId: {
-                                                    discordId: user.id,
+                                                    discordId: targetUserId,
                                                     tenantId: tenant.id,
                                                 },
                                             }
@@ -250,20 +260,20 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                         const dbUser = await prisma.user.upsert({
                                             where: {
                                                 discordId_tenantId: {
-                                                    discordId: user.id,
+                                                    discordId: targetUserId,
                                                     tenantId: tenant.id,
                                                 },
                                             },
                                             update: {
-                                                username: user.name || "Unknown",
-                                                avatar: user.image,
+                                                username: user?.name || existingUser?.username || "Unknown",
+                                                avatar: user?.image || existingUser?.avatar,
                                                 role: token.role as string,
                                                 isAdmin: token.isAdmin as boolean,
                                             },
                                             create: {
-                                                discordId: user.id,
-                                                username: user.name || "Unknown",
-                                                avatar: user.image,
+                                                discordId: targetUserId,
+                                                username: user?.name || "Unknown",
+                                                avatar: user?.image || null,
                                                 role: token.role as string,
                                                 isAdmin: token.isAdmin as boolean,
                                                 tenantId: tenant.id,
