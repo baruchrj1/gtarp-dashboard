@@ -53,7 +53,7 @@ export default function LoginPage() {
 
                     <div className="mt-8 flex items-center justify-between w-full text-xs text-zinc-500 uppercase tracking-wider">
                         <Link href="/" className="hover:text-white transition-colors">Voltar ao Início</Link>
-                        <span>v1.0.0 Stable</span>
+                        <span>v1.0.1 Debug</span>
                     </div>
                 </div>
             </div>
