@@ -16,6 +16,10 @@ export async function GET() {
             hasDatabaseUrl: !!process.env.DATABASE_URL,
             databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 30) : 'none',
         },
+        env: {
+            hasSuperAdminIds: !!process.env.SUPER_ADMIN_IDS,
+            hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
+        },
         request: {
             host,
             userAgent: headersList.get("user-agent"),

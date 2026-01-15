@@ -11,7 +11,7 @@ async function main() {
     // Credentials provided by user
     const updates = {
         discordClientId: "1459429173897597001",
-        discordClientSecret: "X0XuMpvhHYd0jIpQr10arVvTVHrNOlsL",
+        discordClientSecret: "zO1RvmA3oA_-_ct12yV4AtdDhgRyIdE-",
         discordGuildId: "1459392828281979024",
         discordRoleAdmin: "1459408512806555864",
         discordRoleEvaluator: "1459408514282684539",
@@ -19,9 +19,15 @@ async function main() {
     };
 
     try {
-        const tenant = await prisma.tenant.update({
+        const tenant = await prisma.tenant.upsert({
             where: { slug: tenantSlug },
-            data: updates,
+            update: updates,
+            create: {
+                slug: tenantSlug,
+                name: "Default Tenant",
+                subdomain: "default",
+                ...updates
+            }
         });
         console.log("✅ Successfully updated tenant:", tenant.name);
         console.log("New Client ID:", tenant.discordClientId);
