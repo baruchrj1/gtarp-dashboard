@@ -105,6 +105,8 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
     return {
         debug: process.env.NODE_ENV === "development",
         secret: process.env.NEXTAUTH_SECRET,
+        // TRUST HOST: Critical for Vercel/Proxies
+        trustHost: true,
         providers: [
             DiscordProvider({
                 // === DYNAMIC: Credentials from database ===
@@ -116,6 +118,18 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
         session: {
             strategy: "jwt",
             maxAge: 24 * 60 * 60, // 24 hours
+        },
+        // LOOP FIX: Force consistent cookie names
+        cookies: {
+            sessionToken: {
+                name: `__Secure-next-auth.session-token`,
+                options: {
+                    httpOnly: true,
+                    sameSite: 'lax',
+                    path: '/',
+                    secure: true, // Always secure on Vercel
+                }
+            }
         },
         callbacks: {
             async signIn({ user, account, profile }) {
@@ -317,6 +331,7 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
 export const fallbackAuthOptions: NextAuthOptions = {
     debug: process.env.NODE_ENV === "development",
     secret: process.env.NEXTAUTH_SECRET,
+    trustHost: true,
     providers: [
         DiscordProvider({
             clientId: process.env.DISCORD_CLIENT_ID || "INVALID_NO_TENANT",
@@ -327,6 +342,17 @@ export const fallbackAuthOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
         maxAge: 24 * 60 * 60,
+    },
+    cookies: {
+        sessionToken: {
+            name: `__Secure-next-auth.session-token`,
+            options: {
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/',
+                secure: true,
+            }
+        }
     },
     callbacks: {
         async signIn() {
