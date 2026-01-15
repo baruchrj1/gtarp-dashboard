@@ -1,9 +1,9 @@
-import { getServerSession } from "@/lib/auth"; // Use custom server session
+import { getServerSession } from "@/lib/auth";
 import { cookies } from "next/headers";
 
 export default async function DebugAuthPage() {
     const session = await getServerSession();
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const allCookies = cookieStore.getAll();
 
     return (
@@ -16,7 +16,7 @@ export default async function DebugAuthPage() {
                     <p className="text-red-500">NO COOKIES RECEIVED. Browser blocked them or domain mismatch.</p>
                 ) : (
                     <ul className="list-disc pl-5">
-                        {allCookies.map(c => (
+                        {allCookies.map((c: any) => (
                             <li key={c.name}>
                                 <span className="font-bold text-yellow-500">{c.name}</span>: {c.value.substring(0, 20)}...
                             </li>
