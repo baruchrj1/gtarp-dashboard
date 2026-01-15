@@ -196,15 +196,32 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                     isAdmin = false;
                                 }
 
-                                // Update Token
-                                token.role = determinedRole;
-                                token.isAdmin = isAdmin;
-                                token.discordRoles = roles;
-
                                 // Sync to Database
                                 if (user) {
                                     try {
-                                        // Upsert User
+                                        // 1. Fetch existing user to prevent downgrading manual Admins
+                                        const existingUser = await prisma.user.findUnique({
+                                            where: {
+                                                discordId_tenantId: {
+                                                    discordId: user.id,
+                                                    tenantId: tenant.id,
+                                                },
+                                            }
+                                        });
+
+                                        // 2. If user is already ADMIN, preserve it (don't downgrade via Sync)
+                                        if (existingUser?.isAdmin) {
+                                            console.log(`[AUTH] User ${user.id} is already ADMIN in DB. Preserving role.`);
+                                            determinedRole = "ADMIN";
+                                            isAdmin = true;
+                                        }
+
+                                        // Update Token
+                                        token.role = determinedRole;
+                                        token.isAdmin = isAdmin;
+                                        token.discordRoles = roles;
+
+                                        // Upsert User with final decided role
                                         const dbUser = await prisma.user.upsert({
                                             where: {
                                                 discordId_tenantId: {
