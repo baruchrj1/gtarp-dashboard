@@ -331,7 +331,6 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
 export const fallbackAuthOptions: NextAuthOptions = {
     debug: process.env.NODE_ENV === "development",
     secret: process.env.NEXTAUTH_SECRET,
-    trustHost: true,
     providers: [
         DiscordProvider({
             clientId: process.env.DISCORD_CLIENT_ID || "INVALID_NO_TENANT",
