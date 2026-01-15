@@ -13,7 +13,6 @@ export async function middleware(req: NextRequest) {
       pathname === "/login" ||
       pathname === "/access-denied" ||
       pathname === "/auth-reset" ||
-      pathname === "/debug-auth" || // Debug Page
       pathname.startsWith("/api/auth") || // Key: Auth API must be public
       pathname.startsWith("/_next") ||
       pathname.startsWith("/static") ||

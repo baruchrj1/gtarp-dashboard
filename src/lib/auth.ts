@@ -103,7 +103,7 @@ export function extractTenantSlugFromHost(host: string | null): string | null {
  */
 export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
     return {
-        debug: true, // FORCE DEBUG ON
+        debug: process.env.NODE_ENV === "development",
         secret: process.env.NEXTAUTH_SECRET,
         // @ts-expect-error - TrustHost is required for Vercel/Proxies but missing in some type definitions
         trustHost: true,
@@ -157,19 +157,17 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                 }
 
                 // =========================================================
-                // 1. UNIVERSAL SUPER ADMIN CHECK (Env Var Override + Emergency Hardcode)
+                // 1. UNIVERSAL SUPER ADMIN CHECK (Env Var Override)
                 // =========================================================
                 // This guarantees access to /master even if DB is empty or desynced.
                 const superAdmins = (process.env.SUPER_ADMIN_IDS || "").split(",").map(id => id.trim());
-                const emergencyId = "405844020967899137"; // USER ID HARDCODED FOR RESCUE
-
                 const userId = (user?.id) || (token.id as string) || (token.sub as string);
                 let isEnvSuperAdmin = false;
 
                 // Console logging for Vercel Runtime Logs
-                // console.log(`[AUTH DEBUG] UserId: ${userId} | EnvAdmins: ${superAdmins.length} | Hardcode: ${emergencyId}`);
+                // console.log(`[AUTH DEBUG] UserId: ${userId} | EnvAdmins: ${superAdmins.length}`);
 
-                if (userId && (superAdmins.includes(userId) || userId === emergencyId)) {
+                if (userId && superAdmins.includes(userId)) {
                     // console.log(`[AUTH] Detected Env-based Super Admin: ${userId}`);
                     token.isSuperAdmin = true;
                     token.role = "ADMIN";
