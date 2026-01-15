@@ -143,27 +143,40 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                     return { ...token, ...session };
                 }
 
-                // ALWAYS Re-evaluate Super Admin Status (DB Based)
-                // If user is ADMIN of the DEFAULT tenant, they are a Super Admin.
-                if (tenant.slug === "default" && token.role === "ADMIN") {
+                // =========================================================
+                // 1. UNIVERSAL SUPER ADMIN CHECK (Env Var Override)
+                // =========================================================
+                // This guarantees access to /master even if DB is empty or desynced.
+                const superAdmins = (process.env.SUPER_ADMIN_IDS || "").split(",").map(id => id.trim());
+                const userId = (user?.id) || (token.id as string) || (token.sub as string);
+                let isEnvSuperAdmin = false;
+
+                if (userId && superAdmins.includes(userId)) {
+                    // console.log(`[AUTH] Detected Env-based Super Admin: ${userId}`);
                     token.isSuperAdmin = true;
+                    token.role = "ADMIN";
+                    token.isAdmin = true;
+                    isEnvSuperAdmin = true;
                 } else {
-                    token.isSuperAdmin = false;
+                    // Only reset if not explicitly set elsewhere (though Env is the source of truth for Super)
+                    // If we want DB-based Super Admin too, we can keep the OR logic relative to tenant
+                    if (tenant.slug === "default" && token.role === "ADMIN") {
+                        token.isSuperAdmin = true;
+                    } else if (!token.isSuperAdmin) {
+                        // Don't accidentally clear it if it was set by a previous iteration in session (unlikely in JWT but safe)
+                        token.isSuperAdmin = false;
+                    }
                 }
 
-
-                // Sync Discord Roles on Sign In (Access Token available)
+                // Sync Discord Roles on Sign In
                 if (account?.provider === "discord" && account.access_token) {
                     try {
-                        // MODIFIED: Check if tenant has Discord credentials
                         if (!tenant.discordGuildId || !tenant.discordClientId || !tenant.discordClientSecret) {
                             console.warn(`[AUTH] Tenant ${tenant.name} has no Discord credentials, skipping role sync`);
                             return token;
                         }
 
-                        // Use tenant-specific guild ID from database
                         const guildId = tenant.discordGuildId;
-
                         if (guildId) {
                             const res = await fetch(`https://discord.com/api/users/@me/guilds/${guildId}/member`, {
                                 headers: { Authorization: `Bearer ${account.access_token}` },
@@ -173,21 +186,14 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                 const member = await res.json();
                                 const roles = (member.roles || []) as string[];
 
-                                // Parse admin roles (can be comma-separated in database)
-                                const adminRoleIds = tenant.discordRoleAdmin
-                                    .split(",")
-                                    .map((id) => id.trim())
-                                    .filter(Boolean);
+                                // Parse roles
+                                const adminRoleIds = tenant.discordRoleAdmin.split(",").map((id) => id.trim()).filter(Boolean);
+                                const evaluatorRoleIds = tenant.discordRoleEvaluator ? tenant.discordRoleEvaluator.split(",").map((id) => id.trim()).filter(Boolean) : [];
 
-                                const evaluatorRoleIds = tenant.discordRoleEvaluator
-                                    ? tenant.discordRoleEvaluator.split(",").map((id) => id.trim()).filter(Boolean)
-                                    : [];
-
-                                // Determine Role
                                 let determinedRole = "PLAYER";
                                 let isAdmin = false;
 
-                                // Check Discord roles for permissions
+                                // Check Discord roles
                                 if (adminRoleIds.some((id) => roles.includes(id))) {
                                     determinedRole = "ADMIN";
                                     isAdmin = true;
@@ -196,10 +202,16 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                     isAdmin = false;
                                 }
 
+                                // FORCE ADMIN if Env Super Admin
+                                if (isEnvSuperAdmin) {
+                                    determinedRole = "ADMIN";
+                                    isAdmin = true;
+                                }
+
                                 // Sync to Database
                                 if (user) {
                                     try {
-                                        // 1. Fetch existing user to prevent downgrading manual Admins
+                                        // 1. Fetch existing user (Anti-Downgrade)
                                         const existingUser = await prisma.user.findUnique({
                                             where: {
                                                 discordId_tenantId: {
@@ -209,9 +221,8 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                             }
                                         });
 
-                                        // 2. If user is already ADMIN, preserve it (don't downgrade via Sync)
-                                        if (existingUser?.isAdmin) {
-                                            console.log(`[AUTH] User ${user.id} is already ADMIN in DB. Preserving role.`);
+                                        // 2. Preserve DB Admin status if not Env Admin
+                                        if (!isEnvSuperAdmin && existingUser?.isAdmin) {
                                             determinedRole = "ADMIN";
                                             isAdmin = true;
                                         }
@@ -221,7 +232,7 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                         token.isAdmin = isAdmin;
                                         token.discordRoles = roles;
 
-                                        // Upsert User with final decided role
+                                        // Upsert User
                                         const dbUser = await prisma.user.upsert({
                                             where: {
                                                 discordId_tenantId: {
@@ -245,7 +256,6 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                             },
                                         });
 
-                                        // Attach DB ID and Tenant ID to Token
                                         token.dbId = dbUser.id;
                                         token.tenantId = tenant.id;
                                     } catch (err) {
