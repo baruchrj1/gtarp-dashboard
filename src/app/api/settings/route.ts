@@ -30,6 +30,13 @@ export async function GET() {
         });
     } catch (error) {
         console.error("Error fetching settings:", error);
-        return NextResponse.json({ error: "Erro ao buscar configurações" }, { status: 500 });
+        // Fallback to defaults instead of 500 to prevent frontend crash
+        return NextResponse.json({
+            settings: {
+                server_name: "SYSTEM REPORTS",
+                server_logo: "",
+                theme_color: "#8b5cf6",
+            }
+        });
     }
 }

@@ -25,6 +25,17 @@ export default withAuth(
       const isMasquerading = !!masqueradeCookie?.value;
 
       // Redirect Logic
+
+      // 0. BOOTSTRAP MODE CHECK
+      if (token.tenantId === "system-bootstrap") {
+        if (isSuperAdmin) {
+          return NextResponse.redirect(new URL("/master", req.url));
+        } else {
+          // Anyone else shouldn't be here in bootstrap mode
+          return NextResponse.redirect(new URL("/login?error=SystemNotReady", req.url));
+        }
+      }
+
       // Only force Master if Super Admin is NOT masquerading
       if (isSuperAdmin && !isMasquerading) {
         return NextResponse.redirect(new URL("/master", req.url));
