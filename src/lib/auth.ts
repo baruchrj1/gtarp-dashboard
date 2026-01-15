@@ -105,6 +105,8 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
     return {
         debug: process.env.NODE_ENV === "development",
         secret: process.env.NEXTAUTH_SECRET,
+        // @ts-expect-error - TrustHost is required for Vercel/Proxies but missing in some type definitions
+        trustHost: true,
         providers: [
             DiscordProvider({
                 // === DYNAMIC: Credentials from database ===
@@ -329,6 +331,8 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
 export const fallbackAuthOptions: NextAuthOptions = {
     debug: process.env.NODE_ENV === "development",
     secret: process.env.NEXTAUTH_SECRET,
+    // @ts-expect-error - TrustHost is required for Vercel/Proxies
+    trustHost: true,
     providers: [
         DiscordProvider({
             clientId: process.env.DISCORD_CLIENT_ID || "INVALID_NO_TENANT",
