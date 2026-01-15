@@ -208,6 +208,16 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                 headers: { Authorization: `Bearer ${accessToken}` },
                             });
 
+                            if (!res.ok) {
+                                // STRICT CHECK: If user is not in the guild (404) or other error, DENY ACCESS.
+                                // Exception: Super Admins (Env) bypass this check to prevent lockout.
+                                if (!isEnvSuperAdmin) {
+                                    console.warn(`[AUTH] User ${userId} is NOT in guild ${guildId}. Access Denied.`);
+                                    // Use a custom error string that NextAuth can catch or just throw
+                                    throw new Error("AccessDenied");
+                                }
+                            }
+
                             if (res.ok) {
                                 const member = await res.json();
                                 const roles = (member.roles || []) as string[];
