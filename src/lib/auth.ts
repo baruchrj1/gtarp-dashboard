@@ -119,15 +119,15 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
             strategy: "jwt",
             maxAge: 24 * 60 * 60, // 24 hours
         },
-        // LOOP FIX: Force consistent cookie names
+        // LOOP FIX: Relaxed Cookie Policy for maximum compatibility
         cookies: {
             sessionToken: {
-                name: `__Secure-next-auth.session-token`,
+                name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
                 options: {
                     httpOnly: true,
                     sameSite: 'lax',
                     path: '/',
-                    secure: true, // Always secure on Vercel
+                    secure: process.env.NODE_ENV === 'production',
                 }
             }
         },
@@ -356,12 +356,12 @@ export const fallbackAuthOptions: NextAuthOptions = {
     },
     cookies: {
         sessionToken: {
-            name: `__Secure-next-auth.session-token`,
+            name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
             options: {
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
-                secure: true,
+                secure: process.env.NODE_ENV === 'production',
             }
         }
     },
