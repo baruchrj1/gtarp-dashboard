@@ -103,7 +103,7 @@ export function extractTenantSlugFromHost(host: string | null): string | null {
  */
 export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
     return {
-        debug: process.env.NODE_ENV === "development",
+        debug: true, // FORCE DEBUG ON
         secret: process.env.NEXTAUTH_SECRET,
         // @ts-expect-error - TrustHost is required for Vercel/Proxies but missing in some type definitions
         trustHost: true,
