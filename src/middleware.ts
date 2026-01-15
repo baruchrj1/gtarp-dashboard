@@ -63,8 +63,30 @@ export async function middleware(req: NextRequest) {
 
     // PROTECT: /admin (Admin/Evaluator Only)
     if (pathname.startsWith("/admin")) {
+      if (!isSuperAdmin && role !== "ADMIN" && role !== "EVALUATOR") {
+        return NextResponse.redirect(new URL("/access-denied", req.url));
+      }
     }
 
+    // =========================================================
+    // 3. TENANT CONTEXT INJECTION
+    // =========================================================
+    const response = NextResponse.next();
+    const host = req.headers.get("host") || "";
+    let tenantSlug = "default";
+
+    // Extract tenant from Host
+    if (host.includes(".vercel.app")) {
+      // subdomain.vercel.app logic
+      if (!host.startsWith("gtarp-dashboard")) {
+        tenantSlug = host.split(".")[0];
+      }
+    } else if (!host.includes("localhost") && !host.includes("127.0.0.1")) {
+      // Custom domain logic
+      tenantSlug = `custom:${host}`;
+    }
+
+    // Inject header for layout/page to use
     response.headers.set("x-tenant-slug", tenantSlug);
     return response;
 
