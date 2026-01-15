@@ -119,18 +119,17 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
             strategy: "jwt",
             maxAge: 24 * 60 * 60, // 24 hours
         },
-        // LOOP FIX: Relaxed Cookie Policy for maximum compatibility
-        cookies: {
-            sessionToken: {
-                name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
-                options: {
-                    httpOnly: true,
-                    sameSite: 'lax',
-                    path: '/',
-                    secure: process.env.NODE_ENV === 'production',
-                }
-            }
-        },
+        // cookies: {
+        //     sessionToken: {
+        //         name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
+        //         options: {
+        //             httpOnly: true,
+        //             sameSite: 'lax',
+        //             path: '/',
+        //             secure: process.env.NODE_ENV === 'production',
+        //         }
+        //     }
+        // },
         callbacks: {
             async signIn({ user, account, profile }) {
                 // console.log("[AUTH] SignIn logic...");
@@ -358,17 +357,17 @@ export const fallbackAuthOptions: NextAuthOptions = {
         strategy: "jwt",
         maxAge: 24 * 60 * 60,
     },
-    cookies: {
-        sessionToken: {
-            name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
-            options: {
-                httpOnly: true,
-                sameSite: 'lax',
-                path: '/',
-                secure: process.env.NODE_ENV === 'production',
-            }
-        }
-    },
+    // cookies: {
+    //     sessionToken: {
+    //         name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
+    //         options: {
+    //             httpOnly: true,
+    //             sameSite: 'lax',
+    //             path: '/',
+    //             secure: process.env.NODE_ENV === 'production',
+    //         }
+    //     }
+    // },
     callbacks: {
         async signIn() {
             // Allow sign in if we are using Env Vars (Bootstrapping Mode)
