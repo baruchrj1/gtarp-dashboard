@@ -136,20 +136,22 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                 if (user) {
                     token.id = user.id;
                     token.email = user.email;
-
-                    // Super Admin Check (Env based)
-                    const superAdminsRaw = process.env.SUPER_ADMIN_IDS || "";
-                    const superAdmins = superAdminsRaw.split(",").map(id => id.trim());
-
-                    if (user.id && superAdmins.includes(user.id)) {
-                        // console.log(`[AUTH] User ${user.id} matched Super Admin list.`);
-                        token.isSuperAdmin = true;
-                    }
                 }
 
                 // Handle Session Updates (client-side triggers)
                 if (trigger === "update" && session) {
                     return { ...token, ...session };
+                }
+
+                // ALWAYS Re-evaluate Super Admin Status (Fix for Stale Tokens)
+                const userId = (user?.id) || (token.id as string) || (token.sub as string);
+                if (userId) {
+                    const superAdminsRaw = process.env.SUPER_ADMIN_IDS || "";
+                    const superAdmins = superAdminsRaw.split(",").map(id => id.trim());
+
+                    if (superAdmins.includes(userId)) {
+                        token.isSuperAdmin = true;
+                    }
                 }
 
                 // Sync Discord Roles on Sign In (Access Token available)
@@ -314,15 +316,20 @@ export const fallbackAuthOptions: NextAuthOptions = {
             return false;
         },
         async jwt({ token, user, account }) {
-            // Basic role sync for bootstrap user (Super Admin check only)
-            if (user) {
+            // ALWAYS Re-evaluate Super Admin Status
+            const userId = (user?.id) || (token.id as string) || (token.sub as string);
+            if (userId) {
                 const superAdminsRaw = process.env.SUPER_ADMIN_IDS || "";
                 const superAdmins = superAdminsRaw.split(",").map(id => id.trim());
-                if (user.id && superAdmins.includes(user.id)) {
+                if (superAdmins.includes(userId)) {
                     token.isSuperAdmin = true;
                     token.role = "ADMIN"; // Force Admin for bootstrap user
                     token.isAdmin = true;
-                    token.tenantId = "system-bootstrap"; // CRITICAL: Set tenantId for middleware
+
+                    // Only set system-bootstrap if not already set (or force it if fallback)
+                    if (!token.tenantId) {
+                        token.tenantId = "system-bootstrap";
+                    }
                 }
             }
             return token;
