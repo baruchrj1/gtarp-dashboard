@@ -18,8 +18,8 @@ export async function middleware(req: NextRequest) {
       pathname.startsWith("/static") ||
       pathname.includes(".")
     ) {
-      // Optional: Redirect logged-in users away from /login
-      if (token && pathname === "/login") {
+      // But if on Login/Home and Logged In, redirect to dashboard automatically
+      if (token && (pathname === "/" || pathname === "/login")) {
         const role = token.role as string;
         const isSuperAdmin = (token as any).isSuperAdmin === true;
 
