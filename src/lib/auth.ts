@@ -226,6 +226,12 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                 const adminRoleIds = tenant.discordRoleAdmin.split(",").map((id) => id.trim()).filter(Boolean);
                                 const evaluatorRoleIds = tenant.discordRoleEvaluator ? tenant.discordRoleEvaluator.split(",").map((id) => id.trim()).filter(Boolean) : [];
 
+                                // DEBUG: Inspect Role Matching
+                                console.log(`[AUTH ROLE DEBUG] User: ${userId}`);
+                                console.log(`[AUTH ROLE DEBUG] Discord Roles (API):`, roles);
+                                console.log(`[AUTH ROLE DEBUG] DB Admin IDs:`, adminRoleIds);
+                                console.log(`[AUTH ROLE DEBUG] DB Evaluator IDs:`, evaluatorRoleIds);
+
                                 let determinedRole = "PLAYER";
                                 let isAdmin = false;
 
