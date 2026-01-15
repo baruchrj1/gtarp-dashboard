@@ -317,10 +317,10 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                 return session;
             },
         },
-        pages: {
-            signIn: "/login",
-            error: "/login", // Redirect errors back to login
-        },
+        // pages: {
+        //     signIn: "/login",
+        //     error: "/login", // Redirect errors back to login
+        // },
     };
 }
 
