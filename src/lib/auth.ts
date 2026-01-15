@@ -227,6 +227,7 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                 const evaluatorRoleIds = tenant.discordRoleEvaluator ? tenant.discordRoleEvaluator.split(",").map((id) => id.trim()).filter(Boolean) : [];
 
                                 // DEBUG: Inspect Role Matching
+                                // Forced Redeploy Timestamp: ${new Date().toISOString()}
                                 console.log(`[AUTH ROLE DEBUG] User: ${userId}`);
                                 console.log(`[AUTH ROLE DEBUG] Discord Roles (API):`, roles);
                                 console.log(`[AUTH ROLE DEBUG] DB Admin IDs:`, adminRoleIds);
