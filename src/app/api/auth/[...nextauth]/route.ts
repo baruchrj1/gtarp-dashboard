@@ -1,5 +1,4 @@
-import NextAuth from "next-auth";
-import { headers } from "next/headers";
+import NextAuth from "next-auth/next";
 import {
     buildAuthOptions,
     fallbackAuthOptions,
@@ -8,34 +7,33 @@ import { getTenantFromRequest } from "@/lib/tenant";
 
 /**
  * Build the NextAuth handler for the current tenant.
- * This resolves the tenant from request headers and uses
- * tenant-specific Discord OAuth credentials from the database.
+ * Note: NextAuth(options) returns { GET, POST } in App Router.
  */
-async function getHandler() {
+async function getAuthHandlers() {
     // Resolve the tenant using the unified, cached function
     const tenant = await getTenantFromRequest();
 
     if (!tenant) {
-        console.error(`[AUTH] No tenant found via getTenantFromRequest`);
-        // Use fallback options which will block sign in
+        console.warn(`[AUTH] No tenant found - using fallback options`);
         return NextAuth(fallbackAuthOptions);
     }
 
-    console.log(`[AUTH] Using tenant: ${tenant.name} (${tenant.subdomain}) - Client ID: ${tenant.discordClientId.substring(0, 10)}...`);
+    console.log(`[AUTH] Using tenant: ${tenant.name} (${tenant.subdomain})`);
 
     // Build dynamic auth options with tenant credentials
     const authOptions = buildAuthOptions(tenant);
     return NextAuth(authOptions);
 }
 
-// Export the handler for both GET and POST methods
-// NextAuth in App Router expects direct NextAuth() call, not a function
-export async function GET(request: Request) {
-    const handler = await getHandler();
-    return handler(request, { params: { nextauth: request.url.split('/api/auth/')[1]?.split('?')[0]?.split('/') || [] } });
+// Params type for Next.js 15
+type RouteContext = { params: Promise<{ nextauth: string[] }> };
+
+export async function GET(request: Request, context: RouteContext) {
+    const handlers = await getAuthHandlers();
+    return handlers.GET(request, context as any);
 }
 
-export async function POST(request: Request) {
-    const handler = await getHandler();
-    return handler(request, { params: { nextauth: request.url.split('/api/auth/')[1]?.split('?')[0]?.split('/') || [] } });
+export async function POST(request: Request, context: RouteContext) {
+    const handlers = await getAuthHandlers();
+    return handlers.POST(request, context as any);
 }
