@@ -43,6 +43,10 @@ model Tenant {
   discordRoleEvaluator String?
   discordRolePlayer   String?
 
+  // Whitelist Manual (Option 1)
+  adminIds            String?  // Comma-separated Discord IDs
+  evaluatorIds        String?  // Comma-separated Discord IDs
+
   // Status
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
