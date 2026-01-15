@@ -143,16 +143,14 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                     return { ...token, ...session };
                 }
 
-                // ALWAYS Re-evaluate Super Admin Status (Fix for Stale Tokens)
-                const userId = (user?.id) || (token.id as string) || (token.sub as string);
-                if (userId) {
-                    const superAdminsRaw = process.env.SUPER_ADMIN_IDS || "";
-                    const superAdmins = superAdminsRaw.split(",").map(id => id.trim());
-
-                    if (superAdmins.includes(userId)) {
-                        token.isSuperAdmin = true;
-                    }
+                // ALWAYS Re-evaluate Super Admin Status (DB Based)
+                // If user is ADMIN of the DEFAULT tenant, they are a Super Admin.
+                if (tenant.slug === "default" && token.role === "ADMIN") {
+                    token.isSuperAdmin = true;
+                } else {
+                    token.isSuperAdmin = false;
                 }
+
 
                 // Sync Discord Roles on Sign In (Access Token available)
                 if (account?.provider === "discord" && account.access_token) {
