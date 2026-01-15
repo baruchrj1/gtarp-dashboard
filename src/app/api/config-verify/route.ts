@@ -18,6 +18,12 @@ export async function GET() {
         },
         env: {
             hasSuperAdminIds: !!process.env.SUPER_ADMIN_IDS,
+            superAdminDebug: {
+                rawLength: process.env.SUPER_ADMIN_IDS ? process.env.SUPER_ADMIN_IDS.length : 0,
+                firstChar: process.env.SUPER_ADMIN_IDS ? process.env.SUPER_ADMIN_IDS.charAt(0) : 'N/A',
+                lastChar: process.env.SUPER_ADMIN_IDS ? process.env.SUPER_ADMIN_IDS.slice(-1) : 'N/A',
+                parsedCount: (process.env.SUPER_ADMIN_IDS || "").split(",").length,
+            },
             hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
         },
         request: {
