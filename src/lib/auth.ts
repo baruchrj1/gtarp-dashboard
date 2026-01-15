@@ -322,6 +322,7 @@ export const fallbackAuthOptions: NextAuthOptions = {
                     token.isSuperAdmin = true;
                     token.role = "ADMIN"; // Force Admin for bootstrap user
                     token.isAdmin = true;
+                    token.tenantId = "system-bootstrap"; // CRITICAL: Set tenantId for middleware
                 }
             }
             return token;
