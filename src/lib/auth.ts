@@ -105,8 +105,6 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
     return {
         debug: process.env.NODE_ENV === "development",
         secret: process.env.NEXTAUTH_SECRET,
-        // TRUST HOST: Critical for Vercel/Proxies
-        trustHost: true,
         providers: [
             DiscordProvider({
                 // === DYNAMIC: Credentials from database ===
