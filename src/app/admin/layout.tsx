@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { getServerSession } from "@/lib/auth";
-import { getTenantFromRequest } from "@/lib/tenant";
+import { getTenantFromRequest, toTenantContextValue } from "@/lib/tenant";
 import { hasTenantRole } from "@/lib/permissions";
-import { TenantProvider, toTenantContextValue } from "@/contexts/TenantContext";
+import { TenantProvider } from "@/contexts/TenantContext";
 import { ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
