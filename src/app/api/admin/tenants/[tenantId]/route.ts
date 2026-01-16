@@ -1,5 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -45,6 +46,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ te
                 discordRolePlayer
             }
         });
+
+        revalidatePath("/", "layout");
 
         return NextResponse.json(updatedTenant);
     } catch (error) {
