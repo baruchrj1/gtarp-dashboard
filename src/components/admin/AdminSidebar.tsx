@@ -3,8 +3,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { LayoutDashboard, FileText, Users, Settings, Activity, ShieldCheck, Shield, UserCheck, Gavel } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import { LayoutDashboard, FileText, Users, Settings, Activity, ShieldCheck, Shield, UserCheck, Gavel, LogOut } from "lucide-react";
 
 export default function AdminSidebar() {
     const pathname = usePathname();
@@ -100,7 +100,14 @@ export default function AdminSidebar() {
                 </nav>
             </div>
 
-            <div className="mt-auto p-6 border-t border-border">
+            <div className="mt-auto p-6 border-t border-border space-y-4">
+                <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="w-full flex items-center px-4 py-3 text-xs font-bold rounded transition-all duration-300 uppercase tracking-wider text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20"
+                >
+                    <LogOut className="w-4 h-4 mr-3" />
+                    Sair
+                </button>
                 <div className="bg-zinc-900/50 backdrop-blur-sm rounded border border-white/10 p-4 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <div className="flex items-center gap-2 mb-2">

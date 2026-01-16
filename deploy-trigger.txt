@@ -1,1 +1,1 @@
-Trigger deployment - Retry 7 (API Auth Fix) - Timestamp: 1736987417000
+Trigger deployment - Retry 8 (Logout & Sync Fix) - Timestamp: 1736987817000

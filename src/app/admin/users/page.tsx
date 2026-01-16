@@ -68,10 +68,11 @@ export default function UsersPage() {
                 // Refresh the players list
                 mutate();
             } else {
-                setSyncMessage(`❌ ${result.error}`);
+                setSyncMessage(`❌ ${result.error || "Erro desconhecido ao sincronizar"}`);
             }
         } catch (error) {
-            setSyncMessage("❌ Erro ao sincronizar jogadores");
+            console.error(error);
+            setSyncMessage("❌ Erro de conexão ou timeout ao sincronizar");
         } finally {
             setIsSyncing(false);
             setTimeout(() => setSyncMessage(""), 5000);
