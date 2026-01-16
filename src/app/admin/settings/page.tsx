@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { PageLoading } from "@/components/ui/LoadingSpinner";
-import { Settings, Save, Layout, MessageSquare } from "lucide-react";
+import { Settings, Save, Layout, MessageSquare, Palette } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useToast } from "@/components/ui/Toast";
 
@@ -19,9 +19,19 @@ export default function SettingsPage() {
     // Local state for form
     const [formData, setFormData] = useState({
         server_name: "",
+        theme_color: "",
         discord_webhook_reports: "",
         discord_webhook_logs: "",
     });
+
+    const PREDEFINED_COLORS = [
+        { name: "Roxo (Padrão)", value: "#8B5CF6", class: "bg-[#8B5CF6]" },
+        { name: "Azul", value: "#3B82F6", class: "bg-[#3B82F6]" },
+        { name: "Verde", value: "#22C55E", class: "bg-[#22C55E]" },
+        { name: "Vermelho", value: "#EF4444", class: "bg-[#EF4444]" },
+        { name: "Laranja", value: "#F97316", class: "bg-[#F97316]" },
+        { name: "Rosa", value: "#EC4899", class: "bg-[#EC4899]" },
+    ];
 
     // Load initial data from Admin API to get all fields including secrets
     useEffect(() => {
@@ -35,6 +45,7 @@ export default function SettingsPage() {
                             ...prev,
                             // Only load fields we allow editing
                             server_name: data.settings.server_name || "",
+                            theme_color: data.settings.theme_color || "#8B5CF6",
                             discord_webhook_reports: data.settings.discord_webhook_reports || "",
                             discord_webhook_logs: data.settings.discord_webhook_logs || "",
                         }));
@@ -123,6 +134,43 @@ export default function SettingsPage() {
                                     placeholder="Ex: CIDADE ALTA"
                                 />
                                 <p className="text-[10px] text-zinc-500 mt-1">Aparece na aba do navegador e no topo do site.</p>
+                            </div>
+
+                            {/* Theme Color Section */}
+                            <div className="pt-6 border-t border-white/10">
+                                <div className="flex items-center gap-2 mb-6 text-zinc-400">
+                                    <Palette className="w-5 h-5" />
+                                    <h2 className="font-bold uppercase tracking-wider text-sm">Personalização</h2>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-zinc-400 mb-4 uppercase tracking-wide">
+                                        Cor Principal (Dashboard)
+                                    </label>
+                                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+                                        {PREDEFINED_COLORS.map((color) => (
+                                            <button
+                                                key={color.value}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, theme_color: color.value })}
+                                                className={`group relative flex flex-col items-center gap-2 p-2 rounded-lg border transition-all ${formData.theme_color === color.value
+                                                    ? "border-primary bg-primary/10"
+                                                    : "border-white/10 hover:border-white/30 hover:bg-white/5"
+                                                    }`}
+                                            >
+                                                <div className={`w-8 h-8 rounded-full shadow-lg ${color.class} ${formData.theme_color === color.value ? "ring-2 ring-white ring-offset-2 ring-offset-black" : ""
+                                                    }`} />
+                                                <span className={`text-[10px] font-bold uppercase tracking-wide ${formData.theme_color === color.value ? "text-primary" : "text-zinc-500 group-hover:text-zinc-300"
+                                                    }`}>
+                                                    {color.name}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="text-[10px] text-zinc-500 mt-4">
+                                        Esta cor será aplicada em botões, bordas e destaques no painel administrativo e do cliente.
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Discord Integration Section - REMOVED (Use Master Panel) */}
