@@ -11,6 +11,12 @@ const updateSettingsSchema = z.object({
     theme_color: z.string().optional(),
     discord_webhook_reports: z.string().optional(),
     discord_webhook_logs: z.string().optional(),
+    // New Discord Sync Fields
+    discord_bot_token: z.string().optional(),
+    discord_guild_id: z.string().optional(),
+    discord_role_player: z.string().optional(),
+    discord_role_admin: z.string().optional(),
+    discord_role_evaluator: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -72,6 +78,21 @@ export async function POST(req: Request) {
                 where: { key_tenantId: { key: "discord_webhook_logs", tenantId } },
                 update: { value: validation.data.discord_webhook_logs },
                 create: { key: "discord_webhook_logs", value: validation.data.discord_webhook_logs, description: "Webhook para Logs Administrativos", tenantId }
+            }));
+        }
+
+        // Check if there are any tenant-level updates (Discord Sync Config)
+        const tenantUpdates: any = {};
+        if (validation.data.discord_bot_token !== undefined) tenantUpdates.discordBotToken = validation.data.discord_bot_token || null;
+        if (validation.data.discord_guild_id !== undefined) tenantUpdates.discordGuildId = validation.data.discord_guild_id; // Guild ID is usually required by schema but we allow partial updates
+        if (validation.data.discord_role_player !== undefined) tenantUpdates.discordRolePlayer = validation.data.discord_role_player || null;
+        if (validation.data.discord_role_admin !== undefined) tenantUpdates.discordRoleAdmin = validation.data.discord_role_admin;
+        if (validation.data.discord_role_evaluator !== undefined) tenantUpdates.discordRoleEvaluator = validation.data.discord_role_evaluator || null;
+
+        if (Object.keys(tenantUpdates).length > 0) {
+            updates.push(prisma.tenant.update({
+                where: { id: tenantId },
+                data: tenantUpdates
             }));
         }
 
