@@ -5,10 +5,12 @@ import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getTenantFromRequest } from "@/lib/tenant";
 
+import { isStaff } from "@/lib/permissions";
+
 export async function GET(req: Request) {
     const session = await getServerSession();
 
-    if (!session?.user?.isAdmin && session?.user?.role !== "ADMIN") {
+    if (!session || !isStaff(session)) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

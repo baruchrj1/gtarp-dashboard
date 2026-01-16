@@ -59,7 +59,7 @@ export default function AdminDashboard() {
     const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7)); // YYYY-MM
 
     const { data: statsData, isLoading: isLoadingStats } = useSWR(
-        isAuthenticated && isAdmin
+        isAuthenticated && hasAccess
             ? `/api/admin/stats?range=${timeRange}${timeRange === "month" ? `&date=${selectedMonth}` : ""}`
             : null,
         fetcher
@@ -172,42 +172,41 @@ export default function AdminDashboard() {
                     )}
                 </div>
 
-                {/* Only Admin sees full stats */}
-                {
-                    isAdmin ? (
-                        <div className="space-y-8 animate-in fade-in duration-500">
-                            {/* Stats Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <StatsCard
-                                    title="Total de Denúncias"
-                                    value={overview.total}
-                                    icon={<FileText className="w-6 h-6 text-primary" />}
-                                    description="Registros totais"
-                                    loading={isLoadingStats}
-                                />
-                                <StatsCard
-                                    title="Pendentes"
-                                    value={overview.pending}
-                                    icon={<Clock className="w-6 h-6 text-yellow-500" />}
-                                    description="Aguardando análise"
-                                    loading={isLoadingStats}
-                                />
-                                <StatsCard
-                                    title="Casos Encerrados"
-                                    value={overview.resolved}
-                                    icon={<CheckCircle className="w-6 h-6 text-emerald-500" />}
-                                    description={`Aprov: ${overview.approved} | Rej: ${overview.rejected}`}
-                                    loading={isLoadingStats}
-                                />
-                                <StatsCard
-                                    title="Em Investigação"
-                                    value={overview.investigating}
-                                    icon={<ShieldAlert className="w-6 h-6 text-blue-500" />}
-                                    description="Sendo analisadas agora"
-                                    loading={isLoadingStats}
-                                />
-                            </div>
+                <div className="space-y-8 animate-in fade-in duration-500">
+                    {/* Stats Cards - Visible to all Staff (Admin & Evaluators) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <StatsCard
+                            title="Total de Denúncias"
+                            value={overview.total}
+                            icon={<FileText className="w-6 h-6 text-primary" />}
+                            description="Registros totais"
+                            loading={isLoadingStats}
+                        />
+                        <StatsCard
+                            title="Pendentes"
+                            value={overview.pending}
+                            icon={<Clock className="w-6 h-6 text-yellow-500" />}
+                            description="Aguardando análise"
+                            loading={isLoadingStats}
+                        />
+                        <StatsCard
+                            title="Casos Encerrados"
+                            value={overview.resolved}
+                            icon={<CheckCircle className="w-6 h-6 text-emerald-500" />}
+                            description={`Aprov: ${overview.approved} | Rej: ${overview.rejected}`}
+                            loading={isLoadingStats}
+                        />
+                        <StatsCard
+                            title="Em Investigação"
+                            value={overview.investigating}
+                            icon={<ShieldAlert className="w-6 h-6 text-blue-500" />}
+                            description="Sendo analisadas agora"
+                            loading={isLoadingStats}
+                        />
+                    </div>
 
+                    {isAdmin ? (
+                        <>
                             {/* Charts Row 1 */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 {/* Daily Activity Chart */}
@@ -354,7 +353,7 @@ export default function AdminDashboard() {
                                     )}
                                 </div>
                             </div>
-                        </div>
+                        </>
                     ) : (
                         // Logic for Evaluator (Simpler view or just reports list)
                         <div className="space-y-6">
@@ -366,8 +365,8 @@ export default function AdminDashboard() {
                             </div>
                             <ReportsTable />
                         </div>
-                    )
-                }
+                    )}
+                </div>
             </main >
         </div >
     );

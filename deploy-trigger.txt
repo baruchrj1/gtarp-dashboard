@@ -1,1 +1,1 @@
-Trigger deployment - Retry 8 (Logout & Sync Fix) - Timestamp: 1736987817000
+Trigger deployment - Retry 9 (Admin Header Restoration) - Timestamp: 1736988217000
