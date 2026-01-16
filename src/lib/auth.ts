@@ -291,11 +291,7 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
                                             }
                                         });
 
-                                        // 2. Preserve DB Admin status if not Env Admin
-                                        if (!isEnvSuperAdmin && existingUser?.isAdmin) {
-                                            determinedRole = "ADMIN";
-                                            isAdmin = true;
-                                        }
+
 
                                         // Update Token
                                         token.role = determinedRole;
