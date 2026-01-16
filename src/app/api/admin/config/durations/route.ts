@@ -5,15 +5,22 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
+import { isAdmin } from "@/lib/permissions";
+import { getTenantFromRequest } from "@/lib/tenant";
+
 export async function GET() {
     const session = await getServerSession();
+    const tenant = await getTenantFromRequest();
 
-    if (!session || session.user.role !== "ADMIN") {
+    const authorized = isAdmin(session);
+
+    if (!session || !authorized || !tenant) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
         const durations = await prisma.punishmentDuration.findMany({
+            where: { tenantId: tenant.id },
             orderBy: { createdAt: "asc" },
         });
         return NextResponse.json(durations);
@@ -28,8 +35,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
     const session = await getServerSession();
+    const tenant = await getTenantFromRequest();
 
-    if (!session || session.user.role !== "ADMIN") {
+    const authorized = isAdmin(session);
+
+    if (!session || !authorized || !tenant) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -43,16 +53,8 @@ export async function POST(req: Request) {
             );
         }
 
-        const tenantId = session.user.tenantId;
-        if (!tenantId) {
-            return NextResponse.json(
-                { error: "Tenant ID not found" },
-                { status: 400 }
-            );
-        }
-
         const duration = await prisma.punishmentDuration.create({
-            data: { value, label, tenantId },
+            data: { value, label, tenantId: tenant.id },
         });
 
         return NextResponse.json(duration);
@@ -67,8 +69,11 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
     const session = await getServerSession();
+    const tenant = await getTenantFromRequest();
 
-    if (!session || session.user.role !== "ADMIN") {
+    const authorized = isAdmin(session);
+
+    if (!session || !authorized || !tenant) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -78,6 +83,15 @@ export async function DELETE(req: Request) {
 
         if (!id) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
+        }
+
+        // Verify ownership
+        const duration = await prisma.punishmentDuration.findFirst({
+            where: { id, tenantId: tenant.id },
+        });
+
+        if (!duration) {
+            return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
 
         await prisma.punishmentDuration.delete({
