@@ -20,8 +20,6 @@ export default function SettingsPage() {
     const [formData, setFormData] = useState({
         server_name: "",
         theme_color: "",
-        discord_webhook_reports: "",
-        discord_webhook_logs: "",
     });
 
     const PREDEFINED_COLORS = [
@@ -46,8 +44,6 @@ export default function SettingsPage() {
                             // Only load fields we allow editing
                             server_name: data.settings.server_name || "",
                             theme_color: data.settings.theme_color || "#8B5CF6",
-                            discord_webhook_reports: data.settings.discord_webhook_reports || "",
-                            discord_webhook_logs: data.settings.discord_webhook_logs || "",
                         }));
                     }
                 }
@@ -173,43 +169,7 @@ export default function SettingsPage() {
                                 </div>
                             </div>
 
-                            {/* Discord Integration Section - REMOVED (Use Master Panel) */}
-                            <div className="pt-6 border-t border-white/10">
-                                <div className="flex items-center gap-2 mb-6 text-zinc-400">
-                                    <MessageSquare className="w-5 h-5" />
-                                    <h2 className="font-bold uppercase tracking-wider text-sm">Integração Discord</h2>
-                                </div>
 
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
-                                            Webhook para Novas Denúncias
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.discord_webhook_reports}
-                                            onChange={(e) => setFormData({ ...formData, discord_webhook_reports: e.target.value })}
-                                            className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm"
-                                            placeholder="https://discord.com/api/webhooks/..."
-                                        />
-                                        <p className="text-[10px] text-zinc-500 mt-1">Sempre que uma denúncia for criada, uma notificação será enviada aqui.</p>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
-                                            Webhook para Logs (Aprovações/Rejeições)
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.discord_webhook_logs}
-                                            onChange={(e) => setFormData({ ...formData, discord_webhook_logs: e.target.value })}
-                                            className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm"
-                                            placeholder="https://discord.com/api/webhooks/..."
-                                        />
-                                        <p className="text-[10px] text-zinc-500 mt-1">Logs de ações da staff (aprovar, rejeitar, banir) serão enviados aqui.</p>
-                                    </div>
-                                </div>
-                            </div>
 
                             <div className="pt-4 border-t border-white/10 flex justify-end">
                                 <LoadingButton

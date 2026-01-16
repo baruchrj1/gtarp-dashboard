@@ -10,12 +10,11 @@ export default function RolesManagement() {
     const isAdmin = session?.user?.role === "ADMIN" || session?.user?.isAdmin === true;
 
     const { data: usersData, isLoading, mutate } = useSWR(isAdmin ? "/api/admin/roles/users" : null);
-    const { data: configData, mutate: mutateConfig } = useSWR(isAdmin ? "/api/admin/roles/config" : null);
     const { data: reasonsData, mutate: mutateReasons } = useSWR(isAdmin ? "/api/admin/config/reasons" : null);
     const { data: orgsData, mutate: mutateOrgs } = useSWR(isAdmin ? "/api/admin/config/organizations" : null);
     const { data: durationsData, mutate: mutateDurations } = useSWR(isAdmin ? "/api/admin/config/durations" : null);
 
-    const [activeTab, setActiveTab] = useState<"users" | "config" | "lists" | "tempos">("users");
+    const [activeTab, setActiveTab] = useState<"users" | "lists" | "tempos">("users");
     const [searchQuery, setSearchQuery] = useState("");
     const [saving, setSaving] = useState(false);
 
@@ -23,12 +22,6 @@ export default function RolesManagement() {
     const [newItemValue, setNewItemValue] = useState(""); // For Organization Name or Reason Label
     const [newItemSecondValue, setNewItemSecondValue] = useState(""); // For Reason Value (e.g. RDM)
     const [addingParam, setAddingParam] = useState<"org" | "reason" | "duration" | null>(null);
-
-    const [config, setConfig] = useState({
-        guildId: configData?.config?.guildId || "",
-        adminRoleId: configData?.config?.adminRoleId || "",
-        evaluatorRoleId: configData?.config?.evaluatorRoleId || ""
-    });
 
     const users = usersData?.users || [];
     const reasons = reasonsData?.reasons || [];
@@ -39,31 +32,6 @@ export default function RolesManagement() {
         user.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-
-
-
-
-    const handleSaveConfig = async () => {
-        setSaving(true);
-        try {
-            const res = await fetch("/api/admin/roles/config", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(config)
-            });
-            const data = await res.json();
-            if (res.ok) {
-                mutateConfig();
-                alert("Configuração salva!");
-            } else {
-                alert(data.error || "Erro ao salvar configuração");
-            }
-        } catch (error) {
-            alert("Erro ao salvar configuração");
-        } finally {
-            setSaving(false);
-        }
-    };
 
     const handleAddItem = async () => {
         if (!newItemValue) return;
@@ -180,16 +148,7 @@ export default function RolesManagement() {
                         <Users className="w-4 h-4 inline mr-2" />
                         Usuários
                     </button>
-                    <button
-                        onClick={() => setActiveTab("config")}
-                        className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === "config"
-                            ? "text-primary border-b-2 border-primary"
-                            : "text-muted-foreground hover:text-foreground"
-                            }`}
-                    >
-                        <Settings className="w-4 h-4 inline mr-2" />
-                        Configuração
-                    </button>
+
                     <button
                         onClick={() => setActiveTab("lists")}
                         className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === "lists"
@@ -288,68 +247,7 @@ export default function RolesManagement() {
                             </table>
                         </div>
                     </div>
-                ) : activeTab === "config" ? (
-                    <div className="space-y-6 bg-card border border-border rounded p-6">
-                        <h2 className="text-xl font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                            <Settings className="w-5 h-5 text-primary" />
-                            Configuração de Cargos Discord
-                        </h2>
 
-                        <div className="grid gap-6">
-                            <div>
-                                <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                                    Discord Guild ID
-                                </label>
-                                <input
-                                    type="text"
-                                    value={config.guildId}
-                                    onChange={(e) => setConfig({ ...config, guildId: e.target.value })}
-                                    className="w-full bg-input border border-border rounded px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-primary/50"
-                                    placeholder="123456789012345678"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                                    Admin Role ID
-                                </label>
-                                <input
-                                    type="text"
-                                    value={config.adminRoleId}
-                                    onChange={(e) => setConfig({ ...config, adminRoleId: e.target.value })}
-                                    className="w-full bg-input border border-border rounded px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-primary/50"
-                                    placeholder="123456789012345678"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                                    Evaluator Role ID
-                                </label>
-                                <input
-                                    type="text"
-                                    value={config.evaluatorRoleId}
-                                    onChange={(e) => setConfig({ ...config, evaluatorRoleId: e.target.value })}
-                                    className="w-full bg-input border border-border rounded px-4 py-3 text-foreground font-mono text-sm focus:outline-none focus:border-primary/50"
-                                    placeholder="123456789012345678"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 pt-4 border-t border-border">
-                            <button
-                                onClick={handleSaveConfig}
-                                disabled={saving}
-                                className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-bold text-sm uppercase tracking-wider rounded hover:bg-primary/90 transition-all disabled:opacity-50"
-                            >
-                                <Save className="w-4 h-4" />
-                                {saving ? "Salvando..." : "Salvar Configuração"}
-                            </button>
-                            <p className="text-xs text-muted-foreground">
-                                Nota: Atualize também suas variáveis de ambiente (.env)
-                            </p>
-                        </div>
-                    </div>
                 ) : activeTab === "tempos" ? (
                     <div className="space-y-6">
                         <div className="bg-card border border-border rounded p-6">
@@ -539,8 +437,9 @@ export default function RolesManagement() {
                             </div>
                         </div>
                     </div>
-                )}
-            </main>
-        </div>
+                )
+                }
+            </main >
+        </div >
     );
 }
