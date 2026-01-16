@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getServerSession } from "@/lib/auth";
 
 export const dynamic = 'force-dynamic'; // Ensure we get fresh settings
 
 export async function GET() {
     try {
+        const session = await getServerSession();
         const settings = await prisma.systemSetting.findMany();
 
         // Convert array to object for easier access
@@ -25,8 +27,30 @@ export async function GET() {
             theme_color: "#8b5cf6", // Default violet
         };
 
+        const finalSettings = { ...defaults, ...settingsMap };
+
+        // Override with user preferences if logged in
+        if (session?.user?.id) {
+            try {
+                const user = await prisma.user.findUnique({
+                    where: { id: session.user.id },
+                    select: { preferences: true } as any
+                });
+
+                // @ts-ignore
+                if ((user as any)?.preferences) {
+                    const prefs = JSON.parse((user as any).preferences as string);
+                    if (prefs.theme_color) {
+                        finalSettings.theme_color = prefs.theme_color;
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading user preferences:", err);
+            }
+        }
+
         return NextResponse.json({
-            settings: { ...defaults, ...settingsMap }
+            settings: finalSettings
         });
     } catch (error) {
         console.error("Error fetching settings:", error);

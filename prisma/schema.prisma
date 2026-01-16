@@ -78,6 +78,7 @@ model User {
   avatar        String?
   isAdmin       Boolean   @default(false)
   role          String    @default("PLAYER") // PLAYER, EVALUATOR, ADMIN
+  preferences   String?   // JSON string for user preferences (theme, sidebar, etc.)
   reportsMade   Report[]  @relation("Reporter")
 
   // Relations for punishments

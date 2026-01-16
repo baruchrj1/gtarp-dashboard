@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { LayoutDashboard, FileText, Users, Settings, Activity, ShieldCheck, Shield, UserCheck, Gavel, LogOut } from "lucide-react";
+import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
 
 export default function AdminSidebar() {
     const pathname = usePathname();
@@ -127,6 +128,9 @@ export default function AdminSidebar() {
                             Cargo: <span className="text-primary font-bold">{role}</span>
                         </p>
                     </div>
+                </div>
+                <div className="flex justify-end pr-2">
+                    <ThemeSwitcher />
                 </div>
             </div>
         </div>

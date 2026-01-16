@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import { LayoutDashboard, FileText, ClipboardList, CheckCircle2, LogOut, PlusCircle } from "lucide-react";
 import { signOut } from "next-auth/react";
 
+import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
+
 export default function PlayerSidebar() {
     const pathname = usePathname();
     const { data: session } = useSession();
@@ -64,6 +66,9 @@ export default function PlayerSidebar() {
                             {session?.user?.role === "ADMIN" ? "Admin" :
                                 session?.user?.role === "EVALUATOR" ? "Avaliador" : "Jogador"}
                         </p>
+                    </div>
+                    <div>
+                        <ThemeSwitcher />
                     </div>
                 </div>
             </div>
