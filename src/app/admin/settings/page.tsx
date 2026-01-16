@@ -21,11 +21,6 @@ export default function SettingsPage() {
         server_name: "",
         discord_webhook_reports: "",
         discord_webhook_logs: "",
-        discord_bot_token: "",
-        discord_guild_id: "",
-        discord_role_player: "",
-        discord_role_admin: "",
-        discord_role_evaluator: "",
     });
 
     // Load initial data from Admin API to get all fields including secrets
@@ -42,11 +37,6 @@ export default function SettingsPage() {
                             server_name: data.settings.server_name || "",
                             discord_webhook_reports: data.settings.discord_webhook_reports || "",
                             discord_webhook_logs: data.settings.discord_webhook_logs || "",
-                            discord_bot_token: data.settings.discord_bot_token || "",
-                            discord_guild_id: data.settings.discord_guild_id || "",
-                            discord_role_player: data.settings.discord_role_player || "",
-                            discord_role_admin: data.settings.discord_role_admin || "",
-                            discord_role_evaluator: data.settings.discord_role_evaluator || "",
                         }));
                     }
                 }
@@ -135,87 +125,13 @@ export default function SettingsPage() {
                                 <p className="text-[10px] text-zinc-500 mt-1">Aparece na aba do navegador e no topo do site.</p>
                             </div>
 
+                            {/* Discord Integration Section - REMOVED (Use Master Panel) */}
                             <div className="pt-6 border-t border-white/10">
                                 <div className="flex items-center gap-2 mb-6 text-zinc-400">
                                     <MessageSquare className="w-5 h-5" />
-                                    <h2 className="font-bold uppercase tracking-wider text-sm">Configuração do Bot (Sync)</h2>
+                                    <h2 className="font-bold uppercase tracking-wider text-sm">Integração Discord</h2>
                                 </div>
 
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
-                                            Discord Bot Token
-                                        </label>
-                                        <input
-                                            type="password"
-                                            value={formData.discord_bot_token}
-                                            onChange={(e) => setFormData({ ...formData, discord_bot_token: e.target.value })}
-                                            className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm"
-                                            placeholder="MTE..."
-                                        />
-                                        <p className="text-[10px] text-zinc-500 mt-1">Token do bot que fará a sincronização de cargos.</p>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
-                                            ID do Servidor (Guild ID)
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.discord_guild_id}
-                                            onChange={(e) => setFormData({ ...formData, discord_guild_id: e.target.value })}
-                                            className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm"
-                                            placeholder="123456789..."
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
-                                                ID Cargo Jogador
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={formData.discord_role_player}
-                                                onChange={(e) => setFormData({ ...formData, discord_role_player: e.target.value })}
-                                                className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm"
-                                                placeholder="ID..."
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
-                                                ID Cargo Admin
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={formData.discord_role_admin}
-                                                onChange={(e) => setFormData({ ...formData, discord_role_admin: e.target.value })}
-                                                className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm"
-                                                placeholder="ID..."
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
-                                                ID Cargo Avaliador
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={formData.discord_role_evaluator}
-                                                onChange={(e) => setFormData({ ...formData, discord_role_evaluator: e.target.value })}
-                                                className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-sm"
-                                                placeholder="ID..."
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Old Webhooks Section */}
-                            <div className="pt-6 border-t border-white/10">
-                                <div className="flex items-center gap-2 mb-6 text-zinc-400">
-                                    <MessageSquare className="w-5 h-5" />
-                                    <h2 className="font-bold uppercase tracking-wider text-sm">Webhooks (Logs)</h2>
-                                </div>
                                 <div className="space-y-6">
                                     <div>
                                         <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">
