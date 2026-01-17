@@ -8,7 +8,7 @@ import { getTenantFromRequest } from "@/lib/tenant";
 
 // Schema for Creating Report
 const createReportSchema = z.object({
-    accusedId: z.string().min(2, "ID do acusado obrigatorio"),
+    accusedId: z.string().optional(),
     accusedName: z.string().optional(),
     accusedFamily: z.string().optional(),
     reason: z.string().min(3, "Motivo obrigatorio"),
@@ -89,6 +89,7 @@ export async function POST(req: NextRequest) {
         const report = await prisma.report.create({
             data: {
                 ...data,
+                accusedId: data.accusedId || "N/A",
                 tenantId: tenant.id,
                 reporterId: session.user.id,
                 status: "PENDING",

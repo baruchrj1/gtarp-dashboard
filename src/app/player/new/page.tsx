@@ -268,7 +268,7 @@ export default function NewPlayerReportPage() {
 
                         <div className="space-y-5">
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide ml-1">ID (Passaporte)</label>
+                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide ml-1">ID (Passaporte - Opcional)</label>
                                 <input
                                     type="text"
                                     className="w-full bg-muted/50 dark:bg-zinc-950/50 border border-border rounded-lg p-3 text-foreground focus:border-primary outline-none transition-colors placeholder-muted-foreground font-mono"
