@@ -31,11 +31,6 @@ export const AuditService = {
         const logs = await prisma.auditLog.findMany({
             orderBy: { createdAt: "desc" },
             take: limit,
-            include: {
-                admin: {
-                    select: { name: true, email: true }
-                }
-            }
         });
         return logs;
     },
@@ -44,11 +39,6 @@ export const AuditService = {
         const logs = await prisma.auditLog.findMany({
             where: { entity, entityId },
             orderBy: { createdAt: "desc" },
-            include: {
-                admin: {
-                    select: { name: true, email: true }
-                }
-            }
         });
         return logs;
     }

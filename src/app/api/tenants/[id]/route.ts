@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { updateTenantSchema } from "@/lib/tenants/schema";
+import { AuditService } from "@/lib/audit/service";
 
 // GET /api/tenants/[id] - Get single tenant
 export async function GET(
@@ -83,6 +84,18 @@ export async function PUT(
             data: updateData
         });
 
+
+
+        // Log Audit
+        await AuditService.log({
+            action: "UPDATE",
+            entity: "TENANT",
+            entityId: tenant.id,
+            details: { name: tenant.name, slug: tenant.slug, changes: Object.keys(data) },
+            adminId: (session?.user as any).discordId || "unknown",
+            adminEmail: session?.user?.email || "unknown",
+        });
+
         return NextResponse.json({
             ...tenant,
             features: JSON.parse(tenant.features)
@@ -112,6 +125,16 @@ export async function DELETE(
     try {
         await prisma.tenant.delete({
             where: { id }
+        });
+
+        // Log Audit
+        await AuditService.log({
+            action: "DELETE",
+            entity: "TENANT",
+            entityId: id,
+            details: {},
+            adminId: (session?.user as any).discordId || "unknown",
+            adminEmail: session?.user?.email || "unknown",
         });
 
         // Simplified: No Netlify delete logic needed.

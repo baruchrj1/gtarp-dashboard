@@ -352,9 +352,10 @@ model SuperAdmin {
   createdAt DateTime @default(now())
 
   // Audit logs created by this admin
-  auditLogs AuditLog[]
+  // auditLogs AuditLog[]
 }
 
+// Logs de auditoria do Manager
 // Logs de auditoria do Manager
 model AuditLog {
   id          String   @id @default(cuid())
@@ -363,8 +364,8 @@ model AuditLog {
   entityId    String?  // ID do tenant afetado (se aplicável)
 
   // Quem fez
-  adminId     String
-  admin       SuperAdmin @relation(fields: [adminId], references: [id])
+  adminId     String   // Discord ID
+  // admin       SuperAdmin @relation(fields: [adminId], references: [id]) // REMOVED RELATION
   
   adminEmail  String     // Snapshot do email no momento
   details     String?    // JSON details

@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"; // Direct prisma access
 import { createTenantSchema } from "@/lib/tenants/schema";
 import { z } from "zod";
+import { AuditService } from "@/lib/audit/service";
 
 // GET - List all tenants
 export async function GET(req: NextRequest) {
@@ -82,6 +83,16 @@ export async function POST(req: NextRequest) {
                 }),
                 isActive: data.isActive ?? true,
             },
+        });
+
+        // Log Audit
+        await AuditService.log({
+            action: "CREATE",
+            entity: "TENANT",
+            entityId: tenant.id,
+            details: { name: tenant.name, slug: tenant.slug },
+            adminId: (session?.user as any).discordId || "unknown",
+            adminEmail: session?.user?.email || "unknown",
         });
 
         // Simplified: No Netlify Deploy logic. Just DB creation.
