@@ -5,6 +5,8 @@ import { AuditService } from "@/lib/audit/service";
 import { Activity, User, Settings, LogIn, LogOut, Plus, Edit, Trash2 } from "lucide-react";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 async function getAuditLogs() {
     const logs = await AuditService.getRecentLogs(100);
     return logs.map((log: any) => ({
@@ -102,9 +104,19 @@ export default async function AuditPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         {log.details ? (
-                                            <code className="text-xs bg-zinc-900 px-2 py-1 rounded text-zinc-400 max-w-xs truncate block">
-                                                {JSON.stringify(log.details).slice(0, 50)}...
-                                            </code>
+                                            <div className="text-xs text-zinc-400 max-w-sm">
+                                                {log.details.changes ? (
+                                                    <span className="text-zinc-500">
+                                                        Alterou: <span className="text-zinc-300">{Array.isArray(log.details.changes) ? log.details.changes.join(", ") : JSON.stringify(log.details.changes)}</span>
+                                                    </span>
+                                                ) : log.details.name ? (
+                                                    <span>
+                                                        Nome: <span className="text-white">{log.details.name}</span>
+                                                    </span>
+                                                ) : (
+                                                    <span className="font-mono">{JSON.stringify(log.details).slice(0, 60)}...</span>
+                                                )}
+                                            </div>
                                         ) : (
                                             <span className="text-zinc-600 text-sm">-</span>
                                         )}

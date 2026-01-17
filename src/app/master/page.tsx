@@ -4,6 +4,8 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 async function getStats() {
     const [tenantCount, activeCount, totalUsers, totalReports] = await Promise.all([
         prisma.tenant.count(),

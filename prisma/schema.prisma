@@ -345,15 +345,7 @@ model SystemSetting {
 // SUPER ADMIN TOOLS (Merged from Manager)
 // ============================================
 
-model SuperAdmin {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-
-  // Audit logs created by this admin
-  // auditLogs AuditLog[]
-}
+// SuperAdmin model removed (deprecated)
 
 // Logs de auditoria do Manager
 // Logs de auditoria do Manager
