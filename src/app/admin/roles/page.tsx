@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import useSWR from "swr";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import { Shield, Save, Settings, Users, Search, Crown, CheckCircle, User, Clock } from "lucide-react";
+
+import { Shield, Save, Settings, Users, Search, Crown, CheckCircle, User, Clock, FileText } from "lucide-react";
+import TemplatesTab from "@/components/admin/TemplatesTab";
 
 export default function RolesManagement() {
     const { data: session } = useSWR("/api/auth/session");
@@ -14,7 +15,7 @@ export default function RolesManagement() {
     const { data: orgsData, mutate: mutateOrgs } = useSWR(isAdmin ? "/api/admin/config/organizations" : null);
     const { data: durationsData, mutate: mutateDurations } = useSWR(isAdmin ? "/api/admin/config/durations" : null);
 
-    const [activeTab, setActiveTab] = useState<"users" | "lists" | "tempos">("users");
+    const [activeTab, setActiveTab] = useState<"users" | "lists" | "tempos" | "templates">("users");
     const [searchQuery, setSearchQuery] = useState("");
     const [saving, setSaving] = useState(false);
 
@@ -120,13 +121,9 @@ export default function RolesManagement() {
     }
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 max-w-[1800px] mx-auto pb-12">
-            <aside className="w-full lg:w-64 flex-shrink-0">
-                <AdminSidebar />
-            </aside>
-
+        <div className="flex flex-col gap-8">
             <main className="flex-1 space-y-8 min-w-0">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded border border-border">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 gta-card p-6">
                     <div>
                         <h1 className="text-3xl font-bold text-foreground tracking-widest uppercase font-display">
                             Gerenciamento de <span className="text-primary">Sistema</span>
@@ -167,7 +164,17 @@ export default function RolesManagement() {
                             }`}
                     >
                         <Clock className="w-4 h-4 inline mr-2" />
-                        Tempos
+                        Punições
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("templates")}
+                        className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === "templates"
+                            ? "text-primary border-b-2 border-primary"
+                            : "text-muted-foreground hover:text-foreground"
+                            }`}
+                    >
+                        <FileText className="w-4 h-4 inline mr-2" />
+                        Templates
                     </button>
                 </div>
 
@@ -254,7 +261,7 @@ export default function RolesManagement() {
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                                     <Clock className="w-5 h-5 text-primary" />
-                                    Durações de Punição
+                                    Configuração de Punições
                                 </h2>
                                 <button
                                     onClick={() => { setAddingParam("duration"); setNewItemValue(""); setNewItemSecondValue(""); }}
@@ -315,6 +322,8 @@ export default function RolesManagement() {
                             </div>
                         </div>
                     </div>
+                ) : activeTab === "templates" ? (
+                    <TemplatesTab />
                 ) : (
                     <div className="space-y-6">
                         {/* Report Reasons Management */}

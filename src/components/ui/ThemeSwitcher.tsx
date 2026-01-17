@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, Check } from "lucide-react";
+import { Palette, Check, Sun, Moon } from "lucide-react";
+import Modal from "@/components/ui/Modal";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useSession } from "next-auth/react";
+import { useTheme } from "@/context/ThemeContext";
 
 export function ThemeSwitcher() {
     const { settings, refreshSettings } = useSettings();
+    const { themeMode, setThemeMode } = useTheme();
     const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -57,49 +60,76 @@ export function ThemeSwitcher() {
                 <Palette className="w-5 h-5" />
             </button>
 
-            {isOpen && (
-                <>
-                    <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setIsOpen(false)}
-                    />
-                    <div className="absolute right-0 top-12 z-50 w-64 bg-card border border-border rounded-lg shadow-xl p-4 animate-in fade-in zoom-in-95 duration-200">
-                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                            Tema Pessoal
-                        </h3>
-                        <div className="grid grid-cols-3 gap-2">
-                            {PREDEFINED_COLORS.map((color) => (
-                                <button
-                                    key={color.value}
-                                    onClick={() => handleColorChange(color.value)}
-                                    disabled={isSaving}
-                                    className={`
-                                        group relative flex items-center justify-center h-10 rounded-md border transition-all
-                                        ${settings.theme_color === color.value
-                                            ? "border-primary ring-1 ring-primary"
-                                            : "border-border hover:border-primary/50"
-                                        }
-                                    `}
-                                    style={{ backgroundColor: `${color.value}20` }}
-                                >
-                                    <div
-                                        className="w-4 h-4 rounded-full"
-                                        style={{ backgroundColor: color.value }}
-                                    />
-                                    {settings.theme_color === color.value && (
-                                        <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full p-0.5">
-                                            <Check className="w-2 h-2" />
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground mt-3 leading-tight">
-                            Esta cor será visível apenas para você neste dispositivo.
-                        </p>
+            <Modal
+                isOpen={isOpen}
+                onClose={() => setIsOpen(false)}
+                title="Personalização de Aparência"
+            >
+                <div>
+                    {/* Appearance Mode */}
+                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
+                        Modo de Aparência
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                        <button
+                            onClick={() => setThemeMode("light")}
+                            className={`flex flex-col items-center justify-center gap-3 h-24 rounded-xl border transition-all ${themeMode === "light"
+                                ? "bg-primary/10 border-primary text-primary"
+                                : "bg-card border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                                }`}
+                        >
+                            <Sun className="w-8 h-8" />
+                            <span className="text-sm font-bold uppercase">Modo Claro</span>
+                        </button>
+                        <button
+                            onClick={() => setThemeMode("dark")}
+                            className={`flex flex-col items-center justify-center gap-3 h-24 rounded-xl border transition-all ${themeMode === "dark"
+                                ? "bg-primary/10 border-primary text-primary"
+                                : "bg-card border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                                }`}
+                        >
+                            <Moon className="w-8 h-8" />
+                            <span className="text-sm font-bold uppercase">Modo Escuro</span>
+                        </button>
                     </div>
-                </>
-            )}
+
+                    <div className="h-px bg-border my-6" />
+
+                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
+                        Cor de Destaque
+                    </h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                        {PREDEFINED_COLORS.map((color) => (
+                            <button
+                                key={color.value}
+                                onClick={() => handleColorChange(color.value)}
+                                disabled={isSaving}
+                                className={`
+                                    group relative flex items-center justify-center h-12 rounded-lg border transition-all
+                                    ${settings.theme_color === color.value
+                                        ? "border-primary ring-2 ring-primary/30"
+                                        : "border-border hover:border-primary/50"
+                                    }
+                                `}
+                                style={{ backgroundColor: `${color.value}10` }}
+                            >
+                                <div
+                                    className="w-6 h-6 rounded-full transition-transform group-hover:scale-110"
+                                    style={{ backgroundColor: color.value }}
+                                />
+                                {settings.theme_color === color.value && (
+                                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1 shadow-lg">
+                                        <Check className="w-3 h-3" />
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-6 text-center">
+                        Suas preferências são salvas automaticamente neste dispositivo.
+                    </p>
+                </div>
+            </Modal>
         </div>
     );
 }

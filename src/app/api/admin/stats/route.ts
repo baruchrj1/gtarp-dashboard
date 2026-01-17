@@ -44,13 +44,25 @@ export async function GET(req: Request) {
 
     try {
         // 1. Overview counts - Apply filter + TenantId
-        const [total, pending, investigating, approved, rejected] = await Promise.all([
+        const [total, statusCounts] = await Promise.all([
             prisma.report.count({ where: { tenantId, createdAt: dateFilter } }),
-            prisma.report.count({ where: { tenantId, status: "PENDING", createdAt: dateFilter } }),
-            prisma.report.count({ where: { tenantId, status: "INVESTIGATING", createdAt: dateFilter } }),
-            prisma.report.count({ where: { tenantId, status: "APPROVED", createdAt: dateFilter } }),
-            prisma.report.count({ where: { tenantId, status: "REJECTED", createdAt: dateFilter } }),
+            prisma.report.groupBy({
+                by: ['status'],
+                _count: { status: true },
+                where: { tenantId, createdAt: dateFilter }
+            })
         ]);
+
+        // Map status counts
+        const statusMap = statusCounts.reduce((acc, curr) => {
+            acc[curr.status] = curr._count.status;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const pending = statusMap["PENDING"] || 0;
+        const investigating = statusMap["INVESTIGATING"] || 0;
+        const approved = statusMap["APPROVED"] || 0;
+        const rejected = statusMap["REJECTED"] || 0;
 
         // 2. Reports by Reason (Top 5)
         const reportsByReason = await prisma.report.groupBy({

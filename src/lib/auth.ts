@@ -121,28 +121,28 @@ export function buildAuthOptions(tenant: TenantConfig): NextAuthOptions {
         },
         cookies: {
             sessionToken: {
-                name: `__Secure-next-auth.session-token`,
+                name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
                 options: {
                     httpOnly: true,
                     sameSite: 'lax',
                     path: '/',
-                    secure: true,
+                    secure: process.env.NODE_ENV === 'production',
                 },
             },
             callbackUrl: {
-                name: `__Secure-next-auth.callback-url`,
+                name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.callback-url` : `next-auth.callback-url`,
                 options: {
                     sameSite: 'lax',
                     path: '/',
-                    secure: true,
+                    secure: process.env.NODE_ENV === 'production',
                 },
             },
             csrfToken: {
-                name: `__Host-next-auth.csrf-token`,
+                name: process.env.NODE_ENV === 'production' ? `__Host-next-auth.csrf-token` : `next-auth.csrf-token`,
                 options: {
                     sameSite: 'lax',
                     path: '/',
-                    secure: true,
+                    secure: process.env.NODE_ENV === 'production',
                 },
             },
         },

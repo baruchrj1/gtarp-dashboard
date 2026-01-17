@@ -6,8 +6,9 @@ import useSWR, { mutate } from "swr";
 import Link from "next/link";
 import Image from "next/image";
 import { Shield, ClipboardList, Eye, UserMinus, Loader2, CheckCircle, XCircle, Clock } from "lucide-react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { AccessDenied } from "@/components/admin/AccessDenied";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -78,27 +79,19 @@ export default function MyReportsPage() {
 
     if (!canAccess) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <div className="w-24 h-24 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center mb-6 animate-pulse">
-                    <Shield className="w-10 h-10 text-red-500" />
-                </div>
-                <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-white">
-                    Acesso Negado
-                </h2>
-                <p className="text-zinc-500">Apenas staff pode acessar esta área.</p>
-            </div>
+            <AccessDenied
+                message="Apenas staff pode acessar esta área."
+                returnTo="/"
+                returnLabel="Voltar ao Início"
+            />
         );
     }
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 max-w-[1800px] mx-auto pb-12">
-            <aside className="w-full lg:w-64 flex-shrink-0">
-                <AdminSidebar />
-            </aside>
-
+        <div className="flex flex-col gap-8">
             <main className="flex-1 space-y-8 min-w-0">
                 {/* Header */}
-                <div className="bg-card p-6 rounded border border-border">
+                <div className="gta-card p-6">
                     <h1 className="text-3xl font-bold text-foreground tracking-widest uppercase font-display flex items-center gap-3">
                         <ClipboardList className="w-8 h-8 text-primary" />
                         Minhas <span className="text-primary">Denúncias</span>

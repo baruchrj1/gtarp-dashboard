@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import useSWR, { mutate } from "swr";
 import { ShieldAlert, Archive, Calendar, FileText, Gavel, ChevronRight, Trash2, CheckCircle, XCircle, Clock, Eye, ArchiveIcon } from "lucide-react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+
 import Modal from "@/components/ui/Modal";
+import { AccessDenied } from "@/components/admin/AccessDenied";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -139,27 +140,17 @@ export default function HistoryPage() {
 
     if (!isAuthenticated || !hasAccess) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <div className="w-24 h-24 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center mb-6 animate-pulse">
-                    <ShieldAlert className="w-10 h-10 text-red-500" />
-                </div>
-                <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-foreground">
-                    Acesso Negado
-                </h2>
-                <p className="text-muted-foreground">Apenas membros da staff podem acessar esta área.</p>
-            </div>
+            <AccessDenied
+                message="Apenas membros da staff podem acessar esta área."
+            />
         );
     }
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 max-w-[1800px] mx-auto pb-12">
-            <aside className="w-full lg:w-64 flex-shrink-0">
-                <AdminSidebar />
-            </aside>
-
+        <div className="flex flex-col gap-8">
             <main className="flex-1 space-y-6 min-w-0">
                 {/* Header */}
-                <div className="bg-card p-6 rounded border border-border">
+                <div className="gta-card p-6">
                     <h1 className="text-3xl font-bold text-foreground tracking-widest uppercase font-display">
                         <Clock className="w-8 h-8 inline mr-3 text-primary" />
                         Histórico de <span className="text-primary">Denúncias</span>

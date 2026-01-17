@@ -12,18 +12,44 @@ export async function GET() {
     const session = await getServerSession();
     const tenant = await getTenantFromRequest();
 
-    const authorized = isAdmin(session);
-
-    if (!session || !authorized || !tenant) {
+    if (!session?.user || !tenant) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
-        const durations = await prisma.punishmentDuration.findMany({
+        let durations = await prisma.punishmentDuration.findMany({
             where: { tenantId: tenant.id },
             orderBy: { createdAt: "asc" },
         });
-        return NextResponse.json(durations);
+
+        if (durations.length === 0) {
+            const defaults = [
+                { label: "24 Horas", value: "24" },
+                { label: "3 Dias", value: "3d" },
+                { label: "7 Dias", value: "7d" },
+                { label: "15 Dias", value: "15d" },
+                { label: "30 Dias", value: "30d" },
+            ];
+
+            // Create defaults
+            for (const d of defaults) {
+                await prisma.punishmentDuration.create({
+                    data: {
+                        label: d.label,
+                        value: d.value,
+                        tenantId: tenant.id,
+                    },
+                });
+            }
+
+            // Fetch again
+            durations = await prisma.punishmentDuration.findMany({
+                where: { tenantId: tenant.id },
+                orderBy: { createdAt: "asc" },
+            });
+        }
+
+        return NextResponse.json({ durations });
     } catch (error) {
         console.error("Error fetching durations:", error);
         return NextResponse.json(

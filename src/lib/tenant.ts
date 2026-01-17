@@ -174,7 +174,7 @@ export const getTenantFromRequest = cache(async (): Promise<TenantConfig | null>
       });
 
       if (firstTenant) {
-        console.log(`[Tenant] Dev Fallback - Using First Tenant: ${firstTenant.name} (${firstTenant.subdomain})`);
+        // console.log(`[Tenant] Dev Fallback - Using First Tenant: ${firstTenant.name} (${firstTenant.subdomain})`);
         return {
           ...firstTenant,
           features: parseFeatures(firstTenant.features),

@@ -13,7 +13,7 @@ const createReportSchema = z.object({
     accusedFamily: z.string().optional(),
     reason: z.string().min(3, "Motivo obrigatorio"),
     description: z.string().optional(),
-    evidence: z.string().url("Evidence must be a valid URL"),
+    evidence: z.union([z.string().url(), z.array(z.string().url())]),
 });
 
 // GET - List Reports
@@ -34,26 +34,38 @@ export async function GET(req: NextRequest) {
         const status = req.nextUrl.searchParams.get("status");
 
         // Query
+        // Query
+        const query = {
+            tenantId: tenant.id,
+            // Players only see their own reports. Admins/Evaluators see all.
+            ...(isAdmin ? {} : { reporterId: session.user.id }),
+            ...(status ? { status } : {}),
+        };
+
+        if (!session.user.id) {
+            return NextResponse.json({ message: "ID do usuário não encontrado na sessão" }, { status: 401 });
+        }
+
+        console.log(`[REPORTS DEBUG] GET /api/reports - User: ${session.user.id} (${session.user.name}) | Role: ${session.user.role} | Admin? ${isAdmin}`);
+        console.log(`[REPORTS DEBUG] Query Filter:`, JSON.stringify(query, null, 2));
+
         const reports = await prisma.report.findMany({
-            where: {
-                tenantId: tenant.id,
-                // Players only see their own reports. Admins/Evaluators see all.
-                ...(isAdmin ? {} : { reporterId: session.user.id }),
-                ...(status ? { status } : {}),
-            },
-            include: {
+            where: query,
+            include: isAdmin ? {
                 reporter: {
                     select: { username: true, avatar: true, discordId: true }
                 }
-            },
+            } : undefined,
             orderBy: { createdAt: "desc" },
             take: 50, // Limit for performance
         });
 
-        return NextResponse.json(reports);
-    } catch (error) {
+        console.log(`[REPORTS DEBUG] Found ${reports.length} reports.`);
+
+        return NextResponse.json({ reports }); // Wrap in object to match SWR expectation { reports: [] }
+    } catch (error: any) {
         console.error(`[REPORTS] List Error:`, error);
-        return NextResponse.json({ message: "Erro interno" }, { status: 500 });
+        return NextResponse.json({ message: "Erro interno", error: error.message }, { status: 500 });
     }
 }
 
@@ -80,6 +92,7 @@ export async function POST(req: NextRequest) {
                 tenantId: tenant.id,
                 reporterId: session.user.id,
                 status: "PENDING",
+                evidence: Array.isArray(data.evidence) ? data.evidence.join("\n") : data.evidence,
             },
         });
 

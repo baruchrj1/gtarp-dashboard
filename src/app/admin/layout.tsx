@@ -6,6 +6,10 @@ import { hasTenantRole } from "@/lib/permissions";
 import { TenantProvider } from "@/contexts/TenantContext";
 import { ShieldAlert } from "lucide-react";
 import Link from "next/link";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import { AccessDenied } from "@/components/admin/AccessDenied";
+
+import AdminHeader from "@/components/admin/AdminHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -36,27 +40,24 @@ export default async function AdminLayout({
     if (!isAdmin && !isEvaluator) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-                <div className="w-24 h-24 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center mb-6 animate-pulse">
-                    <ShieldAlert className="w-10 h-10 text-red-500" />
-                </div>
-                <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-zinc-900 dark:text-white">Acesso Negado</h2>
-                <div className="text-zinc-500 max-w-md text-center mb-8">
-                    <p className="mb-2">Você não tem permissão para acessar o painel administrativo desta cidade.</p>
-                    <p className="text-sm text-zinc-600">Tenant: {tenant.name}</p>
-                </div>
-                <Link
-                    href="/"
-                    className="px-6 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg text-zinc-900 dark:text-white transition-colors"
-                >
-                    Voltar ao Início
-                </Link>
+                <AccessDenied
+                    message={`Você não tem permissão para acessar o painel administrativo desta cidade.`}
+                />
             </div>
         );
     }
 
     return (
         <TenantProvider tenant={toTenantContextValue(tenant)}>
-            {children}
+            <div className="min-h-screen flex bg-background/50">
+                <AdminSidebar />
+                <main className="flex-1 lg:ml-64 min-h-screen transition-all duration-300">
+                    <div className="p-4 md:p-8 pt-24 lg:pt-8 max-w-[1600px] mx-auto">
+                        <AdminHeader />
+                        {children}
+                    </div>
+                </main>
+            </div>
         </TenantProvider>
     );
 }

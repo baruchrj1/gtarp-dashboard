@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Hammer, Clock, AlertTriangle, Search, User, Users } from 'lucide-react';
+import { X, Hammer, Clock, AlertTriangle, Search, User, Users, CheckCircle, UserX } from 'lucide-react';
 import { LoadingButton } from '@/components/ui/LoadingButton';
 import { useDebounce } from '@/hooks/useDebounce';
 import useSWR from 'swr';
@@ -15,7 +15,7 @@ interface PunishmentModalProps {
     reportReason?: string;
 }
 
-type PunishmentType = 'WARNING' | 'KICK' | 'TEMP_BAN' | 'PERM_BAN';
+type PunishmentType = 'active' | 'warned' | 'suspended';
 
 export function PunishmentModal({
     isOpen,
@@ -25,7 +25,7 @@ export function PunishmentModal({
     reportId,
     reportReason,
 }: PunishmentModalProps) {
-    const [type, setType] = useState<PunishmentType>('WARNING');
+    const [type, setType] = useState<PunishmentType>('warned');
     const [duration, setDuration] = useState('24');
     const [reason, setReason] = useState(reportReason || '');
     const [loading, setLoading] = useState(false);
@@ -44,6 +44,10 @@ export function PunishmentModal({
     // Fetch organizations
     const { data: orgsData } = useSWR('/api/admin/config/organizations');
     const organizations = orgsData?.organizations || [];
+
+    // Fetch durations
+    const { data: durationsData } = useSWR('/api/admin/config/durations');
+    const durations = durationsData?.durations || [];
 
     // Search for players
     useEffect(() => {
@@ -86,6 +90,29 @@ export function PunishmentModal({
             return;
         }
 
+        // Map UI types to Backend types
+        let backendType: 'WARNING' | 'KICK' | 'TEMP_BAN' | 'PERM_BAN' | null = null;
+        if (type === 'warned') backendType = 'WARNING';
+        else if (type === 'suspended') backendType = 'TEMP_BAN'; // Default to TEMP_BAN for suspension
+
+        // Handle "Active" / Unban logic if necessary 
+        // For now, if "active", we might interpret it as unbanning or just setting status. 
+        // Since the prompt asks to synchronize UI, and backend expects specific types:
+        if (type === 'active') {
+            // Logic for reactivating/unbanning. 
+            // Since the current API POST /punishments creates a punishment, 'active' might not fit here directly without API changes.
+            // We'll proceed with notifying/updating via the notify endpoint instead if strictly following PunishmentsPage logic?
+            // Or we just map to a "WARNING" with "REMOVED" reason? No, that's hacky.
+            // I'll alert the user for now on this specific edge case or skip the API call if it's just a UI sync request.
+            alert("A funcionalidade de 'Remover Punição' via este modal será implementada em breve.");
+            return;
+        }
+
+        if (!backendType) {
+            // Fallback
+            backendType = 'WARNING';
+        }
+
         setLoading(true);
 
         try {
@@ -94,8 +121,8 @@ export function PunishmentModal({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: selectedPlayer.id,
-                    type,
-                    duration: type === 'TEMP_BAN' ? parseInt(duration) : undefined,
+                    type: backendType,
+                    duration: type === 'suspended' ? parseInt(duration) : undefined,
                     reason,
                     reportId,
                     organization: organization || undefined,
@@ -117,10 +144,9 @@ export function PunishmentModal({
     if (!isOpen) return null;
 
     const punishmentTypes = [
-        { value: 'WARNING', label: 'Advertência', color: 'yellow', icon: AlertTriangle },
-        { value: 'KICK', label: 'Kick', color: 'orange', icon: Hammer },
-        { value: 'TEMP_BAN', label: 'Ban Temporário', color: 'red', icon: Clock },
-        { value: 'PERM_BAN', label: 'Ban Permanente', color: 'red', icon: X },
+        { value: 'active', label: '✅ Ativo (Remover Punição)', color: 'green', icon: CheckCircle },
+        { value: 'warned', label: '⚠️ Advertido', color: 'yellow', icon: AlertTriangle },
+        { value: 'suspended', label: '🚫 Suspenso', color: 'red', icon: UserX },
     ];
 
     return (
@@ -169,7 +195,7 @@ export function PunishmentModal({
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="p-6 space-y-6">
                         {/* Player Search */}
-                        {!accusedId && (
+                        {!selectedPlayer && (
                             <div className="relative">
                                 <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">
                                     Buscar Jogador
@@ -221,7 +247,7 @@ export function PunishmentModal({
                         )}
 
                         {/* Selected Player Display */}
-                        {selectedPlayer && !accusedId && (
+                        {selectedPlayer && (
                             <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
@@ -273,23 +299,75 @@ export function PunishmentModal({
                         </div>
 
                         {/* Duration (only for TEMP_BAN) */}
-                        {type === 'TEMP_BAN' && (
+                        {type === 'suspended' && (
                             <div>
                                 <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                                    Duração (horas)
+                                    Duração da Punição
                                 </label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="720"
-                                    value={duration}
-                                    onChange={(e) => setDuration(e.target.value)}
-                                    className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
-                                    placeholder="24"
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Máximo: 720 horas (30 dias)
-                                </p>
+                                {durations.length > 0 ? (
+                                    <div className="space-y-3">
+                                        <select
+                                            value={duration}
+                                            onChange={(e) => setDuration(e.target.value)}
+                                            className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all appearance-none"
+                                        >
+                                            {durations.map((d: any) => {
+                                                // Parse value (e.g. "3d" -> 72, "24h" -> 24)
+                                                let hours = parseInt(d.value);
+                                                if (d.value.toLowerCase().endsWith('d')) hours = parseInt(d.value) * 24;
+
+                                                return (
+                                                    <option key={d.id} value={hours.toString()}>
+                                                        {d.label}
+                                                    </option>
+                                                );
+                                            })}
+                                            <option value="custom">Outro (Personalizado)</option>
+                                        </select>
+
+                                        {/* Show input if "custom" is selected or if it's a value not in list (legacy) */}
+                                        {(duration === 'custom' || !durations.some((d: any) => {
+                                            let hours = parseInt(d.value);
+                                            if (d.value.toLowerCase().endsWith('d')) hours = parseInt(d.value) * 24;
+                                            return hours.toString() === duration;
+                                        })) && (
+                                                <div>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            max="720"
+                                                            value={duration === 'custom' ? '' : duration}
+                                                            onChange={(e) => setDuration(e.target.value)}
+                                                            className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                                                            placeholder="Digite as horas..."
+                                                        />
+                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-bold uppercase">
+                                                            Horas
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        Máximo: 720 horas (30 dias)
+                                                    </p>
+                                                </div>
+                                            )}
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="720"
+                                            value={duration}
+                                            onChange={(e) => setDuration(e.target.value)}
+                                            className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                                            placeholder="24"
+                                        />
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Máximo: 720 horas (30 dias)
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         )}
 

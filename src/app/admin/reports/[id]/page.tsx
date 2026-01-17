@@ -7,6 +7,7 @@ import { useState, use } from "react";
 import { ChevronLeft, Check, X, HelpCircle, Shield, User, FileText, ExternalLink, Hammer, ChevronDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { PunishmentModal } from "@/components/admin/PunishmentModal";
+import { AccessDenied } from "@/components/admin/AccessDenied";
 import clsx from "clsx";
 
 type ReportDetail = {
@@ -79,12 +80,11 @@ export default function ReportDetailsPage({ params }: { params: Promise<{ id: st
 
     if (!canAccess) {
         return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
-                <Shield className="w-16 h-16 text-zinc-700 mb-4" />
-                <h2 className="text-xl font-bold text-white uppercase tracking-widest">Acesso Negado</h2>
-                <p className="text-zinc-500 mt-2">Você não tem permissão para visualizar esta página.</p>
-                <Link href="/" className="mt-6 bg-primary text-black px-6 py-3 rounded font-bold uppercase tracking-wider">Voltar ao Início</Link>
-            </div>
+            <AccessDenied
+                message="Você não tem permissão para visualizar esta página."
+                returnTo="/"
+                returnLabel="Voltar ao Início"
+            />
         );
     }
 

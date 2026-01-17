@@ -4,7 +4,8 @@ import useSWR from "swr";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { ShieldCheck, FileText, CheckCircle, XCircle, ChevronRight, History } from "lucide-react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+import { AccessDenied } from "@/components/admin/AccessDenied";
+
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -50,12 +51,11 @@ export default function ReviewsHistoryPage() {
 
     if (!canAccess) {
         return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
-                <ShieldCheck className="w-16 h-16 text-muted-foreground mb-4" />
-                <h2 className="text-xl font-bold text-foreground uppercase tracking-widest">Acesso Negado</h2>
-                <p className="text-muted-foreground mt-2">Apenas staff pode acessar esta página.</p>
-                <Link href="/" className="mt-6 bg-primary text-primary-foreground px-6 py-3 rounded font-bold uppercase tracking-wider">Voltar ao Início</Link>
-            </div>
+            <AccessDenied
+                message="Apenas staff pode acessar esta página."
+                returnTo="/"
+                returnLabel="Voltar ao Início"
+            />
         );
     }
 
@@ -87,11 +87,7 @@ export default function ReviewsHistoryPage() {
     };
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 max-w-[1800px] mx-auto pb-12">
-            <aside className="w-full lg:w-64 flex-shrink-0">
-                <AdminSidebar />
-            </aside>
-
+        <div className="flex flex-col gap-8">
             <main className="flex-1 space-y-8 min-w-0">
                 {/* Header */}
                 <div className="bg-card p-6 rounded border border-border">

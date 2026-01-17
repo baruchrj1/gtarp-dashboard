@@ -2,9 +2,10 @@
 
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+
 import StatsCard from "@/components/admin/StatsCard";
 import EvaluatorsTable from "@/components/admin/EvaluatorsTable";
+import { AccessDenied } from "@/components/admin/AccessDenied";
 import { ShieldAlert, Users, Activity, TrendingUp, UserCheck } from "lucide-react";
 
 interface EvaluatorStats {
@@ -63,20 +64,9 @@ export default function EvaluatorsPage() {
     // Redirect or show denied if not authorized
     if (!isAuthenticated || !isAdmin) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <div className="w-24 h-24 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center mb-6 animate-pulse">
-                    <ShieldAlert className="w-10 h-10 text-red-500" />
-                </div>
-                <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-zinc-900 dark:text-white">
-                    Acesso Negado
-                </h2>
-                <div className="text-zinc-500 max-w-md text-center">
-                    <p className="mb-2">Apenas administradores podem acessar esta área.</p>
-                    <p className="text-xs font-mono bg-zinc-900 p-2 rounded border border-zinc-800">
-                        Status: {status} | Role: {role}
-                    </p>
-                </div>
-            </div>
+            <AccessDenied
+                message="Apenas administradores podem acessar esta área."
+            />
         );
     }
 
@@ -111,11 +101,7 @@ export default function EvaluatorsPage() {
     ];
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 max-w-[1800px] mx-auto pb-12">
-            <aside className="w-full lg:w-64 flex-shrink-0">
-                <AdminSidebar />
-            </aside>
-
+        <div className="flex flex-col gap-8">
             <main className="flex-1 space-y-8 min-w-0">
                 <div className="gta-card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card/50 backdrop-blur-sm">
                     <div>

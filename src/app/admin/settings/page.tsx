@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { PageLoading } from "@/components/ui/LoadingSpinner";
 import { Settings, Save, Layout, MessageSquare, Palette } from "lucide-react";
@@ -96,11 +96,9 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="flex min-h-screen bg-background text-foreground">
-            <AdminSidebar />
-
-            <main className="flex-1 p-8">
-                <div className="mb-8">
+        <div className="flex flex-col gap-8">
+            <main className="flex-1 space-y-8 min-w-0">
+                <div className="gta-card p-6 mb-8">
                     <h1 className="text-3xl font-bold font-display uppercase tracking-widest flex items-center gap-3">
                         <Settings className="w-8 h-8 text-primary" />
                         Configurações Gerais
@@ -110,7 +108,7 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                     {/* Form Panel */}
-                    <div className="bg-card border border-border rounded-lg p-6">
+                    <div className="gta-card p-6">
                         <div className="flex items-center gap-2 mb-6 text-zinc-400">
                             <Layout className="w-5 h-5" />
                             <h2 className="font-bold uppercase tracking-wider text-sm">Informações Básicas</h2>
@@ -126,49 +124,11 @@ export default function SettingsPage() {
                                     type="text"
                                     value={formData.server_name}
                                     onChange={(e) => setFormData({ ...formData, server_name: e.target.value })}
-                                    className="w-full bg-black/30 border border-white/10 rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-display tracking-wide"
+                                    className="w-full bg-input border border-border rounded px-4 py-3 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-display tracking-wide"
                                     placeholder="Ex: CIDADE ALTA"
                                 />
                                 <p className="text-[10px] text-zinc-500 mt-1">Aparece na aba do navegador e no topo do site.</p>
                             </div>
-
-                            {/* Theme Color Section */}
-                            <div className="pt-6 border-t border-white/10">
-                                <div className="flex items-center gap-2 mb-6 text-zinc-400">
-                                    <Palette className="w-5 h-5" />
-                                    <h2 className="font-bold uppercase tracking-wider text-sm">Personalização</h2>
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-bold text-zinc-400 mb-4 uppercase tracking-wide">
-                                        Cor Principal (Dashboard)
-                                    </label>
-                                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-                                        {PREDEFINED_COLORS.map((color) => (
-                                            <button
-                                                key={color.value}
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, theme_color: color.value })}
-                                                className={`group relative flex flex-col items-center gap-2 p-2 rounded-lg border transition-all ${formData.theme_color === color.value
-                                                    ? "border-primary bg-primary/10"
-                                                    : "border-white/10 hover:border-white/30 hover:bg-white/5"
-                                                    }`}
-                                            >
-                                                <div className={`w-8 h-8 rounded-full shadow-lg ${color.class} ${formData.theme_color === color.value ? "ring-2 ring-white ring-offset-2 ring-offset-black" : ""
-                                                    }`} />
-                                                <span className={`text-[10px] font-bold uppercase tracking-wide ${formData.theme_color === color.value ? "text-primary" : "text-zinc-500 group-hover:text-zinc-300"
-                                                    }`}>
-                                                    {color.name}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <p className="text-[10px] text-zinc-500 mt-4">
-                                        Esta cor será aplicada em botões, bordas e destaques no painel administrativo e do cliente.
-                                    </p>
-                                </div>
-                            </div>
-
 
 
                             <div className="pt-4 border-t border-white/10 flex justify-end">

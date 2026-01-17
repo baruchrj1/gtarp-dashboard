@@ -4,9 +4,10 @@ import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import ReportsTable from "@/components/admin/ReportsTable";
+import { AccessDenied } from "@/components/admin/AccessDenied";
 import { ShieldAlert, Clock } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 
 export default function AdminReportsPage() {
     const { data: session, status } = useSession();
@@ -18,10 +19,8 @@ export default function AdminReportsPage() {
     const isEvaluator = role === "EVALUATOR";
     const hasAccess = isAdmin || isEvaluator;
 
-    const { data: reportsData, isLoading: isLoadingReports } = useSWR(
-        isAuthenticated && hasAccess ? "/api/admin/reports?limit=100" : null,
-        fetcher
-    );
+    // The table handles its own fetching
+
 
     // Show loading state
     if (isLoadingAuth) {
@@ -34,28 +33,14 @@ export default function AdminReportsPage() {
 
     // Check access
     if (!isAuthenticated || !hasAccess) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <div className="w-24 h-24 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center mb-6 animate-pulse">
-                    <ShieldAlert className="w-10 h-10 text-red-500" />
-                </div>
-                <h2 className="text-3xl font-bold mb-2 font-display uppercase tracking-wide text-foreground">
-                    Acesso Negado
-                </h2>
-                <p className="text-muted-foreground">Apenas administradores e avaliadores podem acessar esta área.</p>
-            </div>
-        );
+        return <AccessDenied />;
     }
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 max-w-[1800px] mx-auto pb-12">
-            <aside className="w-full lg:w-64 flex-shrink-0">
-                <AdminSidebar />
-            </aside>
-
+        <div className="flex flex-col gap-8">
             <main className="flex-1 space-y-8 min-w-0">
                 {/* Header - Same as admin dashboard */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded border border-border">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 gta-card p-6">
                     <div>
                         <h1 className="text-3xl font-bold text-foreground tracking-widest uppercase font-display">
                             Painel <span className="text-primary">{isAdmin ? "Administrativo" : "de Avaliação"}</span>
@@ -76,13 +61,7 @@ export default function AdminReportsPage() {
                     </div>
 
                     {/* Reports Table */}
-                    {isLoadingReports ? (
-                        <div className="grid place-items-center h-64 border border-border rounded bg-muted/20">
-                            <div className="animate-spin rounded h-12 w-12 border-b-2 border-primary"></div>
-                        </div>
-                    ) : (
-                        <ReportsTable />
-                    )}
+                    <ReportsTable />
                 </div>
             </main>
         </div>
